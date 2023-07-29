@@ -3,6 +3,8 @@
 namespace Media\Service;
 
 use Media\Repository\MediaRepositoryInterface;
+use Media\Storage\LocalDownload;
+use Media\Storage\LocalStorage;
 use User\Service\AccountService;
 use User\Service\UtilityService;
 
@@ -11,30 +13,35 @@ class MediaService implements ServiceInterface
     /** @var MediaRepositoryInterface */
     protected MediaRepositoryInterface $mediaRepository;
 
-    /** @var LocalStorageService */
-    protected LocalStorageService $localStorageService;
-
     /** @var AccountService */
     protected AccountService $accountService;
 
     /** @var UtilityService */
     protected UtilityService $utilityService;
 
+    /** @var LocalStorage */
+    protected LocalStorage $localStorage;
+
+    /** @var LocalDownload */
+    protected LocalDownload $localDownload;
+
     /* @var array */
     protected array $config;
 
     public function __construct(
         MediaRepositoryInterface $mediaRepository,
-        LocalStorageService $localStorageService,
         AccountService $accountService,
         UtilityService $utilityService,
+        LocalStorage $localStorage,
+        LocalDownload $localDownload,
         $config
     ) {
-        $this->mediaRepository     = $mediaRepository;
-        $this->localStorageService = $localStorageService;
-        $this->accountService      = $accountService;
-        $this->utilityService      = $utilityService;
-        $this->config              = $config;
+        $this->mediaRepository = $mediaRepository;
+        $this->accountService  = $accountService;
+        $this->utilityService  = $utilityService;
+        $this->localStorage    = $localStorage;
+        $this->localDownload   = $localDownload;
+        $this->config          = $config;
     }
 
     public function addMedia($uploadFile, $authentication, $params): array
@@ -45,7 +52,7 @@ class MediaService implements ServiceInterface
         ];
 
         // Store media
-        $storeInfo = $this->localStorageService->storeMedia($uploadFile, $storageParams);
+        $storeInfo = $this->localStorage->storeMedia($uploadFile, $storageParams);
 
         // Set storage params
         $addStorage = [
@@ -182,9 +189,10 @@ class MediaService implements ServiceInterface
         ];
     }
 
-    public function generateLink($params):string
+    public function generateLink($params): string
     {
-        return '';
+        $source = '/var/www/html/local/laminas/data/upload/654cde20ead03f441e8a8aed6c2527d6/website-home-2023-07-29-10-37-15-2679.jpg';
+        return $this->localDownload->send($source);
     }
 
     public function canonizeStorage($storage): array

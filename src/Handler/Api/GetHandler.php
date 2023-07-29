@@ -33,7 +33,7 @@ class GetHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $requestBody    = $request->getParsedBody();
+        $requestBody = $request->getParsedBody();
 
         $result = $this->mediaService->generateLink($requestBody);
 

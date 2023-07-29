@@ -3,7 +3,6 @@
 namespace Media\Middleware;
 
 use Fig\Http\Message\StatusCodeInterface;
-use Laminas\Validator\File\Exists;
 use Laminas\Validator\File\Extension;
 use Laminas\Validator\File\MimeType;
 use Laminas\Validator\File\Size;
@@ -52,7 +51,7 @@ class MediaMiddleware implements MiddlewareInterface
         $this->streamFactory   = $streamFactory;
         $this->errorHandler    = $errorHandler;
         $this->mediaService    = $mediaService;
-        $this->config = $config;
+        $this->config          = $config;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -95,7 +94,6 @@ class MediaMiddleware implements MiddlewareInterface
 
     protected function attacheIsValid($uploadFiles)
     {
-
         $validatorUpload    = new UploadFile();
         $validatorExtension = new Extension($this->config['allowed_extension']);
         $validatorMimeType  = new MimeType($this->config['mime_type']);

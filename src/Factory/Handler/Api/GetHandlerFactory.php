@@ -5,7 +5,6 @@ namespace Media\Factory\Handler\Api;
 use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Handler\Api\GetHandler;
-use Media\Handler\Api\UpdateHandler;
 use Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;

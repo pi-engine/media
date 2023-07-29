@@ -1,8 +1,8 @@
 <?php
 
-namespace Media\Service;
+namespace Media\Storage;
 
-class LocalStorageService implements ServiceInterface
+class LocalStorage implements StorageInterface
 {
     /* @var array */
     protected array $config;
@@ -40,4 +40,6 @@ class LocalStorageService implements ServiceInterface
     {
         return is_dir($path) || mkdir($path);
     }
+
+
 }

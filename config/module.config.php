@@ -14,13 +14,15 @@ return [
             Repository\MediaRepositoryInterface::class => Repository\MediaRepository::class,
         ],
         'factories' => [
-            Repository\MediaRepository::class  => Factory\Repository\MediaRepositoryFactory::class,
-            Service\MediaService::class        => Factory\Service\MediaServiceFactory::class,
-            Service\LocalStorageService::class => Factory\Service\LocalStorageServiceFactory::class,
-            Middleware\MediaMiddleware::class  => Factory\Middleware\MediaMiddlewareFactory::class,
-            Handler\Api\AddHandler::class      => Factory\Handler\Api\AddHandlerFactory::class,
-            Handler\Api\UpdateHandler::class   => Factory\Handler\Api\UpdateHandlerFactory::class,
-            Handler\Api\ListHandler::class     => Factory\Handler\Api\ListHandlerFactory::class,
+            Repository\MediaRepository::class => Factory\Repository\MediaRepositoryFactory::class,
+            Service\MediaService::class       => Factory\Service\MediaServiceFactory::class,
+            Storage\LocalStorage::class       => Factory\Storage\Local\StorageFactory::class,
+            Storage\LocalDownload::class      => Factory\Storage\Local\DownloadFactory::class,
+            Middleware\MediaMiddleware::class => Factory\Middleware\MediaMiddlewareFactory::class,
+            Handler\Api\AddHandler::class     => Factory\Handler\Api\AddHandlerFactory::class,
+            Handler\Api\UpdateHandler::class  => Factory\Handler\Api\UpdateHandlerFactory::class,
+            Handler\Api\ListHandler::class    => Factory\Handler\Api\ListHandlerFactory::class,
+            Handler\Api\GetHandler::class     => Factory\Handler\Api\GetHandlerFactory::class,
         ],
     ],
 
@@ -88,6 +90,25 @@ return [
                                     AuthenticationMiddleware::class,
                                     CheckMiddleware::class,
                                     Handler\Api\ListHandler::class
+                                ),
+                            ],
+                        ],
+                    ],
+                    'get'   => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/get',
+                            'defaults' => [
+                                'module'     => 'media',
+                                'section'    => 'api',
+                                'package'    => 'media',
+                                'handler'    => 'get',
+                                'controller' => PipeSpec::class,
+                                'middleware' => new PipeSpec(
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    CheckMiddleware::class,
+                                    Handler\Api\GetHandler::class
                                 ),
                             ],
                         ],
