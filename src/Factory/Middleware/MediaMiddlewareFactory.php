@@ -14,11 +14,15 @@ class MediaMiddlewareFactory implements FactoryInterface
 {
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null): MediaMiddleware
     {
+        $config = $container->get('config');
+        $config = $config['media'] ?? [];
+
         return new MediaMiddleware(
             $container->get(ResponseFactoryInterface::class),
             $container->get(StreamFactoryInterface::class),
             $container->get(ErrorHandler::class),
-            $container->get(MediaService::class)
+            $container->get(MediaService::class),
+            $config
         );
     }
 }

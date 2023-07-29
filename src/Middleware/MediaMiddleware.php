@@ -3,6 +3,7 @@
 namespace Media\Middleware;
 
 use Fig\Http\Message\StatusCodeInterface;
+use Laminas\Validator\File\Exists;
 use Laminas\Validator\File\Extension;
 use Laminas\Validator\File\MimeType;
 use Laminas\Validator\File\Size;
@@ -37,16 +38,21 @@ class MediaMiddleware implements MiddlewareInterface
     /** @var MediaService */
     protected MediaService $mediaService;
 
+    /* @var array */
+    protected array $config;
+
     public function __construct(
         ResponseFactoryInterface $responseFactory,
         StreamFactoryInterface $streamFactory,
         ErrorHandler $errorHandler,
-        MediaService $mediaService
+        MediaService $mediaService,
+        $config
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;
         $this->errorHandler    = $errorHandler;
         $this->mediaService    = $mediaService;
+        $this->config = $config;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -89,29 +95,11 @@ class MediaMiddleware implements MiddlewareInterface
 
     protected function attacheIsValid($uploadFiles)
     {
+
         $validatorUpload    = new UploadFile();
-        $validatorExtension = new Extension(
-            [
-                'csv',
-                'xlsx',
-                'xls',
-                'png',
-                'jpg',
-                'jpeg',
-            ]
-        );
-        $validatorMimeType  = new MimeType([
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'text/csv',
-            'application/vnd.oasis.opendocument.spreadsheet',
-        ]);
-        $validatorSize      = new Size(
-            [
-                'min' => '1kB',
-                'max' => '10MB',
-            ]
-        );
+        $validatorExtension = new Extension($this->config['allowed_extension']);
+        $validatorMimeType  = new MimeType($this->config['mime_type']);
+        $validatorSize      = new Size($this->config['allowed_size']);
 
         // Check attached files
         foreach ($uploadFiles as $uploadFile) {
