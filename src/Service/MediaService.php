@@ -182,6 +182,11 @@ class MediaService implements ServiceInterface
         ];
     }
 
+    public function generateLink($params):string
+    {
+        return '';
+    }
+
     public function canonizeStorage($storage): array
     {
         if (empty($storage)) {
