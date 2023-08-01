@@ -44,11 +44,16 @@ class MediaService implements ServiceInterface
         $this->config          = $config;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function addMedia($uploadFile, $authentication, $params): array
     {
         // Set storage params
         $storageParams = [
-            'local_path' => $authentication['company']['hash'] ?? sprintf('%s/%s', date('Y'), date('m')),
+            'local_path' => isset($authentication['company']['hash'])
+                ? sprintf('%s/%s/%s', $authentication['company']['hash'], date('Y'), date('m'))
+                : sprintf('%s/%s', date('Y'), date('m')),
             'access'     => $params['access'],
             'storage'    => 'local',
         ];
@@ -56,10 +61,15 @@ class MediaService implements ServiceInterface
         // Store media
         $storeInfo = $this->localStorage->storeMedia($uploadFile, $storageParams);
 
+        // Make download info
+        $downloadInfo = [
+            'public_uri' => ($params['access'] == 'public') ? $this->localDownload->makePublicUri($storeInfo) : '',
+        ];
+
         // Set storage params
         $addStorage = [
             'title'       => $params['title'] ?? $storeInfo['file_title'],
-            'user_id'     => $authentication['user_id'],
+            'user_id'     => $authentication['user_id'] ?? $authentication['id'],
             'company_id'  => $authentication['company_id'] ?? 0,
             'access'      => $params['access'],
             'storage'     => 'local',
@@ -71,6 +81,7 @@ class MediaService implements ServiceInterface
             'information' => json_encode(
                 [
                     'storage' => $storeInfo,
+                    'download' => $downloadInfo,
                 ]
             ),
         ];
@@ -89,7 +100,7 @@ class MediaService implements ServiceInterface
             // Set relation params
             $addRelation = [
                 'storage_id'       => $storage['id'],
-                'user_id'          => $authentication['user_id'],
+                'user_id'          => $authentication['user_id'] ?? $authentication['id'],
                 'company_id'       => $authentication['company_id'] ?? 0,
                 'access'           => $params['access'],
                 'relation_module'  => $params['relation_module'],
@@ -127,26 +138,23 @@ class MediaService implements ServiceInterface
             'access'     => 'company',
             'company_id' => $authentication['company_id'],
         ];
-        if (isset($params['status']) && !empty($params['status'])) {
+        if (!empty($params['status'])) {
             $listParams['status'] = $params['status'];
         }
-        if (isset($params['user_id']) && !empty($params['user_id'])) {
+        if (!empty($params['user_id'])) {
             $listParams['user_id'] = $params['user_id'];
         }
-        if (isset($params['slug']) && !empty($params['slug'])) {
+        if (!empty($params['slug'])) {
             $listParams['slug'] = $params['slug'];
         }
-        if (isset($params['id']) && !empty($params['id'])) {
+        if (!empty($params['id'])) {
             $listParams['id'] = $params['id'];
         }
 
         // Check request has relation information
         if (
-            isset($params['relation_module'])
-            && !empty($params['relation_module'])
-            && isset($params['relation_section'])
+            !empty($params['relation_module'])
             && !empty($params['relation_section'])
-            && isset($params['relation_item'])
             && !empty($params['relation_item'])
         ) {
             $listParams['relation_module']  = $params['relation_module'];
@@ -188,10 +196,13 @@ class MediaService implements ServiceInterface
         ];
     }
 
-    public function generateLink($params): string
+    /**
+     * @throws \Exception
+     */
+    public function streamMedia($params): string
     {
-        $source = '/var/www/html/local/laminas/data/upload/654cde20ead03f441e8a8aed6c2527d6/website-home-2023-07-29-10-37-15-2679.jpg';
-        return $this->localDownload->send($source);
+        $source = '/var/www/html/local/laminas/data/upload/654cde20ead03f441e8a8aed6c2527d6/2023/08/screenshot_20230713_170927-2023-08-01-07-44-00-3595.png';
+        return $this->localDownload->stream($source);
     }
 
     public function canonizeStorage($storage): array

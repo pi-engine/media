@@ -35,7 +35,7 @@ class GetHandler implements RequestHandlerInterface
     {
         $requestBody = $request->getParsedBody();
 
-        $result = $this->mediaService->generateLink($requestBody);
+        $result = $this->mediaService->streamMedia($requestBody);
 
         return new JsonResponse($result);
     }

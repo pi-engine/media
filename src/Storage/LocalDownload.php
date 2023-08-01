@@ -18,26 +18,13 @@ class LocalDownload implements DownloadInterface
         $this->config = $config;
     }
 
-    /**
-     * Set options
-     *
-     * @param array $options
-     *
-     * @return $this
-     */
-    public function setOptions($options = [])
+    public function makePublicUri($params): string
     {
-        if (isset($options['exit'])) {
-            $this->exit = (bool)$options['exit'];
-        }
-
-        $this->tmp = isset($options['tmp']) ? $options['tmp'] : '';
-
-        return $this;
+        return sprintf('%s/%s/%s', $this->config['download_uri'], $params['local_path'], $params['file_name']);
     }
 
     /**
-     * Send the file to the client (Download)
+     * Stream the file to the client (Download)
      *
      * @param string|array $source  File or file meta to download
      * @param array        $options Options for the file(s) to send
@@ -45,7 +32,7 @@ class LocalDownload implements DownloadInterface
      * @return bool|void
      * @throws \Exception
      */
-    public function send($source, array $options = [])
+    public function stream($source, array $options = []): bool
     {
         // Disable logging service
         //Pi::service('log')->mute();

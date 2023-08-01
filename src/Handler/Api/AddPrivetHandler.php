@@ -38,7 +38,7 @@ class AddPrivetHandler implements RequestHandlerInterface
         $uploadFiles    = $request->getUploadedFiles();
 
         // Set access type
-        $requestBody['access'] = 'company';
+        $requestBody['access'] = $requestBody['access'] ?? 'company';
 
         $fileList = [];
         foreach ($uploadFiles as $uploadFile) {
