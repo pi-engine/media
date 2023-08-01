@@ -48,7 +48,9 @@ class MediaService implements ServiceInterface
     {
         // Set storage params
         $storageParams = [
-            'local_path' => $authentication['company']['hash'],
+            'local_path' => $authentication['company']['hash'] ?? sprintf('%s/%s', date('Y'), date('m')),
+            'access'     => $params['access'],
+            'storage'    => 'local',
         ];
 
         // Store media
@@ -58,8 +60,8 @@ class MediaService implements ServiceInterface
         $addStorage = [
             'title'       => $params['title'] ?? $storeInfo['file_title'],
             'user_id'     => $authentication['user_id'],
-            'company_id'  => $authentication['company_id'],
-            'access'      => 'company',
+            'company_id'  => $authentication['company_id'] ?? 0,
+            'access'      => $params['access'],
             'storage'     => 'local',
             'type'        => '',
             'extension'   => '',
@@ -79,11 +81,8 @@ class MediaService implements ServiceInterface
 
         // Check media have a relation
         if (
-            isset($params['relation_module'])
-            && !empty($params['relation_module'])
-            && isset($params['relation_section'])
+            !empty($params['relation_module'])
             && !empty($params['relation_section'])
-            && isset($params['relation_item'])
             && !empty($params['relation_item'])
             && is_numeric($params['relation_item'])
         ) {
@@ -91,8 +90,8 @@ class MediaService implements ServiceInterface
             $addRelation = [
                 'storage_id'       => $storage['id'],
                 'user_id'          => $authentication['user_id'],
-                'company_id'       => $authentication['company_id'],
-                'access'           => 'company',
+                'company_id'       => $authentication['company_id'] ?? 0,
+                'access'           => $params['access'],
                 'relation_module'  => $params['relation_module'],
                 'relation_section' => $params['relation_section'],
                 'relation_item'    => (int)$params['relation_item'],

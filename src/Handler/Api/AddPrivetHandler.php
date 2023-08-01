@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class AddHandler implements RequestHandlerInterface
+class AddPrivetHandler implements RequestHandlerInterface
 {
     /** @var ResponseFactoryInterface */
     protected ResponseFactoryInterface $responseFactory;
@@ -36,6 +36,9 @@ class AddHandler implements RequestHandlerInterface
         $authentication = $request->getAttribute('company_authentication');
         $requestBody    = $request->getParsedBody();
         $uploadFiles    = $request->getUploadedFiles();
+
+        // Set access type
+        $requestBody['access'] = 'company';
 
         $fileList = [];
         foreach ($uploadFiles as $uploadFile) {

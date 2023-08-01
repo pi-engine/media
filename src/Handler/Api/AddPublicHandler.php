@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class UpdateHandler implements RequestHandlerInterface
+class AddPublicHandler implements RequestHandlerInterface
 {
     /** @var ResponseFactoryInterface */
     protected ResponseFactoryInterface $responseFactory;
@@ -33,10 +33,24 @@ class UpdateHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $authentication = $request->getAttribute('company_authentication');
+        $authentication = $request->getAttribute('account');
         $requestBody    = $request->getParsedBody();
+        $uploadFiles    = $request->getUploadedFiles();
 
-        $result = $this->mediaService->updateMedia($authentication, $requestBody);
+        // Set access type
+        $requestBody['access'] = 'public';
+
+        $fileList = [];
+        foreach ($uploadFiles as $uploadFile) {
+            $fileList[] = $this->mediaService->addMedia($uploadFile, $authentication, $requestBody);
+        }
+
+        $result = [
+            'result' => true,
+            'data'   => $fileList,
+            'error'  => [],
+        ];
+
         return new JsonResponse($result);
     }
 }

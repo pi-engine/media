@@ -4,16 +4,16 @@ namespace Media\Factory\Handler\Api;
 
 use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Handler\Api\AddHandler;
+use Media\Handler\Api\AddPublicHandler;
 use Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
-class AddHandlerFactory implements FactoryInterface
+class AddPublicHandlerFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): AddHandler
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): AddPublicHandler
     {
-        return new AddHandler(
+        return new AddPublicHandler(
             $container->get(ResponseFactoryInterface::class),
             $container->get(StreamFactoryInterface::class),
             $container->get(MediaService::class)
