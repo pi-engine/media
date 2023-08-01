@@ -2,7 +2,7 @@
 
 namespace Media;
 
-use Company\Middleware\CheckMiddleware;
+use Company\Middleware\CompanyMiddleware;
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
 use User\Middleware\AuthenticationMiddleware;
@@ -49,7 +49,7 @@ return [
                                 'middleware' => new PipeSpec(
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
-                                    CheckMiddleware::class,
+                                    CompanyMiddleware::class,
                                     Middleware\MediaMiddleware::class,
                                     Handler\Api\AddPrivetHandler::class
                                 ),
@@ -88,7 +88,7 @@ return [
                                 'middleware' => new PipeSpec(
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
-                                    CheckMiddleware::class,
+                                    CompanyMiddleware::class,
                                     Handler\Api\ListHandler::class
                                 ),
                             ],
@@ -107,7 +107,7 @@ return [
                                 'middleware' => new PipeSpec(
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
-                                    CheckMiddleware::class,
+                                    CompanyMiddleware::class,
                                     Handler\Api\GetHandler::class
                                 ),
                             ],
