@@ -2,7 +2,10 @@
 
 namespace Media\Storage;
 
-
+use Laminas\Filter\FilterChain;
+use Laminas\Filter\StringToLower;
+use Laminas\Filter\Word\SeparatorToDash;
+use Laminas\Filter\PregReplace;
 use ArrayObject;
 use Closure;
 use DirectoryIterator;
@@ -30,7 +33,8 @@ class LocalStorage implements StorageInterface
         $mainPath = ($params['access'] == 'public') ? $this->config['public_path'] : $this->config['privet_path'];
         $fullPath = sprintf('%s/%s', $mainPath, $params['local_path']);
         $fileInfo = pathinfo($uploadFile->getClientFilename());
-        $fileName = strtolower(sprintf('%s-%s-%s.%s', $fileInfo['filename'], date('Y-m-d-H-i-s'), rand(1000, 9999), $fileInfo['extension']));
+        $fileName = $this->makeFileName($fileInfo['filename']);
+        $fileName = strtolower(sprintf('%s-%s-%s.%s', $fileName, date('Y-m-d-H-i-s'), rand(1000, 9999), $fileInfo['extension']));
         $filePath = sprintf('%s/%s', $fullPath, $fileName);
 
         // Check and make path
@@ -47,6 +51,16 @@ class LocalStorage implements StorageInterface
             'main_path'  => $mainPath,
             'local_path' => $params['local_path'],
         ];
+    }
+
+    public function makeFileName($fileName)
+    {
+        $filterChain = new FilterChain();
+        $filterChain->attach(new StringToLower())
+            ->attach(new SeparatorToDash())
+            ->attach(new PregReplace('/[^a-zA-Z0-9-]/', '-'));
+
+        return $filterChain->filter($fileName);
     }
 
     /**

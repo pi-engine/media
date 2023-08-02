@@ -47,12 +47,12 @@ class MediaService implements ServiceInterface
     /**
      * @throws \Exception
      */
-    public function addMedia($uploadFile, $authentication, $params): array
+    public function addMedia($uploadFile, $authorization, $params): array
     {
         // Set storage params
         $storageParams = [
-            'local_path' => isset($authentication['company']['hash'])
-                ? sprintf('%s/%s/%s', $authentication['company']['hash'], date('Y'), date('m'))
+            'local_path' => isset($authorization['company']['hash'])
+                ? sprintf('%s/%s/%s', $authorization['company']['hash'], date('Y'), date('m'))
                 : sprintf('%s/%s', date('Y'), date('m')),
             'access'     => $params['access'],
             'storage'    => 'local',
@@ -69,8 +69,8 @@ class MediaService implements ServiceInterface
         // Set storage params
         $addStorage = [
             'title'       => $params['title'] ?? $storeInfo['file_title'],
-            'user_id'     => $authentication['user_id'] ?? $authentication['id'],
-            'company_id'  => $authentication['company_id'] ?? 0,
+            'user_id'     => $authorization['user_id'] ?? $authorization['id'],
+            'company_id'  => $authorization['company_id'] ?? 0,
             'access'      => $params['access'],
             'storage'     => 'local',
             'type'        => '',
@@ -82,7 +82,8 @@ class MediaService implements ServiceInterface
                 [
                     'storage' => $storeInfo,
                     'download' => $downloadInfo,
-                ]
+                ],
+                JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT
             ),
         ];
 
@@ -100,8 +101,8 @@ class MediaService implements ServiceInterface
             // Set relation params
             $addRelation = [
                 'storage_id'       => $storage['id'],
-                'user_id'          => $authentication['user_id'] ?? $authentication['id'],
-                'company_id'       => $authentication['company_id'] ?? 0,
+                'user_id'          => $authorization['user_id'] ?? $authorization['id'],
+                'company_id'       => $authorization['company_id'] ?? 0,
                 'access'           => $params['access'],
                 'relation_module'  => $params['relation_module'],
                 'relation_section' => $params['relation_section'],
@@ -119,12 +120,12 @@ class MediaService implements ServiceInterface
         return $storage;
     }
 
-    public function updateMedia($authentication, $params)
+    public function updateMedia($authorization, $params)
     {
         return $params;
     }
 
-    public function getMediaList($authentication, $params): array
+    public function getMediaList($authorization, $params): array
     {
         $limit  = (int)($params['limit'] ?? 25);
         $page   = (int)($params['page'] ?? 1);
@@ -136,7 +137,7 @@ class MediaService implements ServiceInterface
             'offset'     => $offset,
             'limit'      => $limit,
             'access'     => 'company',
-            'company_id' => $authentication['company_id'],
+            'company_id' => $authorization['company_id'],
         ];
         if (!empty($params['status'])) {
             $listParams['status'] = $params['status'];

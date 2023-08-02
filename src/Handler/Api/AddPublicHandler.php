@@ -33,7 +33,7 @@ class AddPublicHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $authentication = $request->getAttribute('account');
+        $authorization = $request->getAttribute('account');
         $requestBody    = $request->getParsedBody();
         $uploadFiles    = $request->getUploadedFiles();
 
@@ -42,7 +42,7 @@ class AddPublicHandler implements RequestHandlerInterface
 
         $fileList = [];
         foreach ($uploadFiles as $uploadFile) {
-            $fileList[] = $this->mediaService->addMedia($uploadFile, $authentication, $requestBody);
+            $fileList[] = $this->mediaService->addMedia($uploadFile, $authorization, $requestBody);
         }
 
         $result = [

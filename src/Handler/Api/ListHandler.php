@@ -33,10 +33,10 @@ class ListHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $authentication = $request->getAttribute('company_authentication');
+        $authorization = $request->getAttribute('company_authorization');
         $requestBody    = $request->getParsedBody();
 
-        $result = $this->mediaService->getMediaList($authentication, $requestBody);
+        $result = $this->mediaService->getMediaList($authorization, $requestBody);
         return new JsonResponse($result);
     }
 }
