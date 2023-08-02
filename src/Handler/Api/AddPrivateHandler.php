@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class AddPrivetHandler implements RequestHandlerInterface
+class AddPrivateHandler implements RequestHandlerInterface
 {
     /** @var ResponseFactoryInterface */
     protected ResponseFactoryInterface $responseFactory;
@@ -40,14 +40,12 @@ class AddPrivetHandler implements RequestHandlerInterface
         // Set access type
         $requestBody['access'] = $requestBody['access'] ?? 'company';
 
-        $fileList = [];
-        foreach ($uploadFiles as $uploadFile) {
-            $fileList[] = $this->mediaService->addMedia($uploadFile, $authorization, $requestBody);
-        }
+        // Add media
+        $media = $this->mediaService->addMedia(array_shift($uploadFiles), $authorization, $requestBody);
 
         $result = [
             'result' => true,
-            'data'   => $fileList,
+            'data'   => $media,
             'error'  => [],
         ];
 

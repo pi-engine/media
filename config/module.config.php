@@ -14,15 +14,15 @@ return [
             Repository\MediaRepositoryInterface::class => Repository\MediaRepository::class,
         ],
         'factories' => [
-            Repository\MediaRepository::class   => Factory\Repository\MediaRepositoryFactory::class,
-            Service\MediaService::class         => Factory\Service\MediaServiceFactory::class,
-            Storage\LocalStorage::class         => Factory\Storage\Local\StorageFactory::class,
-            Storage\LocalDownload::class        => Factory\Storage\Local\DownloadFactory::class,
-            Middleware\MediaMiddleware::class   => Factory\Middleware\MediaMiddlewareFactory::class,
-            Handler\Api\AddPrivetHandler::class => Factory\Handler\Api\AddPrivetHandlerFactory::class,
-            Handler\Api\AddPublicHandler::class => Factory\Handler\Api\AddPublicHandlerFactory::class,
-            Handler\Api\ListHandler::class      => Factory\Handler\Api\ListHandlerFactory::class,
-            Handler\Api\GetHandler::class       => Factory\Handler\Api\GetHandlerFactory::class,
+            Repository\MediaRepository::class    => Factory\Repository\MediaRepositoryFactory::class,
+            Service\MediaService::class          => Factory\Service\MediaServiceFactory::class,
+            Storage\LocalStorage::class          => Factory\Storage\Local\StorageFactory::class,
+            Storage\LocalDownload::class         => Factory\Storage\Local\DownloadFactory::class,
+            Middleware\MediaMiddleware::class    => Factory\Middleware\MediaMiddlewareFactory::class,
+            Handler\Api\AddPrivateHandler::class => Factory\Handler\Api\AddPrivateHandlerFactory::class,
+            Handler\Api\AddPublicHandler::class  => Factory\Handler\Api\AddPublicHandlerFactory::class,
+            Handler\Api\ListHandler::class       => Factory\Handler\Api\ListHandlerFactory::class,
+            Handler\Api\GetHandler::class        => Factory\Handler\Api\GetHandlerFactory::class,
         ],
     ],
 
@@ -36,22 +36,22 @@ return [
                     'defaults' => [],
                 ],
                 'child_routes' => [
-                    'add-privet' => [
+                    'add-private' => [
                         'type'    => Literal::class,
                         'options' => [
-                            'route'    => '/add-privet',
+                            'route'    => '/add-private',
                             'defaults' => [
                                 'module'     => 'media',
                                 'section'    => 'api',
                                 'package'    => 'media',
-                                'handler'    => 'add-privet',
+                                'handler'    => 'add-private',
                                 'controller' => PipeSpec::class,
                                 'middleware' => new PipeSpec(
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
                                     CompanyMiddleware::class,
                                     Middleware\MediaMiddleware::class,
-                                    Handler\Api\AddPrivetHandler::class
+                                    Handler\Api\AddPrivateHandler::class
                                 ),
                             ],
                         ],

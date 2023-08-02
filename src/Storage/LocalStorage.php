@@ -30,7 +30,7 @@ class LocalStorage implements StorageInterface
      */
     public function storeMedia($uploadFile, $params): array
     {
-        $mainPath = ($params['access'] == 'public') ? $this->config['public_path'] : $this->config['privet_path'];
+        $mainPath = ($params['access'] == 'public') ? $this->config['public_path'] : $this->config['private_path'];
         $fullPath = sprintf('%s/%s', $mainPath, $params['local_path']);
         $fileInfo = pathinfo($uploadFile->getClientFilename());
         $fileName = $this->makeFileName($fileInfo['filename']);
