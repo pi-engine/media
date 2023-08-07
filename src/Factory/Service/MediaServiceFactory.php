@@ -4,9 +4,9 @@ namespace Media\Factory\Service;
 
 use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Media\Download\LocalDownload;
 use Media\Repository\MediaRepositoryInterface;
 use Media\Service\MediaService;
-use Media\Storage\LocalDownload;
 use Media\Storage\LocalStorage;
 use User\Service\AccountService;
 use User\Service\UtilityService;

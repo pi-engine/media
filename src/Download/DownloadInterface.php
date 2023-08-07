@@ -1,6 +1,6 @@
 <?php
 
-namespace Media\Storage;
+namespace Media\Download;
 
 interface DownloadInterface
 {

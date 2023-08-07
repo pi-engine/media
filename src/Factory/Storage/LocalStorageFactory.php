@@ -1,12 +1,12 @@
 <?php
 
-namespace Media\Factory\Storage\Local;
+namespace Media\Factory\Storage;
 
 use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Storage\LocalStorage;
 
-class StorageFactory implements FactoryInterface
+class LocalStorageFactory implements FactoryInterface
 {
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null): LocalStorage
     {

@@ -1,12 +1,12 @@
 <?php
 
-namespace Media\Factory\Storage\Local;
+namespace Media\Factory\Download;
 
 use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Storage\LocalDownload;
+use Media\Download\LocalDownload;
 
-class DownloadFactory implements FactoryInterface
+class LocalDownloadFactory implements FactoryInterface
 {
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null): LocalDownload
     {

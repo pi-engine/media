@@ -2,8 +2,8 @@
 
 namespace Media\Service;
 
+use Media\Download\LocalDownload;
 use Media\Repository\MediaRepositoryInterface;
-use Media\Storage\LocalDownload;
 use Media\Storage\LocalStorage;
 use User\Service\AccountService;
 use User\Service\UtilityService;

@@ -16,8 +16,8 @@ return [
         'factories' => [
             Repository\MediaRepository::class    => Factory\Repository\MediaRepositoryFactory::class,
             Service\MediaService::class          => Factory\Service\MediaServiceFactory::class,
-            Storage\LocalStorage::class          => Factory\Storage\Local\StorageFactory::class,
-            Storage\LocalDownload::class         => Factory\Storage\Local\DownloadFactory::class,
+            Storage\LocalStorage::class          => Factory\Storage\LocalStorageFactory::class,
+            Download\LocalDownload::class        => Factory\Download\LocalDownloadFactory::class,
             Middleware\MediaMiddleware::class    => Factory\Middleware\MediaMiddlewareFactory::class,
             Handler\Api\AddPrivateHandler::class => Factory\Handler\Api\AddPrivateHandlerFactory::class,
             Handler\Api\AddPublicHandler::class  => Factory\Handler\Api\AddPublicHandlerFactory::class,
