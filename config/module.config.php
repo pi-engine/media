@@ -14,15 +14,17 @@ return [
             Repository\MediaRepositoryInterface::class => Repository\MediaRepository::class,
         ],
         'factories' => [
-            Repository\MediaRepository::class    => Factory\Repository\MediaRepositoryFactory::class,
-            Service\MediaService::class          => Factory\Service\MediaServiceFactory::class,
-            Storage\LocalStorage::class          => Factory\Storage\LocalStorageFactory::class,
-            Download\LocalDownload::class        => Factory\Download\LocalDownloadFactory::class,
-            Middleware\MediaMiddleware::class    => Factory\Middleware\MediaMiddlewareFactory::class,
-            Handler\Api\AddPrivateHandler::class => Factory\Handler\Api\AddPrivateHandlerFactory::class,
-            Handler\Api\AddPublicHandler::class  => Factory\Handler\Api\AddPublicHandlerFactory::class,
-            Handler\Api\ListHandler::class       => Factory\Handler\Api\ListHandlerFactory::class,
-            Handler\Api\GetHandler::class        => Factory\Handler\Api\GetHandlerFactory::class,
+            Repository\MediaRepository::class       => Factory\Repository\MediaRepositoryFactory::class,
+            Service\MediaService::class             => Factory\Service\MediaServiceFactory::class,
+            Storage\LocalStorage::class             => Factory\Storage\LocalStorageFactory::class,
+            Download\LocalDownload::class           => Factory\Download\LocalDownloadFactory::class,
+            Middleware\UploadMediaMiddleware::class => Factory\Middleware\UploadMediaMiddlewareFactory::class,
+            Middleware\GetMediaMiddleware::class    => Factory\Middleware\GetMediaMiddlewareFactory::class,
+            Handler\Api\AddPrivateHandler::class    => Factory\Handler\Api\AddPrivateHandlerFactory::class,
+            Handler\Api\AddPublicHandler::class     => Factory\Handler\Api\AddPublicHandlerFactory::class,
+            Handler\Api\ListHandler::class          => Factory\Handler\Api\ListHandlerFactory::class,
+            Handler\Api\GetHandler::class           => Factory\Handler\Api\GetHandlerFactory::class,
+            Handler\Api\StreamHandler::class           => Factory\Handler\Api\StreamHandlerFactory::class,
         ],
     ],
 
@@ -50,7 +52,7 @@ return [
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
                                     CompanyMiddleware::class,
-                                    Middleware\MediaMiddleware::class,
+                                    Middleware\UploadMediaMiddleware::class,
                                     Handler\Api\AddPrivateHandler::class
                                 ),
                             ],
@@ -69,7 +71,7 @@ return [
                                 'middleware' => new PipeSpec(
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
-                                    Middleware\MediaMiddleware::class,
+                                    Middleware\UploadMediaMiddleware::class,
                                     Handler\Api\AddPublicHandler::class
                                 ),
                             ],
@@ -108,7 +110,28 @@ return [
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
                                     CompanyMiddleware::class,
+                                    Middleware\GetMediaMiddleware::class,
                                     Handler\Api\GetHandler::class
+                                ),
+                            ],
+                        ],
+                    ],
+                    'stream'   => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/stream',
+                            'defaults' => [
+                                'module'     => 'media',
+                                'section'    => 'api',
+                                'package'    => 'media',
+                                'handler'    => 'stream',
+                                'controller' => PipeSpec::class,
+                                'middleware' => new PipeSpec(
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    CompanyMiddleware::class,
+                                    Middleware\GetMediaMiddleware::class,
+                                    Handler\Api\StreamHandler::class
                                 ),
                             ],
                         ],

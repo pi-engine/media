@@ -16,7 +16,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use User\Handler\ErrorHandler;
 
-class MediaMiddleware implements MiddlewareInterface
+class UploadMediaMiddleware implements MiddlewareInterface
 {
     public array $validationResult
         = [

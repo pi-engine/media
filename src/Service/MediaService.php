@@ -197,13 +197,23 @@ class MediaService implements ServiceInterface
         ];
     }
 
+    public function getMedia($params): array
+    {
+        $media = $this->mediaRepository->getMedia(['id' => $params['id']]);
+        return $this->canonizeStorage($media);
+    }
+
     /**
      * @throws \Exception
      */
-    public function streamMedia($params): string
+    public function streamMedia($media): string
     {
-        $source = '/var/www/html/local/laminas/data/upload/654cde20ead03f441e8a8aed6c2527d6/2023/08/screenshot_20230713_170927-2023-08-01-07-44-00-3595.png';
-        return $this->localDownload->stream($source);
+        $options = [];
+        if (isset($media['information']['storage']['original_name'])) {
+            $options['filename'] = $media['information']['storage']['original_name'];
+        }
+
+        return $this->localDownload->stream($media['information']['storage']['file_path'], $options);
     }
 
     public function canonizeStorage($storage): array

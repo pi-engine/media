@@ -2,6 +2,7 @@
 
 namespace Media\Handler\Api;
 
+use Exception;
 use Laminas\Diactoros\Response\JsonResponse;
 use Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -10,7 +11,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class GetHandler implements RequestHandlerInterface
+class StreamHandler implements RequestHandlerInterface
 {
     /** @var ResponseFactoryInterface */
     protected ResponseFactoryInterface $responseFactory;
@@ -31,17 +32,13 @@ class GetHandler implements RequestHandlerInterface
         $this->mediaService    = $mediaService;
     }
 
+    /**
+     * @throws Exception
+     */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $media = $request->getAttribute('media_item');
-
-        // Set result
-        $result = [
-            'result' => true,
-            'data'   => $media,
-            'error'  => [],
-        ];
-
+        $result = $this->mediaService->streamMedia($media);
         return new JsonResponse($result);
     }
 }

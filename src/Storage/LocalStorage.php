@@ -44,6 +44,7 @@ class LocalStorage implements StorageInterface
         $uploadFile->moveTo($filePath);
 
         return [
+            'original_name' => $uploadFile->getClientFilename(),
             'file_title' => $fileInfo['filename'],
             'file_name'  => $fileName,
             'file_path'  => $filePath,
