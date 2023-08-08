@@ -46,6 +46,7 @@ class LocalStorage implements StorageInterface
         return [
             'original_name' => $uploadFile->getClientFilename(),
             'file_title' => $fileInfo['filename'],
+            'file_extension' => strtolower($fileInfo['extension']),
             'file_name'  => $fileName,
             'file_path'  => $filePath,
             'full_path'  => $fullPath,
@@ -173,7 +174,7 @@ class LocalStorage implements StorageInterface
      *
      * @return Bool
      */
-    public function exists($files)
+    public function exists($files): bool
     {
         foreach ($this->toIterator($files) as $file) {
             if (!file_exists($file)) {
