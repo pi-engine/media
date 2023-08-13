@@ -2,15 +2,15 @@
 
 namespace Media\Storage;
 
-use Laminas\Filter\FilterChain;
-use Laminas\Filter\StringToLower;
-use Laminas\Filter\Word\SeparatorToDash;
-use Laminas\Filter\PregReplace;
 use ArrayObject;
 use Closure;
 use DirectoryIterator;
 use Exception;
 use FilesystemIterator;
+use Laminas\Filter\FilterChain;
+use Laminas\Filter\PregReplace;
+use Laminas\Filter\StringToLower;
+use Laminas\Filter\Word\SeparatorToDash;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Traversable;
@@ -44,15 +44,118 @@ class LocalStorage implements StorageInterface
         $uploadFile->moveTo($filePath);
 
         return [
-            'original_name' => $uploadFile->getClientFilename(),
-            'file_title' => $fileInfo['filename'],
+            'original_name'  => $uploadFile->getClientFilename(),
+            'file_title'     => $fileInfo['filename'],
             'file_extension' => strtolower($fileInfo['extension']),
-            'file_name'  => $fileName,
-            'file_path'  => $filePath,
-            'full_path'  => $fullPath,
-            'main_path'  => $mainPath,
-            'local_path' => $params['local_path'],
+            'file_name'      => $fileName,
+            'file_path'      => $filePath,
+            'full_path'      => $fullPath,
+            'main_path'      => $mainPath,
+            'local_path'     => $params['local_path'],
         ];
+    }
+
+    public function makeFileType($extension): string
+    {
+        $typeMappings = [
+            // Images
+            'jpg'    => 'image',
+            'jpeg'   => 'image',
+            'png'    => 'image',
+            'gif'    => 'image',
+            'bmp'    => 'image',
+            'svg'    => 'image',
+            'webp'   => 'image',
+            'ico'    => 'image',
+            'tif'    => 'image',
+            'tiff'   => 'image',
+            'eps'    => 'image',
+            'raw'    => 'image',
+            'psd'    => 'image',
+            'ai'     => 'image',
+
+            // Videos
+            'mp4'    => 'video',
+            'avi'    => 'video',
+            'mkv'    => 'video',
+            'wmv'    => 'video',
+            'mov'    => 'video',
+            'flv'    => 'video',
+            '3gp'    => 'video',
+            'webm'   => 'video',
+            'ogv'    => 'video',
+            'mpeg'   => 'video',
+            'mpg'    => 'video',
+
+            // Audio
+            'mp3'    => 'audio',
+            'wav'    => 'audio',
+            'aac'    => 'audio',
+            'ogg'    => 'audio',
+            'wma'    => 'audio',
+            'flac'   => 'audio',
+            'm4a'    => 'audio',
+            'amr'    => 'audio',
+            'mid'    => 'audio',
+
+            // Archives
+            'zip'    => 'archive',
+            'rar'    => 'archive',
+            'tar'    => 'archive',
+            'gz'     => 'archive',
+            '7z'     => 'archive',
+            'iso'    => 'archive',
+            'tar.gz' => 'archive',
+            'tgz'    => 'archive',
+            'bz2'    => 'archive',
+            'xz'     => 'archive',
+
+            // Documents
+            'pdf'    => 'document',
+            'doc'    => 'document',
+            'docx'   => 'document',
+            'xls'    => 'document',
+            'xlsx'   => 'document',
+            'ppt'    => 'document',
+            'pptx'   => 'document',
+            'txt'    => 'document',
+            'html'   => 'document',
+            'css'    => 'document',
+            'js'     => 'document',
+            'rtf'    => 'document',
+            'odt'    => 'document',
+            'csv'    => 'document',
+            'xml'    => 'document',
+            'json'   => 'document',
+            'odg'    => 'document',
+            'odf'    => 'document',
+
+            // Executables
+            'exe'    => 'executable',
+            'msi'    => 'executable',
+            'bat'    => 'executable',
+            'sh'     => 'executable',
+            'jar'    => 'executable',
+
+            // Fonts
+            'ttf'    => 'font',
+            'otf'    => 'font',
+            'woff'   => 'font',
+            'woff2'  => 'font',
+
+            // Spreadsheets
+            'ods'    => 'spreadsheet',
+
+            // Presentations
+            'odp'    => 'presentation',
+        ];
+
+        // Check if the extension exists in the mappings
+        if (array_key_exists($extension, $typeMappings)) {
+            return $typeMappings[$extension];
+        } else {
+            return 'unknown';
+        }
     }
 
     public function makeFileName($fileName)

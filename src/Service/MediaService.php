@@ -73,8 +73,8 @@ class MediaService implements ServiceInterface
             'company_id'  => $authorization['company_id'] ?? 0,
             'access'      => $params['access'],
             'storage'     => 'local',
-            'type'        => '',
-            'extension'   => '',
+            'type'        => $this->localStorage->makeFileType($storeInfo['file_extension']),
+            'extension'   => $storeInfo['file_extension'],
             'status'      => 1,
             'time_create' => time(),
             'time_update' => time(),
@@ -89,7 +89,7 @@ class MediaService implements ServiceInterface
 
         // Save storage
         $storage = $this->mediaRepository->addMedia($addStorage);
-        $storage = $this->canonizeStorage($storage);
+        $storage = $this->canonizeStorage($storage, ['view' => 'limited']);
 
         // Check media have a relation
         if (
@@ -166,7 +166,7 @@ class MediaService implements ServiceInterface
             $list   = [];
             $rowSet = $this->mediaRepository->getMediaListByRelationList($listParams);
             foreach ($rowSet as $row) {
-                $list[] = $this->canonizeStorage($row);
+                $list[] = $this->canonizeStorage($row, ['view' => 'limited']);
             }
 
             // Get count
@@ -176,7 +176,9 @@ class MediaService implements ServiceInterface
             $list   = [];
             $rowSet = $this->mediaRepository->getMediaList($listParams);
             foreach ($rowSet as $row) {
-                $list[] = $this->canonizeStorage($row);
+                $storage = $this->canonizeStorage($row, ['view' => 'limited']);
+                unset($storage['information']['storage']);
+                $list[] = $storage;
             }
 
             // Get count
@@ -212,11 +214,14 @@ class MediaService implements ServiceInterface
         if (isset($media['information']['storage']['original_name'])) {
             $options['filename'] = $media['information']['storage']['original_name'];
         }
+        if (isset($media['information']['storage']['file_extension'])) {
+            $options['content_type'] = $media['information']['storage']['file_extension'];
+        }
 
         return $this->localDownload->stream($media['information']['storage']['file_path'], $options);
     }
 
-    public function canonizeStorage($storage): array
+    public function canonizeStorage($storage, $options = []): array
     {
         if (empty($storage)) {
             return [];
@@ -257,6 +262,17 @@ class MediaService implements ServiceInterface
         }
 
         $storage['information'] = json_decode($storage['information'], true);
+
+        // Set original name
+        $storage['original_name'] = $storage['information']['storage']['original_name'];
+
+        if(in_array($storage['access'], ['user', 'company'])) {
+            $storage['information']['download']['private_uri'] = $this->localDownload->makePrivateUrl($storage);
+        }
+
+        if (isset($options['view']) && $options['view'] == 'limited') {
+            unset($storage['information']['storage']);
+        }
 
         return $storage;
     }

@@ -3,6 +3,7 @@
 namespace Media\Download;
 
 use ZipArchive;
+use Laminas\Uri;
 
 class LocalDownload implements DownloadInterface
 {
@@ -21,6 +22,10 @@ class LocalDownload implements DownloadInterface
     public function makePublicUri($params): string
     {
         return sprintf('%s/%s/%s', $this->config['download_uri'], $params['local_path'], $params['file_name']);
+    }
+
+    public function makePrivateUrl($params): string{
+        return '';
     }
 
     /**
@@ -186,6 +191,14 @@ class LocalDownload implements DownloadInterface
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Pragma: public');
+        // Specify domains from which requests are allowed
+        header('Access-Control-Allow-Origin: *');
+        // Specify which request methods are allowed
+        header('Access-Control-Allow-Methods: PUT, GET, POST, DELETE, OPTIONS');
+        // Additional headers which may be sent along with the CORS request
+        header('Access-Control-Allow-Headers: X-Requested-With,Authorization,Content-Type');
+        // Set the age to 1 day to improve speed/caching.
+        header('Access-Control-Max-Age: 86400');
         if ($contentLength) {
             header('Content-Length: ' . $contentLength);
         }
