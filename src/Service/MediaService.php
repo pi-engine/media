@@ -221,7 +221,7 @@ class MediaService implements ServiceInterface
             'storage_id'       => $storage['id'],
             'user_id'          => $authorization['user_id'] ?? $authorization['id'],
             'company_id'       => $authorization['company_id'] ?? 0,
-            'access'           => $params['access'],
+            'access'           => $storage['access'],
             'relation_module'  => $params['relation_module'],
             'relation_section' => $params['relation_section'],
             'relation_item'    => (int)$params['relation_item'],
@@ -243,6 +243,9 @@ class MediaService implements ServiceInterface
         // Save relation
         $relation              = $this->mediaRepository->addMediaRelation($addRelation);
         $storage['relation'][] = $this->canonizeRelation($relation);
+
+        // Clean up
+        unset($storage['information']['storage']);
 
         return $storage;
     }
