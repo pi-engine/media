@@ -22,9 +22,10 @@ return [
             Middleware\GetMediaMiddleware::class    => Factory\Middleware\GetMediaMiddlewareFactory::class,
             Handler\Api\AddPrivateHandler::class    => Factory\Handler\Api\AddPrivateHandlerFactory::class,
             Handler\Api\AddPublicHandler::class     => Factory\Handler\Api\AddPublicHandlerFactory::class,
+            Handler\Api\AddRelationHandler::class   => Factory\Handler\Api\AddRelationHandlerFactory::class,
             Handler\Api\ListHandler::class          => Factory\Handler\Api\ListHandlerFactory::class,
             Handler\Api\GetHandler::class           => Factory\Handler\Api\GetHandlerFactory::class,
-            Handler\Api\StreamHandler::class           => Factory\Handler\Api\StreamHandlerFactory::class,
+            Handler\Api\StreamHandler::class        => Factory\Handler\Api\StreamHandlerFactory::class,
         ],
     ],
 
@@ -38,7 +39,7 @@ return [
                     'defaults' => [],
                 ],
                 'child_routes' => [
-                    'add-private' => [
+                    'add-private'  => [
                         'type'    => Literal::class,
                         'options' => [
                             'route'    => '/add-private',
@@ -58,7 +59,7 @@ return [
                             ],
                         ],
                     ],
-                    'add-public' => [
+                    'add-public'   => [
                         'type'    => Literal::class,
                         'options' => [
                             'route'    => '/add-public',
@@ -77,7 +78,27 @@ return [
                             ],
                         ],
                     ],
-                    'list'   => [
+                    'add-relation' => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/add-relation',
+                            'defaults' => [
+                                'module'     => 'media',
+                                'section'    => 'api',
+                                'package'    => 'media',
+                                'handler'    => 'add-relation',
+                                'controller' => PipeSpec::class,
+                                'middleware' => new PipeSpec(
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    CompanyMiddleware::class,
+                                    Middleware\GetMediaMiddleware::class,
+                                    Handler\Api\AddRelationHandler::class
+                                ),
+                            ],
+                        ],
+                    ],
+                    'list'         => [
                         'type'    => Literal::class,
                         'options' => [
                             'route'    => '/list',
@@ -96,7 +117,7 @@ return [
                             ],
                         ],
                     ],
-                    'get'   => [
+                    'get'          => [
                         'type'    => Literal::class,
                         'options' => [
                             'route'    => '/get',
@@ -116,7 +137,7 @@ return [
                             ],
                         ],
                     ],
-                    'stream'   => [
+                    'stream'       => [
                         'type'    => Literal::class,
                         'options' => [
                             'route'    => '/stream',

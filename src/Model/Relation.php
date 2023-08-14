@@ -15,6 +15,7 @@ class Relation
     private int    $status;
     private int    $time_create;
     private int    $time_update;
+    private string $information;
 
     public function __construct(
         $storage_id,
@@ -27,6 +28,7 @@ class Relation
         $status,
         $time_create,
         $time_update,
+        $information,
         $id = null
     ) {
         $this->id               = $id;
@@ -40,6 +42,7 @@ class Relation
         $this->status           = $status;
         $this->time_create      = $time_create;
         $this->time_update      = $time_update;
+        $this->information      = $information;
     }
 
     public function getId(): ?int
@@ -95,5 +98,10 @@ class Relation
     public function getTimeUpdate(): int
     {
         return $this->time_update;
+    }
+
+    public function getInformation(): ?string
+    {
+        return $this->information;
     }
 }

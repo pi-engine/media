@@ -32,5 +32,6 @@ CREATE TABLE IF NOT EXISTS `media_relation`
     `status`           TINYINT(1) UNSIGNED                NOT NULL DEFAULT '1',
     `time_create`      INT(10) UNSIGNED                   NOT NULL DEFAULT '0',
     `time_update`      INT(10) UNSIGNED                   NOT NULL DEFAULT '0',
+    `information`      JSON,
     PRIMARY KEY (`id`)
 );

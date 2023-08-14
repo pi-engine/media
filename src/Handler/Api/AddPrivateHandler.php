@@ -34,8 +34,8 @@ class AddPrivateHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $authorization = $request->getAttribute('company_authorization');
-        $requestBody    = $request->getParsedBody();
-        $uploadFiles    = $request->getUploadedFiles();
+        $requestBody   = $request->getParsedBody();
+        $uploadFiles   = $request->getUploadedFiles();
 
         // Set access type
         $requestBody['access'] = $requestBody['access'] ?? 'company';

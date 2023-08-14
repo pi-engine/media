@@ -20,6 +20,8 @@ class MediaRepository implements MediaRepositoryInterface
 
     private string $tableRelation = 'media_relation';
 
+    private string $tableAccount = 'user_account';
+
     private AdapterInterface $db;
 
     private HydratorInterface $hydrator;
@@ -61,8 +63,20 @@ class MediaRepository implements MediaRepositoryInterface
             $where['id'] = $params['id'];
         }
 
-        $sql       = new Sql($this->db);
-        $select    = $sql->select($this->tableStorage)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
+        $sql    = new Sql($this->db);
+        $from   = ['storage' => $this->tableStorage];
+        $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
+        $select->join(
+            ['account' => $this->tableAccount],
+            'storage.user_id=account.id',
+            [
+                'user_identity' => 'identity',
+                'user_name'     => 'name',
+                'user_email'    => 'email',
+                'user_mobile'   => 'mobile',
+            ],
+            $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
+        );
         $statement = $sql->prepareStatementForSqlObject($select);
         $result    = $statement->execute();
 
@@ -334,5 +348,39 @@ class MediaRepository implements MediaRepositoryInterface
         $id = $result->getGeneratedValue();
 
         return $this->getMediaRelation(['id' => $id]);
+    }
+
+    public function getMediaRelationList($params = []): HydratingResultSet
+    {
+        $where = [];
+        if (isset($params['storage_id']) && !empty($params['storage_id'])) {
+            $where['storage_id'] = $params['storage_id'];
+        }
+        if (isset($params['status']) && !empty($params['status'])) {
+            $where['status'] = $params['status'];
+        }
+        if (isset($params['company_id']) && !empty($params['company_id'])) {
+            $where['company_id'] = $params['company_id'];
+        }
+        if (isset($params['user_id']) && !empty($params['user_id'])) {
+            $where['user_id'] = $params['user_id'];
+        }
+        if (isset($params['id']) && !empty($params['id'])) {
+            $where['id'] = $params['id'];
+        }
+
+        $sql       = new Sql($this->db);
+        $select    = $sql->select($this->tableRelation)->where($where);
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $result    = $statement->execute();
+
+        if (!$result instanceof ResultInterface || !$result->isQueryResult()) {
+            return [];
+        }
+
+        $resultSet = new HydratingResultSet($this->hydrator, $this->relationPrototype);
+        $resultSet->initialize($result);
+
+        return $resultSet;
     }
 }

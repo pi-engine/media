@@ -3,7 +3,6 @@
 namespace Media\Download;
 
 use ZipArchive;
-use Laminas\Uri;
 
 class LocalDownload implements DownloadInterface
 {
@@ -24,7 +23,8 @@ class LocalDownload implements DownloadInterface
         return sprintf('%s/%s/%s', $this->config['download_uri'], $params['local_path'], $params['file_name']);
     }
 
-    public function makePrivateUrl($params): string{
+    public function makePrivateUrl($params): string
+    {
         return '';
     }
 

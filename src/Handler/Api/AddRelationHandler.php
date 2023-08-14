@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class AddPublicHandler implements RequestHandlerInterface
+class AddRelationHandler implements RequestHandlerInterface
 {
     /** @var ResponseFactoryInterface */
     protected ResponseFactoryInterface $responseFactory;
@@ -33,15 +33,15 @@ class AddPublicHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $authorization = $request->getAttribute('account');
+        $authorization = $request->getAttribute('company_authorization');
         $requestBody   = $request->getParsedBody();
-        $uploadFiles   = $request->getUploadedFiles();
+        $media         = $request->getAttribute('media_item');
 
         // Set access type
-        $requestBody['access'] = 'public';
+        $requestBody['access'] = $requestBody['access'] ?? 'company';
 
-        // Add media
-        $media = $this->mediaService->addMedia(array_shift($uploadFiles), $authorization, $requestBody);
+        // Add relation
+        $media = $this->mediaService->addRelation($media, $authorization, $requestBody);
 
         $result = [
             'result' => true,

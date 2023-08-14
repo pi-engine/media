@@ -37,7 +37,7 @@ class StreamHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $media = $request->getAttribute('media_item');
+        $media  = $request->getAttribute('media_item');
         $result = $this->mediaService->streamMedia($media);
         return new JsonResponse($result);
     }

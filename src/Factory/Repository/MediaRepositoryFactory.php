@@ -17,8 +17,8 @@ class MediaRepositoryFactory implements FactoryInterface
         return new MediaRepository(
             $container->get(AdapterInterface::class),
             new ReflectionHydrator(),
-            new Storage('', '', 0, 0, '', '', '', '', 0, 0, 0, 0, 0, '', 0),
-            new Relation(0, 0, 0, '', '', '', 0, 0, 0, 0, 0)
+            new Storage('', '', 0, 0, '', '', '', '', 0, 0, 0, 0, 0, '', '', '', '', '', 0),
+            new Relation(0, 0, 0, '', '', '', 0, 0, 0, 0, '', 0)
         );
     }
 }

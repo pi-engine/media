@@ -28,5 +28,5 @@ interface MediaRepositoryInterface
 
     public function addMediaRelation(array $params = []): array|Relation;
 
-    //public function updateMediaRelation(int $complianceId, array $params = []): void;
+    public function getMediaRelationList($params = []): HydratingResultSet;
 }

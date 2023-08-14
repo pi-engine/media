@@ -19,6 +19,10 @@ class Storage
     private int    $time_create;
     private int    $time_update;
     private string $information;
+    private mixed  $user_identity;
+    private mixed  $user_name;
+    private mixed  $user_email;
+    private mixed  $user_mobile;
 
     public function __construct(
         $slug,
@@ -35,23 +39,31 @@ class Storage
         $time_create,
         $time_update,
         $information,
+        $user_identity = null,
+        $user_name = null,
+        $user_email = null,
+        $user_mobile = null,
         $id = null
     ) {
-        $this->slug        = $slug;
-        $this->title       = $title;
-        $this->user_id     = $user_id;
-        $this->company_id  = $company_id;
-        $this->access      = $access;
-        $this->storage     = $storage;
-        $this->type        = $type;
-        $this->extension   = $extension;
-        $this->size      = $size;
-        $this->download_count      = $download_count;
-        $this->status      = $status;
-        $this->time_create = $time_create;
-        $this->time_update = $time_update;
-        $this->information = $information;
-        $this->id          = $id;
+        $this->slug           = $slug;
+        $this->title          = $title;
+        $this->user_id        = $user_id;
+        $this->company_id     = $company_id;
+        $this->access         = $access;
+        $this->storage        = $storage;
+        $this->type           = $type;
+        $this->extension      = $extension;
+        $this->size           = $size;
+        $this->download_count = $download_count;
+        $this->status         = $status;
+        $this->time_create    = $time_create;
+        $this->time_update    = $time_update;
+        $this->information    = $information;
+        $this->user_identity  = $user_identity;
+        $this->user_name      = $user_name;
+        $this->user_email     = $user_email;
+        $this->user_mobile    = $user_mobile;
+        $this->id             = $id;
     }
 
     public function getId(): ?int
@@ -127,5 +139,25 @@ class Storage
     public function getInformation(): ?string
     {
         return $this->information;
+    }
+
+    public function getUserIdentity(): ?string
+    {
+        return $this->user_identity;
+    }
+
+    public function getUserName(): ?string
+    {
+        return $this->user_name;
+    }
+
+    public function getUserEmail(): ?string
+    {
+        return $this->user_email;
+    }
+
+    public function getUserMobile(): ?string
+    {
+        return $this->user_mobile;
     }
 }

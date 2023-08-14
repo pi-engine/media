@@ -111,6 +111,16 @@ class MediaService implements ServiceInterface
                 'status'           => 1,
                 'time_create'      => time(),
                 'time_update'      => time(),
+                'information'      => json_encode(
+                    [
+                        'relation_item_title'      => $params['relation_item_title'] ?? null,
+                        'relation_framework_id'    => $params['relation_framework_id'] ?? null,
+                        'relation_framework_title' => $params['relation_framework_title'] ?? null,
+                        'relation_domain_id'       => $params['relation_domain_id'] ?? null,
+                        'relation_domain_title'    => $params['relation_domain_title'] ?? null,
+                    ],
+                    JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+                ),
             ];
 
             // Save relation
@@ -119,11 +129,6 @@ class MediaService implements ServiceInterface
         }
 
         return $storage;
-    }
-
-    public function updateMedia($authorization, $params)
-    {
-        return $params;
     }
 
     public function getMediaList($authorization, $params): array
@@ -167,7 +172,7 @@ class MediaService implements ServiceInterface
             $list   = [];
             $rowSet = $this->mediaRepository->getMediaListByRelationList($listParams);
             foreach ($rowSet as $row) {
-                $list[] = $this->canonizeStorage($row, ['view' => 'limited']);
+                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => 'limited']);
             }
 
             // Get count
@@ -177,9 +182,12 @@ class MediaService implements ServiceInterface
             $list   = [];
             $rowSet = $this->mediaRepository->getMediaList($listParams);
             foreach ($rowSet as $row) {
-                $storage = $this->canonizeStorage($row, ['view' => 'limited']);
-                unset($storage['information']['storage']);
-                $list[] = $storage;
+                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => 'limited']);
+            }
+
+            $rowSet = $this->mediaRepository->getMediaRelationList(['storage_id' => array_keys($list)]);
+            foreach ($rowSet as $row) {
+                $list[$row->getStorageId()]['relation'][] = $this->canonizeRelation($row);
             }
 
             // Get count
@@ -189,7 +197,7 @@ class MediaService implements ServiceInterface
         return [
             'result' => true,
             'data'   => [
-                'list'      => $list,
+                'list'      => array_values($list),
                 'paginator' => [
                     'count' => $count,
                     'limit' => $limit,
@@ -204,6 +212,39 @@ class MediaService implements ServiceInterface
     {
         $media = $this->mediaRepository->getMedia(['id' => $params['id']]);
         return $this->canonizeStorage($media);
+    }
+
+    public function addRelation($storage, $authorization, $params): array
+    {
+        // Set relation params
+        $addRelation = [
+            'storage_id'       => $storage['id'],
+            'user_id'          => $authorization['user_id'] ?? $authorization['id'],
+            'company_id'       => $authorization['company_id'] ?? 0,
+            'access'           => $params['access'],
+            'relation_module'  => $params['relation_module'],
+            'relation_section' => $params['relation_section'],
+            'relation_item'    => (int)$params['relation_item'],
+            'status'           => 1,
+            'time_create'      => time(),
+            'time_update'      => time(),
+            'information'      => json_encode(
+                [
+                    'relation_item_title'      => $params['relation_item_title'] ?? null,
+                    'relation_framework_id'    => $params['relation_framework_id'] ?? null,
+                    'relation_framework_title' => $params['relation_framework_title'] ?? null,
+                    'relation_domain_id'       => $params['relation_domain_id'] ?? null,
+                    'relation_domain_title'    => $params['relation_domain_title'] ?? null,
+                ],
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+            ),
+        ];
+
+        // Save relation
+        $relation              = $this->mediaRepository->addMediaRelation($addRelation);
+        $storage['relation'][] = $this->canonizeRelation($relation);
+
+        return $storage;
     }
 
     /**
@@ -250,6 +291,10 @@ class MediaService implements ServiceInterface
                 'time_create'    => $storage->getTimeCreate(),
                 'time_update'    => $storage->getTimeUpdate(),
                 'information'    => $storage->getInformation(),
+                'user_identity'  => $storage->getUserIdentity(),
+                'user_name'      => $storage->getUserName(),
+                'user_email'     => $storage->getUserEmail(),
+                'user_mobile'    => $storage->getUserMobile(),
             ];
         } else {
             $storage = [
@@ -268,14 +313,22 @@ class MediaService implements ServiceInterface
                 'time_create'    => $storage['time_create'],
                 'time_update'    => $storage['time_update'],
                 'information'    => $storage['information'],
+                'user_identity'  => $storage['user_identity'],
+                'user_name'      => $storage['user_name'],
+                'user_email'     => $storage['user_email'],
+                'user_mobile'    => $storage['user_mobile'],
             ];
         }
+
+        // Set time view
+        $storage['time_create_view'] = $this->utilityService->date($storage['time_create']);
+        $storage['time_update_view'] = $this->utilityService->date($storage['time_update']);
 
         // Set information
         $storage['information'] = json_decode($storage['information'], true);
 
         // Set original name
-        $storage['original_name'] = $storage['information']['storage']['original_name'];
+        $storage['original_name'] = $storage['information']['storage']['original_name'] ?? '';
 
         // Set size view
         $storage['size_view'] = $this->localStorage->transformSize($storage['size']);
@@ -312,6 +365,7 @@ class MediaService implements ServiceInterface
                 'status'           => $relation->getStatus(),
                 'time_create'      => $relation->getTimeCreate(),
                 'time_update'      => $relation->getTimeUpdate(),
+                'information'      => $relation->getInformation(),
             ];
         } else {
             $relation = [
@@ -326,8 +380,16 @@ class MediaService implements ServiceInterface
                 'status'           => $relation['status'],
                 'time_create'      => $relation['time_create'],
                 'time_update'      => $relation['time_update'],
+                'information'      => $relation['information'],
             ];
         }
+
+        // Set time view
+        $relation['time_create_view'] = $this->utilityService->date($relation['time_create']);
+        $relation['time_update_view'] = $this->utilityService->date($relation['time_update']);
+
+        // Set information
+        $relation['information'] = json_decode($relation['information'], true);
 
         return $relation;
     }
