@@ -13,6 +13,8 @@ class Storage
     private string $storage;
     private string $type;
     private string $extension;
+    private int    $size;
+    private int    $download_count;
     private int    $status;
     private int    $time_create;
     private int    $time_update;
@@ -27,6 +29,8 @@ class Storage
         $storage,
         $type,
         $extension,
+        $size,
+        $download_count,
         $status,
         $time_create,
         $time_update,
@@ -41,6 +45,8 @@ class Storage
         $this->storage     = $storage;
         $this->type        = $type;
         $this->extension   = $extension;
+        $this->size      = $size;
+        $this->download_count      = $download_count;
         $this->status      = $status;
         $this->time_create = $time_create;
         $this->time_update = $time_update;
@@ -91,6 +97,16 @@ class Storage
     public function getExtension(): string
     {
         return $this->extension;
+    }
+
+    public function getSize(): int
+    {
+        return $this->size;
+    }
+
+    public function getDownloadCount(): int
+    {
+        return $this->download_count;
     }
 
     public function getStatus(): int

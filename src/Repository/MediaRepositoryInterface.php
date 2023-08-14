@@ -20,7 +20,9 @@ interface MediaRepositoryInterface
 
     public function addMedia(array $params = []): array|Storage;
 
-    //public function updateMedia(int $complianceId, array $params = []): void;
+    public function updateMedia(int $mediaId, array $params = []): void;
+
+    public function updateDownloadCount(int $mediaId): void;
 
     public function getMediaRelation(array $params = []): array|Relation;
 

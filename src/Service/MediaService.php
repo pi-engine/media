@@ -76,14 +76,15 @@ class MediaService implements ServiceInterface
             'type'        => $this->localStorage->makeFileType($storeInfo['file_extension']),
             'extension'   => $storeInfo['file_extension'],
             'status'      => 1,
+            'size'        => $storeInfo['file_size'],
             'time_create' => time(),
             'time_update' => time(),
             'information' => json_encode(
                 [
-                    'storage' => $storeInfo,
+                    'storage'  => $storeInfo,
                     'download' => $downloadInfo,
                 ],
-                JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
             ),
         ];
 
@@ -210,6 +211,10 @@ class MediaService implements ServiceInterface
      */
     public function streamMedia($media): string
     {
+        // Update download count
+        $this->mediaRepository->updateDownloadCount((int)$media['id']);
+
+        // Set options
         $options = [];
         if (isset($media['information']['storage']['original_name'])) {
             $options['filename'] = $media['information']['storage']['original_name'];
@@ -218,6 +223,7 @@ class MediaService implements ServiceInterface
             $options['content_type'] = $media['information']['storage']['file_extension'];
         }
 
+        // Start stream
         return $this->localDownload->stream($media['information']['storage']['file_path'], $options);
     }
 
@@ -229,47 +235,57 @@ class MediaService implements ServiceInterface
 
         if (is_object($storage)) {
             $storage = [
-                'id'          => $storage->getId(),
-                'slug'        => $storage->getSlug(),
-                'title'       => $storage->getTitle(),
-                'user_id'     => $storage->getUserId(),
-                'company_id'  => $storage->getCompanyId(),
-                'access'      => $storage->getAccess(),
-                'storage'     => $storage->getStorage(),
-                'type'        => $storage->getType(),
-                'extension'   => $storage->getExtension(),
-                'status'      => $storage->getStatus(),
-                'time_create' => $storage->getTimeCreate(),
-                'time_update' => $storage->getTimeUpdate(),
-                'information' => $storage->getInformation(),
+                'id'             => $storage->getId(),
+                'slug'           => $storage->getSlug(),
+                'title'          => $storage->getTitle(),
+                'user_id'        => $storage->getUserId(),
+                'company_id'     => $storage->getCompanyId(),
+                'access'         => $storage->getAccess(),
+                'storage'        => $storage->getStorage(),
+                'type'           => $storage->getType(),
+                'extension'      => $storage->getExtension(),
+                'size'           => $storage->getSize(),
+                'download_count' => $storage->getDownloadCount(),
+                'status'         => $storage->getStatus(),
+                'time_create'    => $storage->getTimeCreate(),
+                'time_update'    => $storage->getTimeUpdate(),
+                'information'    => $storage->getInformation(),
             ];
         } else {
             $storage = [
-                'id'          => $storage['id'],
-                'slug'        => $storage['slug'],
-                'title'       => $storage['title'],
-                'user_id'     => $storage['user_id'],
-                'company_id'  => $storage['company_id'],
-                'access'      => $storage['access'],
-                'storage'     => $storage['storage'],
-                'type'        => $storage['type'],
-                'extension'   => $storage['extension'],
-                'status'      => $storage['status'],
-                'time_create' => $storage['time_create'],
-                'time_update' => $storage['time_update'],
-                'information' => $storage['information'],
+                'id'             => $storage['id'],
+                'slug'           => $storage['slug'],
+                'title'          => $storage['title'],
+                'user_id'        => $storage['user_id'],
+                'company_id'     => $storage['company_id'],
+                'access'         => $storage['access'],
+                'storage'        => $storage['storage'],
+                'type'           => $storage['type'],
+                'extension'      => $storage['extension'],
+                'size'           => $storage['size'],
+                'download_count' => $storage['download_count'],
+                'status'         => $storage['status'],
+                'time_create'    => $storage['time_create'],
+                'time_update'    => $storage['time_update'],
+                'information'    => $storage['information'],
             ];
         }
 
+        // Set information
         $storage['information'] = json_decode($storage['information'], true);
 
         // Set original name
         $storage['original_name'] = $storage['information']['storage']['original_name'];
 
-        if(in_array($storage['access'], ['user', 'company'])) {
+        // Set size view
+        $storage['size_view'] = $this->localStorage->transformSize($storage['size']);
+
+        // Set private uri
+        if (in_array($storage['access'], ['user', 'company'])) {
             $storage['information']['download']['private_uri'] = $this->localDownload->makePrivateUrl($storage);
         }
 
+        // Clean up
         if (isset($options['view']) && $options['view'] == 'limited') {
             unset($storage['information']['storage']);
         }

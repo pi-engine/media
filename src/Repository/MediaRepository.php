@@ -8,6 +8,7 @@ use Laminas\Db\ResultSet\HydratingResultSet;
 use Laminas\Db\Sql\Insert;
 use Laminas\Db\Sql\Predicate\Expression;
 use Laminas\Db\Sql\Sql;
+use Laminas\Db\Sql\Update;
 use Laminas\Hydrator\HydratorInterface;
 use Media\Model\Relation;
 use Media\Model\Storage;
@@ -252,6 +253,40 @@ class MediaRepository implements MediaRepositoryInterface
         $id = $result->getGeneratedValue();
 
         return $this->getMedia(['id' => $id]);
+    }
+
+    public function updateMedia(int $mediaId, array $params = []): void
+    {
+        $update = new Update($this->tableStorage);
+        $update->set($params);
+        $update->where(['id' => $mediaId]);
+
+        $sql       = new Sql($this->db);
+        $statement = $sql->prepareStatementForSqlObject($update);
+        $result    = $statement->execute();
+
+        if (!$result instanceof ResultInterface) {
+            throw new RuntimeException(
+                'Database error occurred during update operation'
+            );
+        }
+    }
+
+    public function updateDownloadCount(int $mediaId): void
+    {
+        $update = new Update($this->tableStorage);
+        $update->set(['download_count' => new Expression('download_count + 1')]);
+        $update->where(['id' => $mediaId]);
+
+        $sql       = new Sql($this->db);
+        $statement = $sql->prepareStatementForSqlObject($update);
+        $result    = $statement->execute();
+
+        if (!$result instanceof ResultInterface) {
+            throw new RuntimeException(
+                'Database error occurred during update operation'
+            );
+        }
     }
 
     public function getMediaRelation(array $params = []): array|Relation

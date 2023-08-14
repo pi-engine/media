@@ -36,6 +36,7 @@ class LocalStorage implements StorageInterface
         $fileName = $this->makeFileName($fileInfo['filename']);
         $fileName = strtolower(sprintf('%s-%s-%s.%s', $fileName, date('Y-m-d-H-i-s'), rand(1000, 9999), $fileInfo['extension']));
         $filePath = sprintf('%s/%s', $fullPath, $fileName);
+        $fileSize = $uploadFile->getSize();
 
         // Check and make path
         $this->mkdir($fullPath);
@@ -47,6 +48,7 @@ class LocalStorage implements StorageInterface
             'original_name'  => $uploadFile->getClientFilename(),
             'file_title'     => $fileInfo['filename'],
             'file_extension' => strtolower($fileInfo['extension']),
+            'file_size'      => $fileSize,
             'file_name'      => $fileName,
             'file_path'      => $filePath,
             'full_path'      => $fullPath,
