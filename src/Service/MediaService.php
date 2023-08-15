@@ -133,6 +133,7 @@ class MediaService implements ServiceInterface
 
     public function getMediaList($authorization, $params): array
     {
+        $view   = (isset($params['view']) && in_array($params['view'], ['limited', 'compressed'])) ? $params['view'] : 'limited';
         $limit  = (int)($params['limit'] ?? 25);
         $page   = (int)($params['page'] ?? 1);
         $order  = $params['order'] ?? ['time_create DESC'];
@@ -172,7 +173,7 @@ class MediaService implements ServiceInterface
             $list   = [];
             $rowSet = $this->mediaRepository->getMediaListByRelationList($listParams);
             foreach ($rowSet as $row) {
-                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => 'limited']);
+                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => $view]);
             }
 
             // Get count
@@ -182,12 +183,14 @@ class MediaService implements ServiceInterface
             $list   = [];
             $rowSet = $this->mediaRepository->getMediaList($listParams);
             foreach ($rowSet as $row) {
-                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => 'limited']);
+                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => $view]);
             }
 
-            $rowSet = $this->mediaRepository->getMediaRelationList(['storage_id' => array_keys($list)]);
-            foreach ($rowSet as $row) {
-                $list[$row->getStorageId()]['relation'][] = $this->canonizeRelation($row);
+            if ($view != 'compressed') {
+                $rowSet = $this->mediaRepository->getMediaRelationList(['storage_id' => array_keys($list)]);
+                foreach ($rowSet as $row) {
+                    $list[$row->getStorageId()]['relation'][] = $this->canonizeRelation($row);
+                }
             }
 
             // Get count
@@ -277,6 +280,10 @@ class MediaService implements ServiceInterface
             return [];
         }
 
+        if ($options['view'] == 'compressed') {
+            return $this->canonizeStorageCompressed($storage);
+        }
+
         if (is_object($storage)) {
             $storage = [
                 'id'             => $storage->getId(),
@@ -345,6 +352,33 @@ class MediaService implements ServiceInterface
         if (isset($options['view']) && $options['view'] == 'limited') {
             unset($storage['information']['storage']);
         }
+
+        return $storage;
+    }
+
+    public function canonizeStorageCompressed($storage): array
+    {
+        if (is_object($storage)) {
+            $information =  $storage->getInformation();
+            $storage = [
+                'id'    => $storage->getId(),
+                'title' => $storage->getTitle(),
+            ];
+
+        } else {
+            $information =  $storage['information'];
+            $storage = [
+                'id'    => $storage['id'],
+                'title' => $storage['title'],
+            ];
+
+        }
+
+        // Set information
+        $information = json_decode($information, true);
+
+        // Set original name
+        $storage['original_name'] = $information['storage']['original_name'] ?? '';
 
         return $storage;
     }
