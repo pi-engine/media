@@ -44,9 +44,6 @@ class MediaService implements ServiceInterface
         $this->config          = $config;
     }
 
-    /**
-     * @throws \Exception
-     */
     public function addMedia($uploadFile, $authorization, $params): array
     {
         // Set storage params
@@ -280,7 +277,7 @@ class MediaService implements ServiceInterface
             return [];
         }
 
-        if ($options['view'] == 'compressed') {
+        if (isset($options['view']) && $options['view'] == 'compressed') {
             return $this->canonizeStorageCompressed($storage);
         }
 
