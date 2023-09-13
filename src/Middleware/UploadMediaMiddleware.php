@@ -82,7 +82,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
     {
         $message = [];
         foreach ($inputFilter->getInvalidInput() as $error) {
-            $message[$error->getName()] = implode(', ', $error->getMessages());
+            $message[$error->getName()] = $error->getName() . ': ' . implode(', ', $error->getMessages());
         }
 
         return $this->validationResult = [
