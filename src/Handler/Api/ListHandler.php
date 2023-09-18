@@ -2,6 +2,7 @@
 
 namespace Media\Handler\Api;
 
+use Fig\Http\Message\StatusCodeInterface;
 use Laminas\Diactoros\Response\JsonResponse;
 use Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -37,6 +38,6 @@ class ListHandler implements RequestHandlerInterface
         $requestBody   = $request->getParsedBody();
 
         $result = $this->mediaService->getMediaList($authorization, $requestBody);
-        return new JsonResponse($result);
+        return new JsonResponse($result, $result['status'] ?? StatusCodeInterface::STATUS_OK);
     }
 }

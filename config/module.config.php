@@ -5,6 +5,7 @@ namespace Media;
 use Company\Middleware\CompanyMiddleware;
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
+use Logger\Middleware\LoggerRequestMiddleware;
 use User\Middleware\AuthenticationMiddleware;
 use User\Middleware\SecurityMiddleware;
 
@@ -54,6 +55,7 @@ return [
                                     AuthenticationMiddleware::class,
                                     CompanyMiddleware::class,
                                     Middleware\UploadMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
                                     Handler\Api\AddPrivateHandler::class
                                 ),
                             ],
@@ -73,6 +75,7 @@ return [
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
                                     Middleware\UploadMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
                                     Handler\Api\AddPublicHandler::class
                                 ),
                             ],
@@ -93,6 +96,7 @@ return [
                                     AuthenticationMiddleware::class,
                                     CompanyMiddleware::class,
                                     Middleware\GetMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
                                     Handler\Api\AddRelationHandler::class
                                 ),
                             ],
@@ -112,6 +116,7 @@ return [
                                     SecurityMiddleware::class,
                                     AuthenticationMiddleware::class,
                                     CompanyMiddleware::class,
+                                    LoggerRequestMiddleware::class,
                                     Handler\Api\ListHandler::class
                                 ),
                             ],
@@ -132,6 +137,7 @@ return [
                                     AuthenticationMiddleware::class,
                                     CompanyMiddleware::class,
                                     Middleware\GetMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
                                     Handler\Api\GetHandler::class
                                 ),
                             ],
@@ -152,6 +158,7 @@ return [
                                     AuthenticationMiddleware::class,
                                     CompanyMiddleware::class,
                                     Middleware\GetMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
                                     Handler\Api\StreamHandler::class
                                 ),
                             ],

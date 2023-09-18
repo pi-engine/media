@@ -3,6 +3,7 @@
 namespace Media\Handler\Api;
 
 use Exception;
+use Fig\Http\Message\StatusCodeInterface;
 use Laminas\Diactoros\Response\JsonResponse;
 use Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -39,6 +40,6 @@ class StreamHandler implements RequestHandlerInterface
     {
         $media  = $request->getAttribute('media_item');
         $result = $this->mediaService->streamMedia($media);
-        return new JsonResponse($result);
+        return new JsonResponse($result, $result['status'] ?? StatusCodeInterface::STATUS_OK);
     }
 }

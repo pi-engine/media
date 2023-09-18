@@ -1,0 +1,34 @@
+<?php
+
+return [
+    'media'        => [
+        'download_uri'      => 'http://...',
+        'stream_uri'        => 'http://...',
+        'private_path'      => 'PRIVATE_PATH',
+        'public_path'       => 'PUBLIC_PATH',
+        'allowed_extension' => [
+            'jpg',
+            'jpeg',
+            'png',
+            'pdf',
+            'doc',
+            'docx',
+            'xls',
+            'xlsx',
+            'csv',
+            'txt',
+            'mp3',
+            'mp4',
+        ],
+        'mime_type'         => [
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/csv',
+            'application/vnd.oasis.opendocument.spreadsheet',
+        ],
+        'allowed_size'      => [
+            'min' => '1kB',
+            'max' => '10MB',
+        ],
+    ],
+];
