@@ -58,6 +58,21 @@ class MediaService implements ServiceInterface
         // Store media
         $storeInfo = $this->localStorage->storeMedia($uploadFile, $storageParams);
 
+        // Save and return
+        return $this->saveMedia($authorization, $params, $storeInfo);
+    }
+
+    public function createMedia($authorization, $params, $storageParams): array
+    {
+        // Store media
+        $storeInfo = $this->localStorage->createMedia($storageParams);
+
+        // Save and return
+        return $this->saveMedia($authorization, $params, $storeInfo);
+    }
+
+    public function saveMedia($authorization, $params, $storeInfo): array
+    {
         // Make download info
         $downloadInfo = [
             'public_uri' => ($params['access'] == 'public') ? $this->localDownload->makePublicUri($storeInfo) : '',
@@ -87,7 +102,7 @@ class MediaService implements ServiceInterface
 
         // Save storage
         $storage = $this->mediaRepository->addMedia($addStorage);
-        $storage = $this->canonizeStorage($storage, ['view' => 'limited']);
+        $storage = $this->canonizeStorage($storage, ['view' => $params['view'] ?? 'limited']);
 
         // Check media have a relation
         if (

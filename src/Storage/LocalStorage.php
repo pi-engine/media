@@ -57,6 +57,29 @@ class LocalStorage implements StorageInterface
         ];
     }
 
+    public function createMedia($params): array
+    {
+        $mainPath = ($params['access'] == 'public') ? $this->config['public_path'] : $this->config['private_path'];
+        $fileName = strtolower(sprintf('%s-%s-%s.%s', $params['filename'], date('Y-m-d-H-i-s'), rand(1000, 9999), $params['extension']));
+        $fullPath = sprintf('%s/%s', $mainPath, $params['local_path']);
+        $filePath = sprintf('%s/%s', $fullPath, $fileName);
+
+        // Check and make path
+        $this->mkdir($fullPath);
+
+        return [
+            'original_name'  => $params['original_name'] ?? $fileName,
+            'file_title'     => $params['filename'],
+            'file_extension' => strtolower($params['extension']),
+            'file_size'      => 0,
+            'file_name'      => $fileName,
+            'file_path'      => $filePath,
+            'full_path'      => $fullPath,
+            'main_path'      => $mainPath,
+            'local_path'     => $params['local_path'],
+        ];
+    }
+
     public function makeFileType($extension): string
     {
         $typeMappings = [
