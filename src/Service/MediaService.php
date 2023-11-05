@@ -96,7 +96,7 @@ class MediaService implements ServiceInterface
                     'storage'  => $storeInfo,
                     'download' => $downloadInfo,
                 ],
-                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
             ),
         ];
 
@@ -131,7 +131,7 @@ class MediaService implements ServiceInterface
                         'relation_domain_id'       => $params['relation_domain_id'] ?? null,
                         'relation_domain_title'    => $params['relation_domain_title'] ?? null,
                     ],
-                    JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+                    JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
                 ),
             ];
 
@@ -251,7 +251,7 @@ class MediaService implements ServiceInterface
                     'relation_domain_id'       => $params['relation_domain_id'] ?? null,
                     'relation_domain_title'    => $params['relation_domain_title'] ?? null,
                 ],
-                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
             ),
         ];
 
