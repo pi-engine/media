@@ -164,6 +164,28 @@ return [
                             ],
                         ],
                     ],
+
+                    'update'          => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/update',
+                            'defaults' => [
+                                'module'     => 'media',
+                                'section'    => 'api',
+                                'package'    => 'media',
+                                'handler'    => 'update',
+                                'controller' => PipeSpec::class,
+                                'middleware' => new PipeSpec(
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    CompanyMiddleware::class,
+                                    Middleware\GetMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
+                                    Handler\Api\UpdateHandler::class
+                                ),
+                            ],
+                        ],
+                    ],
                 ],
             ],
         ],

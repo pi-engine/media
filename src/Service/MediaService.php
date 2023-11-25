@@ -44,22 +44,26 @@ class MediaService implements ServiceInterface
         $this->config          = $config;
     }
 
-    public function addMedia($uploadFile, $authorization, $params): array
+    public function addMedia($uploadFile, $authorization, $params, $media = []): array
     {
         // Set storage params
         $storageParams = [
+            'access'     => $params['access'],
+            'storage'    => 'local',
             'local_path' => isset($authorization['company']['hash'])
                 ? sprintf('%s/%s/%s', $authorization['company']['hash'], date('Y'), date('m'))
                 : sprintf('%s/%s', date('Y'), date('m')),
-            'access'     => $params['access'],
-            'storage'    => 'local',
         ];
 
         // Store media
         $storeInfo = $this->localStorage->storeMedia($uploadFile, $storageParams);
 
         // Save and return
-        return $this->saveMedia($authorization, $params, $storeInfo);
+        if (!empty($media) && isset($media['id'])) {
+            return $this->updateMedia($media, $authorization, $params, $storeInfo);
+        } else {
+            return $this->saveMedia($authorization, $params, $storeInfo);
+        }
     }
 
     public function createMedia($authorization, $params, $storageParams): array
@@ -95,6 +99,23 @@ class MediaService implements ServiceInterface
                 [
                     'storage'  => $storeInfo,
                     'download' => $downloadInfo,
+                    'category' => $params['category'] ?? [],
+                    'review'   => $params['review'] ? [$params['review']] : [],
+                    'history'  => [
+                        [
+                            'action'  => 'add',
+                            'storage' => $storeInfo,
+                            'user_id' => $authorization['user_id'] ?? $authorization['id'],
+                            'data'    => [
+                                'title'       => $params['title'] ?? $storeInfo['file_title'],
+                                'type'        => $this->localStorage->makeFileType($storeInfo['file_extension']),
+                                'extension'   => $storeInfo['file_extension'],
+                                'status'      => 1,
+                                'size'        => $storeInfo['file_size'],
+                                'time_update' => time(),
+                            ],
+                        ],
+                    ],
                 ],
                 JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
             ),
@@ -265,6 +286,63 @@ class MediaService implements ServiceInterface
         return $storage;
     }
 
+    public function updateMedia($media, $authorization, $params, $storeInfo): array
+    {
+        // Set download uri
+        $downloadInfo = [
+            'public_uri' => ($params['access'] == 'public') ? $this->localDownload->makePublicUri($storeInfo) : '',
+        ];
+
+        // Set update params
+        $updateParams = [
+            'time_update' => time(),
+        ];
+        if (isset($params['title']) && !empty($params['title'])) {
+            $updateParams['title'] = $params['title'];
+        }
+        if (isset($params['status']) && is_numeric($params['status'])) {
+            $updateParams['status'] = (int)$params['status'];
+        }
+        if (isset($storeInfo['file_extension']) && !empty($storeInfo['file_extension'])) {
+            $updateParams['extension'] = $storeInfo['file_extension'];
+            $updateParams['type']      = $this->localStorage->makeFileType($storeInfo['file_extension']);
+        }
+        if (isset($storeInfo['file_size']) && !empty($storeInfo['file_size'])) {
+            $updateParams['size'] = $storeInfo['file_size'];
+        }
+
+        // Set information
+        $information             = $media['information'];
+        $information['download'] = $downloadInfo;
+        if (isset($storeInfo) && !empty($storeInfo)) {
+            $information['storage'] = $storeInfo;
+        }
+        if (isset($params['category']) && !empty($params['category'])) {
+            $information['category'] = $params['category'];
+        }
+        if (isset($params['review']) && !empty($params['review'])) {
+            $information['review'][] = $params['review'];
+        }
+
+        // Set history
+        $information['history'][] = [
+            'action'  => 'update',
+            'storage' => $storeInfo,
+            'user_id' => $authorization['user_id'] ?? $authorization['id'],
+            'data'    => $updateParams,
+        ];
+
+        // Set information
+        $updateParams['information'] = json_encode(
+            $information,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
+        );
+
+        // Save and get
+        $this->mediaRepository->updateMedia((int)$media['id'], $updateParams);
+        return $this->getMedia($media);
+    }
+
     /**
      * @throws \Exception
      */
@@ -371,19 +449,17 @@ class MediaService implements ServiceInterface
     public function canonizeStorageCompressed($storage): array
     {
         if (is_object($storage)) {
-            $information =  $storage->getInformation();
-            $storage = [
+            $information = $storage->getInformation();
+            $storage     = [
                 'id'    => $storage->getId(),
                 'title' => $storage->getTitle(),
             ];
-
         } else {
-            $information =  $storage['information'];
-            $storage = [
+            $information = $storage['information'];
+            $storage     = [
                 'id'    => $storage['id'],
                 'title' => $storage['title'],
             ];
-
         }
 
         // Set information
