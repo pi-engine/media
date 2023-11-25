@@ -44,7 +44,7 @@ class MediaService implements ServiceInterface
         $this->config          = $config;
     }
 
-    public function addMedia($uploadFile, $authorization, $params, $media = []): array
+    public function storeMedia($uploadFile, $authorization, $params): array
     {
         // Set storage params
         $storageParams = [
@@ -56,14 +56,16 @@ class MediaService implements ServiceInterface
         ];
 
         // Store media
-        $storeInfo = $this->localStorage->storeMedia($uploadFile, $storageParams);
+        return $this->localStorage->storeMedia($uploadFile, $storageParams);
+    }
+
+    public function addMedia($uploadFile, $authorization, $params): array
+    {
+        // Store media
+        $storeInfo = $this->storeMedia($uploadFile, $authorization, $params);
 
         // Save and return
-        if (!empty($media) && isset($media['id'])) {
-            return $this->updateMedia($media, $authorization, $params, $storeInfo);
-        } else {
-            return $this->saveMedia($authorization, $params, $storeInfo);
-        }
+        return $this->saveMedia($authorization, $params, $storeInfo);
     }
 
     public function createMedia($authorization, $params, $storageParams): array
@@ -286,8 +288,11 @@ class MediaService implements ServiceInterface
         return $storage;
     }
 
-    public function updateMedia($media, $authorization, $params, $storeInfo): array
+    public function updateMediaWhitFile($media, $uploadFile, $authorization, $params): array
     {
+        // Store media
+        $storeInfo = $this->storeMedia($uploadFile, $authorization, $params);
+
         // Set download uri
         $downloadInfo = [
             'public_uri' => ($params['access'] == 'public') ? $this->localDownload->makePublicUri($storeInfo) : '',
@@ -343,9 +348,47 @@ class MediaService implements ServiceInterface
         return $this->getMedia($media);
     }
 
-    /**
-     * @throws \Exception
-     */
+    public function updateMedia($media, $authorization, $params): array
+    {
+        // Set update params
+        $updateParams = [
+            'time_update' => time(),
+        ];
+        if (isset($params['title']) && !empty($params['title'])) {
+            $updateParams['title'] = $params['title'];
+        }
+        if (isset($params['status']) && is_numeric($params['status'])) {
+            $updateParams['status'] = (int)$params['status'];
+        }
+
+        // Set information
+        $information             = $media['information'];
+        if (isset($params['category']) && !empty($params['category'])) {
+            $information['category'] = $params['category'];
+        }
+        if (isset($params['review']) && !empty($params['review'])) {
+            $information['review'][] = $params['review'];
+        }
+
+        // Set history
+        $information['history'][] = [
+            'action'  => 'update',
+            'storage' => [],
+            'user_id' => $authorization['user_id'] ?? $authorization['id'],
+            'data'    => $updateParams,
+        ];
+
+        // Set information
+        $updateParams['information'] = json_encode(
+            $information,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
+        );
+
+        // Save and get
+        $this->mediaRepository->updateMedia((int)$media['id'], $updateParams);
+        return $this->getMedia($media);
+    }
+
     public function streamMedia($media): string
     {
         // Update download count

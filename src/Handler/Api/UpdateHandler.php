@@ -42,8 +42,13 @@ class UpdateHandler implements RequestHandlerInterface
         // Set access type
         $requestBody['access'] = $requestBody['access'] ?? 'company';
 
-        // Add media
-        $media = $this->mediaService->addMedia(array_shift($uploadFiles), $authorization, $requestBody, $media);
+        // Update media
+        if (!empty($uploadFiles)) {
+            $media = $this->mediaService->updateMediaWhitFile($media, array_shift($uploadFiles), $authorization, $requestBody);
+        } else {
+            $media = $this->mediaService->updateMedia($media, $authorization, $requestBody);
+        }
+
 
         $result = [
             'result' => true,
