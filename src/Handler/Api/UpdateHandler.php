@@ -49,7 +49,6 @@ class UpdateHandler implements RequestHandlerInterface
             $media = $this->mediaService->updateMedia($media, $authorization, $requestBody);
         }
 
-
         $result = [
             'result' => true,
             'data'   => $media,
