@@ -407,6 +407,12 @@ class MediaService implements ServiceInterface
         return $this->localDownload->stream($media['information']['storage']['file_path'], $options);
     }
 
+    public function streamFile($filePath, $options = []): string
+    {
+        // Start stream
+        return $this->localDownload->stream($filePath, $options);
+    }
+
     public function canonizeStorage($storage, $options = []): array
     {
         if (empty($storage)) {

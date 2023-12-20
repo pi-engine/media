@@ -198,9 +198,9 @@ class LocalStorage implements StorageInterface
      *
      * @param int|string $value
      *
-     * @return string|int|bool
+     * @return float|bool|int|string
      */
-    public function transformSize($value)
+    public function transformSize(int|string $value): float|bool|int|string
     {
         $sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         if (is_numeric($value)) {
@@ -244,7 +244,7 @@ class LocalStorage implements StorageInterface
      *
      * @throws Exception When copy fails
      */
-    public function copy($originFile, $targetFile, $override = false)
+    public function copy(string $originFile, string $targetFile, bool $override = false): static
     {
         $this->mkdir(dirname($targetFile));
 
