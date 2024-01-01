@@ -2,6 +2,7 @@
 
 namespace Media\Download;
 
+use Exception;
 use ZipArchive;
 
 class LocalDownload implements DownloadInterface
@@ -34,14 +35,11 @@ class LocalDownload implements DownloadInterface
      * @param string|array $source  File or file meta to download
      * @param array        $options Options for the file(s) to send
      *
-     * @return bool|void
-     * @throws \Exception
+     * @return bool
+     * @throws Exception
      */
     public function stream($source, array $options = []): bool
     {
-        // Disable logging service
-        //Pi::service('log')->mute();
-
         $error = '';
 
         // Canonize download options
@@ -89,12 +87,12 @@ class LocalDownload implements DownloadInterface
     /**
      * Canonize download options
      *
-     * @param string|array $source  File or file meta to download
+     * @param array|string $source  File or file meta to download
      * @param array        $options Options for the file(s) to send
      *
      * @return string
      */
-    protected function canonizeDownload($source, array &$options = [])
+    protected function canonizeDownload(array|string $source, array &$options = []): array|string
     {
         if (!isset($options['type'])) {
             $options['type'] = 'file';
@@ -162,19 +160,19 @@ class LocalDownload implements DownloadInterface
     /**
      * Send content to client
      *
-     * @param Resource|string $source
-     * @param string          $filename
-     * @param string          $contentType
-     * @param int             $contentLength
+     * @param string $source
+     * @param string $filename
+     * @param string $contentType
+     * @param int    $contentLength
      *
      * @return bool
      */
     protected function download(
-        $source,
-        $filename,
-        $contentType,
-        $contentLength = 0
-    ) {
+        string $source,
+        string $filename,
+        string $contentType,
+        int $contentLength = 0
+    ): bool {
         //$isIe = Pi::service('browser')->isIe();
         $isIe = false;
         if ($isIe) {

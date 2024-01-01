@@ -28,6 +28,8 @@ class MediaService implements ServiceInterface
     /* @var array */
     protected array $config;
 
+    protected string $storage = 'local';
+
     public function __construct(
         MediaRepositoryInterface $mediaRepository,
         AccountService $accountService,
@@ -46,13 +48,27 @@ class MediaService implements ServiceInterface
 
     public function storeMedia($uploadFile, $authorization, $params): array
     {
+        // Set path
+        switch ($params['access']) {
+            case 'company':
+                $path = sprintf('%s/%s/%s', $authorization['company']['hash'], date('Y'), date('m'));
+                break;
+
+            case 'user':
+                $path = sprintf('%s/%s/%s', $authorization['user']['hash'], date('Y'), date('m'));
+                break;
+
+            default:
+            case 'public':
+                $path = sprintf('%s/%s', date('Y'), date('m'));
+                break;
+        }
+
         // Set storage params
         $storageParams = [
+            'storage'    => $this->storage,
             'access'     => $params['access'],
-            'storage'    => 'local',
-            'local_path' => isset($authorization['company']['hash'])
-                ? sprintf('%s/%s/%s', $authorization['company']['hash'], date('Y'), date('m'))
-                : sprintf('%s/%s', date('Y'), date('m')),
+            'local_path' => $path,
         ];
 
         // Store media
@@ -87,10 +103,10 @@ class MediaService implements ServiceInterface
         // Set storage params
         $addStorage = [
             'title'       => $params['title'] ?? $storeInfo['file_title'],
-            'user_id'     => $authorization['user_id'] ?? $authorization['id'],
-            'company_id'  => $authorization['company_id'] ?? 0,
+            'user_id'     => $authorization['user_id'],
+            'company_id'  => $authorization['company_id'],
             'access'      => $params['access'],
-            'storage'     => 'local',
+            'storage'     => $this->storage,
             'type'        => $this->localStorage->makeFileType($storeInfo['file_extension']),
             'extension'   => $storeInfo['file_extension'],
             'status'      => 1,
@@ -107,7 +123,7 @@ class MediaService implements ServiceInterface
                         [
                             'action'  => 'add',
                             'storage' => $storeInfo,
-                            'user_id' => $authorization['user_id'] ?? $authorization['id'],
+                            'user_id' => $authorization['user_id'],
                             'data'    => [
                                 'title'       => $params['title'] ?? $storeInfo['file_title'],
                                 'type'        => $this->localStorage->makeFileType($storeInfo['file_extension']),
@@ -137,8 +153,8 @@ class MediaService implements ServiceInterface
             // Set relation params
             $addRelation = [
                 'storage_id'       => $storage['id'],
-                'user_id'          => $authorization['user_id'] ?? $authorization['id'],
-                'company_id'       => $authorization['company_id'] ?? 0,
+                'user_id'          => $authorization['user_id'],
+                'company_id'       => $authorization['company_id'],
                 'access'           => $params['access'],
                 'relation_module'  => $params['relation_module'],
                 'relation_section' => $params['relation_section'],
@@ -168,6 +184,17 @@ class MediaService implements ServiceInterface
 
     public function getMediaList($authorization, $params): array
     {
+        if (!in_array($authorization['access'], ['user', 'company'])) {
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => 'Please select the true access type !',
+                ],
+            ];
+        }
+
+
         $view   = (isset($params['view']) && in_array($params['view'], ['limited', 'compressed'])) ? $params['view'] : 'limited';
         $limit  = (int)($params['limit'] ?? 25);
         $page   = (int)($params['page'] ?? 1);
@@ -175,22 +202,29 @@ class MediaService implements ServiceInterface
         $offset = ($page - 1) * $limit;
 
         $listParams = [
-            'order'      => $order,
-            'offset'     => $offset,
-            'limit'      => $limit,
-            'access'     => 'company',
-            'company_id' => $authorization['company_id'],
+            'order'  => $order,
+            'offset' => $offset,
+            'limit'  => $limit,
         ];
-        if (!empty($params['status'])) {
+
+        if ($authorization['access'] == 'company') {
+            $listParams['access']     = 'company';
+            $listParams['company_id'] = $authorization['company_id'];
+            if (isset($params['user_id']) && !empty($params['user_id'])) {
+                $listParams['user_id'] = $params['user_id'];
+            }
+        } elseif ($authorization['access'] == 'user') {
+            $listParams['access']  = 'user';
+            $listParams['user_id'] = $authorization['user_id'];
+        }
+
+        if (isset($params['status']) && !empty($params['status'])) {
             $listParams['status'] = $params['status'];
         }
-        if (!empty($params['user_id'])) {
-            $listParams['user_id'] = $params['user_id'];
-        }
-        if (!empty($params['slug'])) {
+        if (isset($params['slug']) && !empty($params['slug'])) {
             $listParams['slug'] = $params['slug'];
         }
-        if (!empty($params['id'])) {
+        if (isset($params['id']) && !empty($params['id'])) {
             $listParams['id'] = $params['id'];
         }
 
@@ -257,8 +291,8 @@ class MediaService implements ServiceInterface
         // Set relation params
         $addRelation = [
             'storage_id'       => $storage['id'],
-            'user_id'          => $authorization['user_id'] ?? $authorization['id'],
-            'company_id'       => $authorization['company_id'] ?? 0,
+            'user_id'          => $authorization['user_id'],
+            'company_id'       => $authorization['company_id'],
             'access'           => $storage['access'],
             'relation_module'  => $params['relation_module'],
             'relation_section' => $params['relation_section'],
@@ -333,7 +367,7 @@ class MediaService implements ServiceInterface
         $information['history'][] = [
             'action'  => 'update',
             'storage' => $storeInfo,
-            'user_id' => $authorization['user_id'] ?? $authorization['id'],
+            'user_id' => $authorization['user_id'],
             'data'    => $updateParams,
         ];
 
@@ -362,7 +396,7 @@ class MediaService implements ServiceInterface
         }
 
         // Set information
-        $information             = $media['information'];
+        $information = $media['information'];
         if (isset($params['category']) && !empty($params['category'])) {
             $information['category'] = $params['category'];
         }
@@ -374,7 +408,7 @@ class MediaService implements ServiceInterface
         $information['history'][] = [
             'action'  => 'update',
             'storage' => [],
-            'user_id' => $authorization['user_id'] ?? $authorization['id'],
+            'user_id' => $authorization['user_id'],
             'data'    => $updateParams,
         ];
 

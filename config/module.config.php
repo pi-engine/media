@@ -15,22 +15,22 @@ return [
             Repository\MediaRepositoryInterface::class => Repository\MediaRepository::class,
         ],
         'factories' => [
-            Repository\MediaRepository::class       => Factory\Repository\MediaRepositoryFactory::class,
-            Service\MediaService::class             => Factory\Service\MediaServiceFactory::class,
-            Storage\LocalStorage::class             => Factory\Storage\LocalStorageFactory::class,
-            Download\LocalDownload::class           => Factory\Download\LocalDownloadFactory::class,
-            Middleware\UploadMediaMiddleware::class => Factory\Middleware\UploadMediaMiddlewareFactory::class,
-            Middleware\GetMediaMiddleware::class    => Factory\Middleware\GetMediaMiddlewareFactory::class,
-            Handler\Api\AddPrivateHandler::class    => Factory\Handler\Api\AddPrivateHandlerFactory::class,
-            Handler\Api\AddPublicHandler::class     => Factory\Handler\Api\AddPublicHandlerFactory::class,
-            Handler\Api\AddRelationHandler::class   => Factory\Handler\Api\AddRelationHandlerFactory::class,
-            Handler\Api\ListHandler::class          => Factory\Handler\Api\ListHandlerFactory::class,
-            Handler\Api\GetHandler::class           => Factory\Handler\Api\GetHandlerFactory::class,
-            Handler\Api\StreamHandler::class        => Factory\Handler\Api\StreamHandlerFactory::class,
+            Repository\MediaRepository::class              => Factory\Repository\MediaRepositoryFactory::class,
+            Service\MediaService::class                    => Factory\Service\MediaServiceFactory::class,
+            Storage\LocalStorage::class                    => Factory\Storage\LocalStorageFactory::class,
+            Download\LocalDownload::class                  => Factory\Download\LocalDownloadFactory::class,
+            Middleware\AuthorizationMediaMiddleware::class => Factory\Middleware\AuthorizationMediaMiddlewareFactory::class,
+            Middleware\UploadMediaMiddleware::class        => Factory\Middleware\UploadMediaMiddlewareFactory::class,
+            Middleware\GetMediaMiddleware::class           => Factory\Middleware\GetMediaMiddlewareFactory::class,
+            Handler\Api\AddPrivateHandler::class           => Factory\Handler\Api\AddPrivateHandlerFactory::class,
+            Handler\Api\AddPublicHandler::class            => Factory\Handler\Api\AddPublicHandlerFactory::class,
+            Handler\Api\AddRelationHandler::class          => Factory\Handler\Api\AddRelationHandlerFactory::class,
+            Handler\Api\ListHandler::class                 => Factory\Handler\Api\ListHandlerFactory::class,
+            Handler\Api\GetHandler::class                  => Factory\Handler\Api\GetHandlerFactory::class,
+            Handler\Api\StreamHandler::class               => Factory\Handler\Api\StreamHandlerFactory::class,
         ],
     ],
-
-    'router'       => [
+    'router'          => [
         'routes' => [
             // Api section
             'api_media' => [
@@ -40,149 +40,369 @@ return [
                     'defaults' => [],
                 ],
                 'child_routes' => [
-                    'add-private'  => [
-                        'type'    => Literal::class,
-                        'options' => [
-                            'route'    => '/add-private',
-                            'defaults' => [
-                                'module'     => 'media',
-                                'section'    => 'api',
-                                'package'    => 'media',
-                                'handler'    => 'add-private',
-                                'controller' => PipeSpec::class,
-                                'middleware' => new PipeSpec(
-                                    SecurityMiddleware::class,
-                                    AuthenticationMiddleware::class,
-                                    CompanyMiddleware::class,
-                                    Middleware\UploadMediaMiddleware::class,
-                                    LoggerRequestMiddleware::class,
-                                    Handler\Api\AddPrivateHandler::class
-                                ),
+                    'company' => [
+                        'type'         => Literal::class,
+                        'options'      => [
+                            'route'    => '/company',
+                            'defaults' => [],
+                        ],
+                        'child_routes' => [
+                            'add-public'   => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/add-public',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'company',
+                                        'handler'    => 'add-public',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            CompanyMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\UploadMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\AddPublicHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'add-private'  => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/add-private',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'company',
+                                        'handler'    => 'add-private',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            CompanyMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\UploadMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\AddPrivateHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'add-relation' => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/add-relation',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'company',
+                                        'handler'    => 'add-relation',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            CompanyMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\AddRelationHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'list'         => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/list',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'company',
+                                        'handler'    => 'list',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            CompanyMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\ListHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'get'          => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/get',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'company',
+                                        'handler'    => 'get',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            CompanyMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\GetHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'stream'       => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/stream',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'company',
+                                        'handler'    => 'stream',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            CompanyMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\StreamHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'update'       => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/update',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'company',
+                                        'handler'    => 'update',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            CompanyMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\UpdateHandler::class
+                                        ),
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    'add-public'   => [
-                        'type'    => Literal::class,
-                        'options' => [
-                            'route'    => '/add-public',
-                            'defaults' => [
-                                'module'     => 'media',
-                                'section'    => 'api',
-                                'package'    => 'media',
-                                'handler'    => 'add-public',
-                                'controller' => PipeSpec::class,
-                                'middleware' => new PipeSpec(
-                                    SecurityMiddleware::class,
-                                    AuthenticationMiddleware::class,
-                                    Middleware\UploadMediaMiddleware::class,
-                                    LoggerRequestMiddleware::class,
-                                    Handler\Api\AddPublicHandler::class
-                                ),
+                    'private' => [
+                        'type'         => Literal::class,
+                        'options'      => [
+                            'route'    => '/private',
+                            'defaults' => [],
+                        ],
+                        'child_routes' => [
+                            'add-public'   => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/add-public',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'private',
+                                        'handler'    => 'add-public',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\UploadMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\AddPublicHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'add-private'  => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/add-private',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'private',
+                                        'handler'    => 'add-private',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\UploadMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\AddPrivateHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'add-relation' => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/add-relation',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'private',
+                                        'handler'    => 'add-relation',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\AddRelationHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'list'         => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/list',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'private',
+                                        'handler'    => 'list',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\ListHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'get'          => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/get',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'private',
+                                        'handler'    => 'get',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\GetHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'stream'       => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/stream',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'private',
+                                        'handler'    => 'stream',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\StreamHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
+                            'update'       => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/update',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'private',
+                                        'handler'    => 'update',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\UpdateHandler::class
+                                        ),
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    'add-relation' => [
-                        'type'    => Literal::class,
-                        'options' => [
-                            'route'    => '/add-relation',
-                            'defaults' => [
-                                'module'     => 'media',
-                                'section'    => 'api',
-                                'package'    => 'media',
-                                'handler'    => 'add-relation',
-                                'controller' => PipeSpec::class,
-                                'middleware' => new PipeSpec(
-                                    SecurityMiddleware::class,
-                                    AuthenticationMiddleware::class,
-                                    CompanyMiddleware::class,
-                                    Middleware\GetMediaMiddleware::class,
-                                    LoggerRequestMiddleware::class,
-                                    Handler\Api\AddRelationHandler::class
-                                ),
-                            ],
+                    'public'  => [
+                        'type'         => Literal::class,
+                        'options'      => [
+                            'route'    => '/public',
+                            'defaults' => [],
                         ],
-                    ],
-                    'list'         => [
-                        'type'    => Literal::class,
-                        'options' => [
-                            'route'    => '/list',
-                            'defaults' => [
-                                'module'     => 'media',
-                                'section'    => 'api',
-                                'package'    => 'media',
-                                'handler'    => 'list',
-                                'controller' => PipeSpec::class,
-                                'middleware' => new PipeSpec(
-                                    SecurityMiddleware::class,
-                                    AuthenticationMiddleware::class,
-                                    CompanyMiddleware::class,
-                                    LoggerRequestMiddleware::class,
-                                    Handler\Api\ListHandler::class
-                                ),
+                        'child_routes' => [
+                            'get'    => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/get',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'public',
+                                        'handler'    => 'get',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\GetHandler::class
+                                        ),
+                                    ],
+                                ],
                             ],
-                        ],
-                    ],
-                    'get'          => [
-                        'type'    => Literal::class,
-                        'options' => [
-                            'route'    => '/get',
-                            'defaults' => [
-                                'module'     => 'media',
-                                'section'    => 'api',
-                                'package'    => 'media',
-                                'handler'    => 'get',
-                                'controller' => PipeSpec::class,
-                                'middleware' => new PipeSpec(
-                                    SecurityMiddleware::class,
-                                    AuthenticationMiddleware::class,
-                                    CompanyMiddleware::class,
-                                    Middleware\GetMediaMiddleware::class,
-                                    LoggerRequestMiddleware::class,
-                                    Handler\Api\GetHandler::class
-                                ),
-                            ],
-                        ],
-                    ],
-                    'stream'       => [
-                        'type'    => Literal::class,
-                        'options' => [
-                            'route'    => '/stream',
-                            'defaults' => [
-                                'module'     => 'media',
-                                'section'    => 'api',
-                                'package'    => 'media',
-                                'handler'    => 'stream',
-                                'controller' => PipeSpec::class,
-                                'middleware' => new PipeSpec(
-                                    SecurityMiddleware::class,
-                                    AuthenticationMiddleware::class,
-                                    CompanyMiddleware::class,
-                                    Middleware\GetMediaMiddleware::class,
-                                    LoggerRequestMiddleware::class,
-                                    Handler\Api\StreamHandler::class
-                                ),
-                            ],
-                        ],
-                    ],
-
-                    'update'          => [
-                        'type'    => Literal::class,
-                        'options' => [
-                            'route'    => '/update',
-                            'defaults' => [
-                                'module'     => 'media',
-                                'section'    => 'api',
-                                'package'    => 'media',
-                                'handler'    => 'update',
-                                'controller' => PipeSpec::class,
-                                'middleware' => new PipeSpec(
-                                    SecurityMiddleware::class,
-                                    AuthenticationMiddleware::class,
-                                    CompanyMiddleware::class,
-                                    Middleware\GetMediaMiddleware::class,
-                                    LoggerRequestMiddleware::class,
-                                    Handler\Api\UpdateHandler::class
-                                ),
+                            'stream' => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/stream',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'public',
+                                        'handler'    => 'stream',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\GetMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\StreamHandler::class
+                                        ),
+                                    ],
+                                ],
                             ],
                         ],
                     ],
@@ -190,7 +410,7 @@ return [
             ],
         ],
     ],
-    'view_manager' => [
+    'view_manager'    => [
         'strategies' => [
             'ViewJsonStrategy',
         ],

@@ -47,7 +47,7 @@ class GetMediaMiddleware implements MiddlewareInterface
     {
         $account = $request->getAttribute('account');
         $roles = $request->getAttribute('roles');
-        $authorization = $request->getAttribute('company_authorization');
+        $authorization = $request->getAttribute('media_authorization');
         $requestBody = $request->getParsedBody();
 
         // Check ID is set
@@ -67,7 +67,7 @@ class GetMediaMiddleware implements MiddlewareInterface
         $media = $this->mediaService->getMedia($requestBody);
 
         // Check media
-        if (empty($media) || (int)$media['status'] !== 1) {
+        if (empty($media) || (int)$media['status'] !== 1 || $media['access'] != $authorization['access']) {
             $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
             $request = $request->withAttribute(
                 'error',

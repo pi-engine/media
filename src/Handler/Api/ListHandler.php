@@ -34,7 +34,7 @@ class ListHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $authorization = $request->getAttribute('company_authorization');
+        $authorization = $request->getAttribute('media_authorization');
         $requestBody   = $request->getParsedBody();
 
         $result = $this->mediaService->getMediaList($authorization, $requestBody);

@@ -34,12 +34,9 @@ class AddPrivateHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $authorization = $request->getAttribute('company_authorization');
+        $authorization = $request->getAttribute('media_authorization');
         $requestBody   = $request->getParsedBody();
         $uploadFiles   = $request->getUploadedFiles();
-
-        // Set access type
-        $requestBody['access'] = $requestBody['access'] ?? 'company';
 
         // Add media
         $media = $this->mediaService->addMedia(array_shift($uploadFiles), $authorization, $requestBody);

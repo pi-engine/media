@@ -40,6 +40,6 @@ class StreamHandler implements RequestHandlerInterface
     {
         $media  = $request->getAttribute('media_item');
         $result = $this->mediaService->streamMedia($media);
-        return new JsonResponse($result, $result['status'] ?? StatusCodeInterface::STATUS_OK);
+        return new JsonResponse($result);
     }
 }

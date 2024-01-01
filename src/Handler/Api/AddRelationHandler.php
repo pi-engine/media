@@ -34,12 +34,9 @@ class AddRelationHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $authorization = $request->getAttribute('company_authorization');
+        $authorization = $request->getAttribute('media_authorization');
         $requestBody   = $request->getParsedBody();
         $media         = $request->getAttribute('media_item');
-
-        // Set access type
-        $requestBody['access'] = $requestBody['access'] ?? 'company';
 
         // Add relation
         $media = $this->mediaService->addRelation($media, $authorization, $requestBody);

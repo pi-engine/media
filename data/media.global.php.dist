@@ -2,8 +2,9 @@
 
 return [
     'media'        => [
-        'download_uri'      => 'http://...',
-        'stream_uri'        => 'http://...',
+        'authorization'     => [],
+        'download_uri'      => 'https://...',
+        'stream_uri'        => 'https://...',
         'private_path'      => 'PRIVATE_PATH',
         'public_path'       => 'PUBLIC_PATH',
         'allowed_extension' => [

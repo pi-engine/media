@@ -202,6 +202,7 @@ class LocalStorage implements StorageInterface
      */
     public function transformSize(int|string $value): float|bool|int|string
     {
+        $result = false;
         $sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         if (is_numeric($value)) {
             $value = (int)$value;
@@ -220,8 +221,6 @@ class LocalStorage implements StorageInterface
                 if (false !== $idx) {
                     $result = $value * pow(1024, $idx);
                 }
-            } else {
-                $result = false;
             }
         }
 
@@ -318,16 +317,16 @@ class LocalStorage implements StorageInterface
      *
      * @param string|array|Traversable $files
      *      A filename, an array of files, or a Traversable instance to create
-     * @param int                      $time
+     * @param int|null                 $time
      *      The touch time as a unix timestamp
-     * @param int                      $atime
+     * @param int|null                 $atime
      *      The access time as a unix timestamp
      *
      * @return $this
      *
      * @throws Exception When touch fails
      */
-    public function touch($files, $time = null, $atime = null)
+    public function touch($files, int $time = null, int $atime = null): static
     {
         if (null === $time) {
             $time = time();
@@ -349,7 +348,7 @@ class LocalStorage implements StorageInterface
      *
      * @return $this
      */
-    public function flush($dirs)
+    public function flush($dirs): static
     {
         $dirs = iterator_to_array($this->toIterator($dirs));
         foreach ($dirs as $dir) {
@@ -372,7 +371,7 @@ class LocalStorage implements StorageInterface
      *
      * @throws Exception When removal fails
      */
-    public function remove($files)
+    public function remove($files): static
     {
         $files = iterator_to_array($this->toIterator($files));
         $files = array_reverse($files);
@@ -431,7 +430,7 @@ class LocalStorage implements StorageInterface
      *
      * @throws Exception When the change fail
      */
-    public function chmod($files, $mode, $umask = 0000, $recursive = false)
+    public function chmod($files, int $mode, int $umask = 0000, bool $recursive = false): static
     {
         foreach ($this->toIterator($files) as $file) {
             if ($recursive && is_dir($file) && !is_link($file)) {
@@ -464,7 +463,7 @@ class LocalStorage implements StorageInterface
      *
      * @throws Exception When the change fail
      */
-    public function chown($files, $user, $recursive = false)
+    public function chown($files, string $user, bool $recursive = false): static
     {
         foreach ($this->toIterator($files) as $file) {
             if ($recursive && is_dir($file) && !is_link($file)) {
@@ -502,7 +501,7 @@ class LocalStorage implements StorageInterface
      *
      * @throws Exception When the change fail
      */
-    public function chgrp($files, $group, $recursive = false)
+    public function chgrp($files, string $group, bool $recursive = false): static
     {
         foreach ($this->toIterator($files) as $file) {
             if ($recursive && is_dir($file) && !is_link($file)) {
@@ -537,7 +536,7 @@ class LocalStorage implements StorageInterface
      * @throws Exception When target file already exists
      * @throws Exception When origin cannot be renamed
      */
-    public function rename($origin, $target)
+    public function rename(string $origin, string $target): static
     {
         // we check that target does not exist
         if (is_readable($target)) {
@@ -572,11 +571,11 @@ class LocalStorage implements StorageInterface
      * @throws Exception When symlink fails
      */
     public function symlink(
-        $originDir,
-        $targetDir,
-        $copyOnWindows = true,
-        $override = false
-    ) {
+        string $originDir,
+        string $targetDir,
+        bool $copyOnWindows = true,
+        bool $override = false
+    ): static {
         if (!function_exists('symlink')
             || (defined('PHP_WINDOWS_VERSION_MAJOR') && $copyOnWindows)
         ) {
@@ -644,7 +643,7 @@ class LocalStorage implements StorageInterface
      *
      * @return string Path of target relative to starting path
      */
-    public function makePathRelative($endPath, $startPath)
+    public function makePathRelative(string $endPath, string $startPath): string
     {
         // Normalize separators on windows
         if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
@@ -703,11 +702,11 @@ class LocalStorage implements StorageInterface
      * @throws Exception When file type is unknown
      */
     public function mirror(
-        $originDir,
-        $targetDir,
+        string $originDir,
+        string $targetDir,
         Traversable $iterator = null,
-        $options = []
-    ) {
+        array $options = []
+    ): static {
         $copyOnWindows = true;
         if (isset($options['copy_on_windows'])
             && defined('PHP_WINDOWS_VERSION_MAJOR')
@@ -763,7 +762,7 @@ class LocalStorage implements StorageInterface
      *
      * @return Bool
      */
-    public function isAbsolutePath($file)
+    public function isAbsolutePath($file): bool
     {
         //$result = preg_match('|^([a-zA-Z]:)?/|', $path);
         $result = false;
@@ -809,7 +808,7 @@ class LocalStorage implements StorageInterface
      *
      * @return array
      */
-    public function getList($path, $filter = null, $recursive = false)
+    public function getList($path, $filter = null, bool $recursive = false): array
     {
         $result   = [];
         $iterator = null;

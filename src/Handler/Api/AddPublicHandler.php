@@ -38,9 +38,6 @@ class AddPublicHandler implements RequestHandlerInterface
         $requestBody   = $request->getParsedBody();
         $uploadFiles   = $request->getUploadedFiles();
 
-        // Set access type
-        $requestBody['access'] = 'public';
-
         // Add media
         $media = $this->mediaService->addMedia(array_shift($uploadFiles), $authorization, $requestBody);
 

@@ -34,13 +34,10 @@ class UpdateHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $authorization = $request->getAttribute('company_authorization');
+        $authorization = $request->getAttribute('media_authorization');
         $media         = $request->getAttribute('media_item');
         $requestBody   = $request->getParsedBody();
         $uploadFiles   = $request->getUploadedFiles();
-
-        // Set access type
-        $requestBody['access'] = $requestBody['access'] ?? 'company';
 
         // Update media
         if (!empty($uploadFiles)) {
