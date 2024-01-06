@@ -118,7 +118,7 @@ class MediaService implements ServiceInterface
                     'storage'  => $storeInfo,
                     'download' => $downloadInfo,
                     'category' => $params['category'] ?? [],
-                    'review'   => $params['review'] ? [$params['review']] : [],
+                    'review'   => (isset($params['review']) && !empty($params['review'])) ? [$params['review']] : [],
                     'history'  => [
                         [
                             'action'  => 'add',
