@@ -184,7 +184,7 @@ class MediaService implements ServiceInterface
 
     public function getMediaList($authorization, $params): array
     {
-        if (!in_array($authorization['access'], ['user', 'company'])) {
+        if (!in_array($authorization['access'], ['user', 'company', 'admin'])) {
             return [
                 'result' => false,
                 'data'   => [],
@@ -210,12 +210,18 @@ class MediaService implements ServiceInterface
         if ($authorization['access'] == 'company') {
             $listParams['access']     = 'company';
             $listParams['company_id'] = $authorization['company_id'];
-            if (isset($params['user_id']) && !empty($params['user_id'])) {
+            if (!$authorization['is_admin']) {
+                $listParams['user_id'] = $authorization['user_id'];
+            } elseif (isset($params['user_id']) && !empty($params['user_id'])) {
                 $listParams['user_id'] = $params['user_id'];
             }
         } elseif ($authorization['access'] == 'user') {
             $listParams['access']  = 'user';
             $listParams['user_id'] = $authorization['user_id'];
+        } elseif ($authorization['access'] == 'admin') {
+            if (isset($params['user_id']) && !empty($params['user_id'])) {
+                $listParams['user_id'] = $params['user_id'];
+            }
         }
 
         if (isset($params['status']) && !empty($params['status'])) {

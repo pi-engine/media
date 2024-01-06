@@ -97,7 +97,7 @@ class GetMediaMiddleware implements MiddlewareInterface
 
                 // Check just admin allow doenload other users media
                 if ((int)$account['id'] !== (int)$media['user_id']) {
-                    if (!in_array('companyadmin', $roles)) {
+                    if (!$authorization['is_admin']) {
                         $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
                         $request = $request->withAttribute(
                             'error',

@@ -37,6 +37,7 @@ class AuthorizationMediaMiddleware implements MiddlewareInterface
             'access'     => 'public',
             'user_id'    => 0,
             'company_id' => 0,
+            'is_admin'   => 0,
         ];
 
     public function __construct(
@@ -88,8 +89,9 @@ class AuthorizationMediaMiddleware implements MiddlewareInterface
                     'company'    => $authorization['company'],
                     'user'       => $authorization['user'],
                     'access'     => 'company',
-                    'user_id'    => $authorization['company_id'],
+                    'user_id'    => $authorization['user_id'],
                     'company_id' => $authorization['company_id'],
+                    'is_admin'   => $authorization['is_admin'],
                 ];
                 break;
 
@@ -103,6 +105,20 @@ class AuthorizationMediaMiddleware implements MiddlewareInterface
                     'access'     => 'user',
                     'user_id'    => $account['id'],
                     'company_id' => 0,
+                    'is_admin'   => 0,
+                ];
+
+            case 'admin':
+                // Get account and set hash
+                $account             = $request->getAttribute('account');
+                $account['hash']     = hash('sha256', sprintf('%s-%s', $account['id'], $account['time_created']));
+                $this->authorization = [
+                    'company'    => [],
+                    'user'       => $account,
+                    'access'     => 'admin',
+                    'user_id'    => $account['id'],
+                    'company_id' => 0,
+                    'is_admin'   => 1,
                 ];
                 break;
         }
