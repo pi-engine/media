@@ -107,6 +107,7 @@ class AuthorizationMediaMiddleware implements MiddlewareInterface
                     'company_id' => 0,
                     'is_admin'   => 0,
                 ];
+                break;
 
             case 'admin':
                 // Get account and set hash

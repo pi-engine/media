@@ -2,7 +2,9 @@
 
 return [
     'media'        => [
-        'authorization'     => [],
+        'authorization'     => [
+            'access' => ['public', 'company', 'user'],
+        ],
         'download_uri'      => 'https://...',
         'stream_uri'        => 'https://...',
         'private_path'      => 'PRIVATE_PATH',

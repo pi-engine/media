@@ -160,7 +160,7 @@ class LocalDownload implements DownloadInterface
     /**
      * Send content to client
      *
-     * @param string $source
+     * @param $source
      * @param string $filename
      * @param string $contentType
      * @param int    $contentLength
@@ -168,19 +168,20 @@ class LocalDownload implements DownloadInterface
      * @return bool
      */
     protected function download(
-        string $source,
+        $source,
         string $filename,
         string $contentType,
         int $contentLength = 0
     ): bool {
         //$isIe = Pi::service('browser')->isIe();
-        $isIe = false;
+        /* $isIe = false;
         if ($isIe) {
             $contentType = $contentType ?: 'application/octet-stream';
             $filename    = urlencode($filename);
         } else {
             $contentType = $contentType ?: 'application/force-download';
-        }
+        } */
+        $contentType = $contentType ?: 'application/force-download';
 
         header('Content-Description: File Transfer');
         header('Content-Type: ' . $contentType);
