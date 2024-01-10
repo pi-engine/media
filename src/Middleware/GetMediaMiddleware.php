@@ -80,50 +80,49 @@ class GetMediaMiddleware implements MiddlewareInterface
         }
 
         // Check media
+        $hasAccess = true;
         switch ($media['access']) {
             case 'company':
                 // Check company access
                 if ((int)$media['company_id'] !== $authorization['company_id']) {
-                    $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
-                    $request = $request->withAttribute(
-                        'error',
-                        [
-                            'message' => 'You dont have a access to this media !',
-                            'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
-                        ]
-                    );
-                    return $this->errorHandler->handle($request);
+                    $hasAccess = false;
                 }
 
                 // Check just admin allow doenload other users media
                 if ((int)$account['id'] !== (int)$media['user_id']) {
                     if (!$authorization['is_admin']) {
-                        $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
-                        $request = $request->withAttribute(
-                            'error',
-                            [
-                                'message' => 'You dont have a access to this media !',
-                                'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
-                            ]
-                        );
-                        return $this->errorHandler->handle($request);
+                        $hasAccess = false;
                     }
                 }
                 break;
 
             case 'user':
                 if ((int)$account['id'] !== (int)$media['user_id']) {
-                    $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
-                    $request = $request->withAttribute(
-                        'error',
-                        [
-                            'message' => 'You dont have a access to this media !',
-                            'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
-                        ]
-                    );
-                    return $this->errorHandler->handle($request);
+                    $hasAccess = false;
                 }
                 break;
+
+            case 'group':
+                if ((int)$account['id'] !== (int)$media['user_id']) {
+                    if (!isset($media['information']['access']) || empty($media['information']['access'])) {
+                        $hasAccess = false;
+                    } elseif (!in_array((int)$account['id'], $media['information']['access'])) {
+                        $hasAccess = false;
+                    }
+                }
+                break;
+        }
+
+        if (!$hasAccess) {
+            $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
+            $request = $request->withAttribute(
+                'error',
+                [
+                    'message' => 'You dont have a access to this media !',
+                    'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
+                ]
+            );
+            return $this->errorHandler->handle($request);
         }
 
         $request = $request->withAttribute('media_item', $media);

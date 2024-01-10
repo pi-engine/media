@@ -3,7 +3,7 @@
 return [
     'media'        => [
         'authorization'     => [
-            'access' => ['public', 'company', 'user'],
+            'access' => ['public', 'company', 'user', 'group', 'admin'],
         ],
         'download_uri'      => 'https://...',
         'stream_uri'        => 'https://...',
