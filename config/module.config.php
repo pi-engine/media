@@ -3,6 +3,7 @@
 namespace Media;
 
 use Company\Middleware\CompanyMiddleware;
+use Company\Middleware\PackageMiddleware;
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
 use Logger\Middleware\LoggerRequestMiddleware;
@@ -70,6 +71,7 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
+                                            PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\UploadMediaMiddleware::class,
                                             LoggerRequestMiddleware::class,
@@ -92,6 +94,7 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
+                                            PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\UploadMediaMiddleware::class,
                                             LoggerRequestMiddleware::class,
@@ -114,6 +117,7 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
+                                            PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestMiddleware::class,
@@ -136,6 +140,7 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
+                                            PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             LoggerRequestMiddleware::class,
                                             Handler\Api\ListHandler::class
@@ -157,6 +162,7 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
+                                            PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestMiddleware::class,
@@ -179,6 +185,7 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
+                                            PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestMiddleware::class,
@@ -201,6 +208,7 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
+                                            PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestMiddleware::class,
