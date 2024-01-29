@@ -160,7 +160,7 @@ class LocalDownload implements DownloadInterface
     /**
      * Send content to client
      *
-     * @param $source
+     * @param        $source
      * @param string $filename
      * @param string $contentType
      * @param int    $contentLength

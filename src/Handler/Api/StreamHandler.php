@@ -3,7 +3,6 @@
 namespace Media\Handler\Api;
 
 use Exception;
-use Fig\Http\Message\StatusCodeInterface;
 use Laminas\Diactoros\Response\JsonResponse;
 use Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;

@@ -203,7 +203,7 @@ class LocalStorage implements StorageInterface
     public function transformSize(int|string $value): float|bool|int|string
     {
         $result = false;
-        $sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        $sizes  = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         if (is_numeric($value)) {
             $value = (int)$value;
             for ($i = 0; $value >= 1024 && $i < 9; $i++) {
