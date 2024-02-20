@@ -194,7 +194,6 @@ class MediaService implements ServiceInterface
             ];
         }
 
-
         $view   = (isset($params['view']) && in_array($params['view'], ['limited', 'compressed'])) ? $params['view'] : 'limited';
         $limit  = (int)($params['limit'] ?? 25);
         $page   = (int)($params['page'] ?? 1);
@@ -235,10 +234,9 @@ class MediaService implements ServiceInterface
         }
 
         // Check request has relation information
-        if (
-            !empty($params['relation_module'])
-            && !empty($params['relation_section'])
-            && !empty($params['relation_item'])
+        if (isset($params['relation_module']) && !empty($params['relation_module']) &&
+            isset($params['relation_section']) && !empty($params['relation_section']) &&
+            isset($params['relation_item']) && !empty($params['relation_item'])
         ) {
             $listParams['relation_module']  = $params['relation_module'];
             $listParams['relation_section'] = $params['relation_section'];
@@ -261,7 +259,7 @@ class MediaService implements ServiceInterface
                 $list[$row->getId()] = $this->canonizeStorage($row, ['view' => $view]);
             }
 
-            if ($view != 'compressed') {
+            if (!empty($list) && $view != 'compressed') {
                 $rowSet = $this->mediaRepository->getMediaRelationList(['storage_id' => array_keys($list)]);
                 foreach ($rowSet as $row) {
                     $list[$row->getStorageId()]['relation'][] = $this->canonizeRelation($row);
