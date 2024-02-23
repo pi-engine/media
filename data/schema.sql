@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `media_relation`
     `storage_id`       INT(10) UNSIGNED                   NOT NULL DEFAULT '0',
     `user_id`          INT(10) UNSIGNED                   NOT NULL DEFAULT '0',
     `company_id`       INT(10) UNSIGNED                   NOT NULL DEFAULT '0',
-    `access`           ENUM ('public', 'company', 'user') NOT NULL DEFAULT 'public',
+    `access`           VARCHAR(32)                        NOT NULL DEFAULT 'public',
     `relation_module`  VARCHAR(32)                        NOT NULL DEFAULT '',
     `relation_section` VARCHAR(32)                        NOT NULL DEFAULT '',
     `relation_item`    INT(10) UNSIGNED                   NOT NULL DEFAULT '0',

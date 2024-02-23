@@ -96,10 +96,10 @@ class GetMediaMiddleware implements MiddlewareInterface
                 }
                 break;
 
-            case 'user':
-                if ((int)$account['id'] !== (int)$media['user_id']) {
+            case 'private':
+                /* if ((int)$account['id'] !== (int)$media['user_id']) {
                     $hasAccess = false;
-                }
+                } */
                 break;
 
             case 'group':

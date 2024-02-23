@@ -95,14 +95,14 @@ class AuthorizationMediaMiddleware implements MiddlewareInterface
                 ];
                 break;
 
-            case 'user':
+            case 'private':
                 // Get account and set hash
                 $account             = $request->getAttribute('account');
                 $account['hash']     = hash('sha256', sprintf('%s-%s', $account['id'], $account['time_created']));
                 $this->authorization = [
                     'company'    => [],
                     'user'       => $account,
-                    'access'     => 'user',
+                    'access'     => 'private',
                     'user_id'    => $account['id'],
                     'company_id' => 0,
                     'is_admin'   => 0,

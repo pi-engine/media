@@ -54,7 +54,7 @@ class MediaService implements ServiceInterface
                 $path = sprintf('%s/%s/%s', $authorization['company']['hash'], date('Y'), date('m'));
                 break;
 
-            case 'user':
+            case 'private':
                 $path = sprintf('%s/%s/%s', $authorization['user']['hash'], date('Y'), date('m'));
                 break;
 
@@ -184,7 +184,7 @@ class MediaService implements ServiceInterface
 
     public function getMediaList($authorization, $params): array
     {
-        if (!in_array($authorization['access'], ['user', 'company', 'admin'])) {
+        if (!in_array($authorization['access'], ['private', 'company', 'group', 'admin'])) {
             return [
                 'result' => false,
                 'data'   => [],
@@ -214,8 +214,8 @@ class MediaService implements ServiceInterface
             } elseif (isset($params['user_id']) && !empty($params['user_id'])) {
                 $listParams['user_id'] = $params['user_id'];
             }
-        } elseif ($authorization['access'] == 'user') {
-            $listParams['access']  = 'user';
+        } elseif ($authorization['access'] == 'private') {
+            $listParams['access']  = 'private';
             $listParams['user_id'] = $authorization['user_id'];
         } elseif ($authorization['access'] == 'admin') {
             if (isset($params['user_id']) && !empty($params['user_id'])) {
@@ -521,7 +521,7 @@ class MediaService implements ServiceInterface
         $storage['size_view'] = $this->localStorage->transformSize($storage['size']);
 
         // Set private uri
-        if (in_array($storage['access'], ['user', 'company'])) {
+        if (in_array($storage['access'], ['private', 'company', 'group', 'admin'])) {
             $storage['information']['download']['private_uri'] = $this->localDownload->makePrivateUrl($storage);
         }
 

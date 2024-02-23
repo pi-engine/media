@@ -226,27 +226,6 @@ return [
                             'defaults' => [],
                         ],
                         'child_routes' => [
-                            'add-public'   => [
-                                'type'    => Literal::class,
-                                'options' => [
-                                    'route'    => '/add-public',
-                                    'defaults' => [
-                                        'module'     => 'media',
-                                        'section'    => 'api',
-                                        'package'    => 'private',
-                                        'handler'    => 'add-public',
-                                        'controller' => PipeSpec::class,
-                                        'middleware' => new PipeSpec(
-                                            SecurityMiddleware::class,
-                                            AuthenticationMiddleware::class,
-                                            Middleware\AuthorizationMediaMiddleware::class,
-                                            Middleware\UploadMediaMiddleware::class,
-                                            LoggerRequestMiddleware::class,
-                                            Handler\Api\AddPublicHandler::class
-                                        ),
-                                    ],
-                                ],
-                            ],
                             'add-private'  => [
                                 'type'    => Literal::class,
                                 'options' => [
