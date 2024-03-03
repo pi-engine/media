@@ -33,17 +33,17 @@ class MediaService implements ServiceInterface
     protected array $defaultTypes
         = [
             'image'        => 0,
-            'video'        => 0,
-            'audio'        => 0,
-            'archive'      => 0,
+            //'video'        => 0,
+            //'audio'        => 0,
+            //'archive'      => 0,
             'document'     => 0,
             'spreadsheet'  => 0,
             'presentation' => 0,
-            'script'       => 0,
+            //'script'       => 0,
             'pdf'          => 0,
-            'executable'   => 0,
-            'font'         => 0,
-            'config'       => 0,
+            //'executable'   => 0,
+            //'font'         => 0,
+            //'config'       => 0,
         ];
 
     public function __construct(
