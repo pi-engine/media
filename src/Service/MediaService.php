@@ -30,6 +30,22 @@ class MediaService implements ServiceInterface
 
     protected string $storage = 'local';
 
+    protected array $defaultTypes
+        = [
+            'image'        => 0,
+            'video'        => 0,
+            'audio'        => 0,
+            'archive'      => 0,
+            'document'     => 0,
+            'spreadsheet'  => 0,
+            'presentation' => 0,
+            'script'       => 0,
+            'pdf'          => 0,
+            'executable'   => 0,
+            'font'         => 0,
+            'config'       => 0,
+        ];
+
     public function __construct(
         MediaRepositoryInterface $mediaRepository,
         AccountService $accountService,
@@ -234,9 +250,11 @@ class MediaService implements ServiceInterface
         }
 
         // Check request has relation information
-        if (isset($params['relation_module']) && !empty($params['relation_module']) &&
-            isset($params['relation_section']) && !empty($params['relation_section']) &&
-            isset($params['relation_item']) && !empty($params['relation_item'])
+        if (isset($params['relation_module']) && !empty($params['relation_module'])
+            && isset($params['relation_section'])
+            && !empty($params['relation_section'])
+            && isset($params['relation_item'])
+            && !empty($params['relation_item'])
         ) {
             $listParams['relation_module']  = $params['relation_module'];
             $listParams['relation_section'] = $params['relation_section'];
@@ -449,6 +467,20 @@ class MediaService implements ServiceInterface
     {
         // Start stream
         return $this->localDownload->stream($filePath, $options);
+    }
+
+    public function analytic($authorization): array
+    {
+        $params = [
+            'company_id' => $authorization['company_id'],
+        ];
+
+        $result = $this->mediaRepository->analytic($params);
+        foreach ($result as $row) {
+            $this->defaultTypes[$row['type']] = $row['count'];
+        }
+
+        return $this->defaultTypes;
     }
 
     public function canonizeStorage($storage, $options = []): array

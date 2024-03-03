@@ -2,6 +2,7 @@
 
 namespace Media\Repository;
 
+use Laminas\Db\Adapter\Driver\ResultInterface;
 use Laminas\Db\ResultSet\HydratingResultSet;
 use Media\Model\Relation;
 use Media\Model\Storage;
@@ -29,4 +30,6 @@ interface MediaRepositoryInterface
     public function addMediaRelation(array $params = []): array|Relation;
 
     public function getMediaRelationList($params = []): HydratingResultSet;
+
+    public function analytic($params): array|ResultInterface;
 }

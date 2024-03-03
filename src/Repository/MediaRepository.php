@@ -383,4 +383,28 @@ class MediaRepository implements MediaRepositoryInterface
 
         return $resultSet;
     }
+
+    public function analytic($params): array|ResultInterface
+    {
+        $columns = [
+            'type',
+            'count' => new Expression('count(*)'),
+        ];
+
+        $where = [
+            'company_id' => $params['company_id'],
+            'status'     => 1,
+        ];
+
+        $sql       = new Sql($this->db);
+        $select    = $sql->select($this->tableStorage)->columns($columns)->where($where)->group('type');
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $result    = $statement->execute();
+
+        if (!$result instanceof ResultInterface || !$result->isQueryResult()) {
+            return [];
+        }
+
+        return $result;
+    }
 }
