@@ -60,9 +60,10 @@ class AuthorizationMediaMiddleware implements MiddlewareInterface
         $routeMatch  = $request->getAttribute('Laminas\Router\RouteMatch');
         $routeParams = $routeMatch->getParams();
         $requestBody = $request->getParsedBody();
+        $package = $routeParams['media_access'] ?? $routeParams['package'];
 
         // Check package and section
-        if (!in_array($routeParams['package'], $this->config['authorization']['access'])) {
+        if (!in_array($package, $this->config['authorization']['access'])) {
             $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
             $request = $request->withAttribute(
                 'error',
@@ -75,10 +76,10 @@ class AuthorizationMediaMiddleware implements MiddlewareInterface
         }
 
         // Set access type
-        $requestBody['access'] = $routeParams['package'];
+        $requestBody['access'] = $package;
 
         // Set authorization
-        switch ($routeParams['package']) {
+        switch ($package) {
             case 'public':
                 $this->authorization['access'] = 'public';
                 break;
