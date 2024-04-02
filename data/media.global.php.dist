@@ -9,6 +9,8 @@ return [
         'stream_uri'        => 'https://...',
         'private_path'      => 'PRIVATE_PATH',
         'public_path'       => 'PUBLIC_PATH',
+        'can_delete'        => 0,
+        'check_duplicate'   => 0,
         'allowed_extension' => [
             'jpg',
             'jpeg',

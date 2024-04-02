@@ -377,14 +377,14 @@ class LocalStorage implements StorageInterface
     /**
      * Removes files or directories.
      *
-     * @param string|array|Traversable $files
+     * @param string|iterable $files
      *      A filename, an array of files, or a Traversable instance to remove
      *
      * @return $this
      *
      * @throws Exception When removal fails
      */
-    public function remove($files): static
+    public function remove(string|iterable $files): static
     {
         $files = iterator_to_array($this->toIterator($files));
         $files = array_reverse($files);

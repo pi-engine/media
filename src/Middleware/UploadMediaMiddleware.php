@@ -3,11 +3,14 @@
 namespace Media\Middleware;
 
 use Fig\Http\Message\StatusCodeInterface;
+use Laminas\InputFilter\Input;
+use Laminas\InputFilter\InputFilter;
 use Laminas\Validator\File\Extension;
 use Laminas\Validator\File\MimeType;
 use Laminas\Validator\File\Size;
 use Laminas\Validator\File\UploadFile;
 use Media\Service\MediaService;
+use Media\Validator\SlugValidator;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -15,6 +18,7 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use User\Handler\ErrorHandler;
+use User\Service\UtilityService;
 
 class UploadMediaMiddleware implements MiddlewareInterface
 {
@@ -37,6 +41,9 @@ class UploadMediaMiddleware implements MiddlewareInterface
     /** @var MediaService */
     protected MediaService $mediaService;
 
+    /** @var UtilityService */
+    protected UtilityService $utilityService;
+
     /* @var array */
     protected array $config;
 
@@ -45,22 +52,25 @@ class UploadMediaMiddleware implements MiddlewareInterface
         StreamFactoryInterface $streamFactory,
         ErrorHandler $errorHandler,
         MediaService $mediaService,
+        UtilityService $utilityService,
         $config
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;
         $this->errorHandler    = $errorHandler;
         $this->mediaService    = $mediaService;
+        $this->utilityService  = $utilityService;
         $this->config          = $config;
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $uploadFiles = $request->getUploadedFiles();
-        $parsedBody  = $request->getParsedBody();
+        $requestBody = $request->getParsedBody();
+        $authorization = $request->getAttribute('media_authorization');
 
         // Check valid
-        $this->attacheIsValid($uploadFiles);
+        $this->attacheIsValid($uploadFiles, $authorization, $requestBody);
 
         // Check if validation result is not true
         if (!$this->validationResult['status']) {
@@ -92,7 +102,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
         ];
     }
 
-    protected function attacheIsValid($uploadFiles)
+    protected function attacheIsValid($uploadFiles, $authorization, $requestBody)
     {
         $validatorUpload    = new UploadFile();
         $validatorExtension = new Extension($this->config['allowed_extension']);
@@ -112,6 +122,35 @@ class UploadMediaMiddleware implements MiddlewareInterface
             } */
             if (!$validatorSize->isValid($uploadFile)) {
                 return $this->setErrorHandler($validatorUpload);
+            }
+
+            // Check duplicate
+            if (isset($this->config['check_duplicate']) && (int)$this->config['check_duplicate'] === 1) {
+                // Set slug params
+                $slug = sprintf(
+                    '%s-%s-%s-%s',
+                    $requestBody['access'],
+                    $authorization['user_id'],
+                    $authorization['company_id'],
+                    $uploadFile->getClientFilename()
+                );
+
+                // Set validator params and create slug
+                $params = [
+                    'slug' => $this->utilityService->slug($slug)
+                ];
+
+                // Call validator
+                $slug = new Input('slug');
+                $slug->getValidatorChain()->attach(new SlugValidator($this->mediaService, []));
+
+                // Set input filter
+                $inputFilter = new InputFilter();
+                $inputFilter->add($slug);
+                $inputFilter->setData($params);
+                if (!$inputFilter->isValid()) {
+                    return $this->setErrorHandler($inputFilter);
+                }
             }
         }
     }

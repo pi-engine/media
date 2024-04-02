@@ -155,6 +155,19 @@ class MediaService implements ServiceInterface
             ),
         ];
 
+        // Set slug for a check duplicate
+        if (isset($this->config['check_duplicate']) && (int)$this->config['check_duplicate'] === 1) {
+            $slug = sprintf(
+                '%s-%s-%s-%s',
+                $params['access'],
+                $authorization['user_id'],
+                $authorization['company_id'],
+                $storeInfo['original_name']
+            );
+
+            $addStorage['slug'] = $this->utilityService->slug($slug);
+        }
+
         // Save storage
         $storage = $this->mediaRepository->addMedia($addStorage);
         $storage = $this->canonizeStorage($storage, ['view' => $params['view'] ?? 'limited']);
@@ -445,6 +458,18 @@ class MediaService implements ServiceInterface
         return $this->getMedia($media);
     }
 
+    public function deleteMedia($media, $authorization): void
+    {
+        // Delete the file
+        $this->localStorage->remove($media['information']['storage']['file_path']);
+
+        // Delete relation
+        $this->mediaRepository->deleteMedia((int)$media['id']);
+
+        // Delete storage
+        $this->mediaRepository->deleteMedia((int)$media['id']);
+    }
+
     public function streamMedia($media): string
     {
         // Update download count
@@ -481,6 +506,25 @@ class MediaService implements ServiceInterface
         }
 
         return $this->defaultTypes;
+    }
+
+    public function isDuplicated($slug): bool
+    {
+        return (bool)$this->mediaRepository->duplicatedMedia(
+            [
+                'slug' => $slug,
+            ]
+        );
+    }
+
+    public function calculateStorage($params): array
+    {
+        $size = $this->mediaRepository->calculateStorage($params);
+
+        return [
+            'storage_size'      => $size,
+            'storage_size_view' => $this->localStorage->transformSize($size),
+        ];
     }
 
     public function canonizeStorage($storage, $options = []): array

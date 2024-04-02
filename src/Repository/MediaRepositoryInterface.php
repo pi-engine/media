@@ -23,7 +23,11 @@ interface MediaRepositoryInterface
 
     public function updateMedia(int $mediaId, array $params = []): void;
 
+    public function deleteMedia(int $mediaId): void;
+
     public function updateDownloadCount(int $mediaId): void;
+
+    public function duplicatedMedia(array $params = []): int;
 
     public function getMediaRelation(array $params = []): array|Relation;
 
@@ -31,5 +35,9 @@ interface MediaRepositoryInterface
 
     public function getMediaRelationList($params = []): HydratingResultSet;
 
+    public function deleteMediaRelation(int $mediaId): void;
+
     public function analytic($params): array|ResultInterface;
+
+    public function calculateStorage(array $params = []): int;
 }

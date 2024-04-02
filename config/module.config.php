@@ -3,7 +3,6 @@
 namespace Media;
 
 use Company\Middleware\CompanyMiddleware;
-use Company\Middleware\PackageMiddleware;
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
 use Logger\Middleware\LoggerRequestMiddleware;
@@ -24,6 +23,8 @@ return [
             Middleware\AuthorizationMediaMiddleware::class => Factory\Middleware\AuthorizationMediaMiddlewareFactory::class,
             Middleware\UploadMediaMiddleware::class        => Factory\Middleware\UploadMediaMiddlewareFactory::class,
             Middleware\GetMediaMiddleware::class           => Factory\Middleware\GetMediaMiddlewareFactory::class,
+            Middleware\DeleteMediaMiddleware::class        => Factory\Middleware\DeleteMediaMiddlewareFactory::class,
+            Validator\SlugValidator::class                 => Factory\Validator\SlugValidatorFactory::class,
             Handler\Api\AddPrivateHandler::class           => Factory\Handler\Api\AddPrivateHandlerFactory::class,
             Handler\Api\AddPublicHandler::class            => Factory\Handler\Api\AddPublicHandlerFactory::class,
             Handler\Api\AddRelationHandler::class          => Factory\Handler\Api\AddRelationHandlerFactory::class,
@@ -31,6 +32,7 @@ return [
             Handler\Api\GetHandler::class                  => Factory\Handler\Api\GetHandlerFactory::class,
             Handler\Api\StreamHandler::class               => Factory\Handler\Api\StreamHandlerFactory::class,
             Handler\Api\UpdateHandler::class               => Factory\Handler\Api\UpdateHandlerFactory::class,
+            Handler\Api\DeleteHandler::class               => Factory\Handler\Api\DeleteHandlerFactory::class,
             Handler\Admin\AddPrivateHandler::class         => Factory\Handler\Admin\AddPrivateHandlerFactory::class,
             Handler\Admin\AddPublicHandler::class          => Factory\Handler\Admin\AddPublicHandlerFactory::class,
             Handler\Admin\AddRelationHandler::class        => Factory\Handler\Admin\AddRelationHandlerFactory::class,
@@ -38,6 +40,7 @@ return [
             Handler\Admin\GetHandler::class                => Factory\Handler\Admin\GetHandlerFactory::class,
             Handler\Admin\StreamHandler::class             => Factory\Handler\Admin\StreamHandlerFactory::class,
             Handler\Admin\UpdateHandler::class             => Factory\Handler\Admin\UpdateHandlerFactory::class,
+            Handler\Admin\DeleteHandler::class             => Factory\Handler\Admin\DeleteHandlerFactory::class,
         ],
     ],
     'router'          => [
@@ -217,6 +220,29 @@ return [
                                     ],
                                 ],
                             ],
+                            'delete'       => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/delete',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'company',
+                                        'handler'    => 'delete',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            CompanyMiddleware::class,
+                                            //PackageMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\DeleteMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\DeleteHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                     'private' => [
@@ -351,6 +377,27 @@ return [
                                     ],
                                 ],
                             ],
+                            'delete'       => [
+                                'type'    => Literal::class,
+                                'options' => [
+                                    'route'    => '/delete',
+                                    'defaults' => [
+                                        'module'     => 'media',
+                                        'section'    => 'api',
+                                        'package'    => 'private',
+                                        'handler'    => 'delete',
+                                        'controller' => PipeSpec::class,
+                                        'middleware' => new PipeSpec(
+                                            SecurityMiddleware::class,
+                                            AuthenticationMiddleware::class,
+                                            Middleware\AuthorizationMediaMiddleware::class,
+                                            Middleware\DeleteMediaMiddleware::class,
+                                            LoggerRequestMiddleware::class,
+                                            Handler\Api\DeleteHandler::class
+                                        ),
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                     'public'  => [
@@ -431,7 +478,7 @@ return [
                                         Middleware\AuthorizationMediaMiddleware::class,
                                         Middleware\UploadMediaMiddleware::class,
                                         LoggerRequestMiddleware::class,
-                                        Handler\Api\AddPublicHandler::class
+                                        Handler\Admin\AddPublicHandler::class
                                     ),
                                 ],
                             ],
@@ -454,7 +501,7 @@ return [
                                         Middleware\AuthorizationMediaMiddleware::class,
                                         Middleware\UploadMediaMiddleware::class,
                                         LoggerRequestMiddleware::class,
-                                        Handler\Api\AddPrivateHandler::class
+                                        Handler\Admin\AddPrivateHandler::class
                                     ),
                                 ],
                             ],
@@ -477,7 +524,7 @@ return [
                                         Middleware\AuthorizationMediaMiddleware::class,
                                         Middleware\GetMediaMiddleware::class,
                                         LoggerRequestMiddleware::class,
-                                        Handler\Api\AddRelationHandler::class
+                                        Handler\Admin\AddRelationHandler::class
                                     ),
                                 ],
                             ],
@@ -499,7 +546,7 @@ return [
                                         AuthorizationMiddleware::class,
                                         Middleware\AuthorizationMediaMiddleware::class,
                                         LoggerRequestMiddleware::class,
-                                        Handler\Api\ListHandler::class
+                                        Handler\Admin\ListHandler::class
                                     ),
                                 ],
                             ],
@@ -522,7 +569,7 @@ return [
                                         Middleware\AuthorizationMediaMiddleware::class,
                                         Middleware\GetMediaMiddleware::class,
                                         LoggerRequestMiddleware::class,
-                                        Handler\Api\GetHandler::class
+                                        Handler\Admin\GetHandler::class
                                     ),
                                 ],
                             ],
@@ -545,7 +592,7 @@ return [
                                         Middleware\AuthorizationMediaMiddleware::class,
                                         Middleware\GetMediaMiddleware::class,
                                         LoggerRequestMiddleware::class,
-                                        Handler\Api\StreamHandler::class
+                                        Handler\Admin\StreamHandler::class
                                     ),
                                 ],
                             ],
@@ -569,6 +616,29 @@ return [
                                         Middleware\GetMediaMiddleware::class,
                                         LoggerRequestMiddleware::class,
                                         Handler\Api\UpdateHandler::class
+                                    ),
+                                ],
+                            ],
+                        ],
+                        'delete'       => [
+                            'type'    => Literal::class,
+                            'options' => [
+                                'route'    => '/delete',
+                                'defaults' => [
+                                    'module'      => 'media',
+                                    'section'     => 'admin',
+                                    'package'     => 'media',
+                                    'handler'     => 'delete',
+                                    'permissions' => 'media-delete',
+                                    'controller'  => PipeSpec::class,
+                                    'middleware'  => new PipeSpec(
+                                        SecurityMiddleware::class,
+                                        AuthenticationMiddleware::class,
+                                        AuthorizationMiddleware::class,
+                                        Middleware\AuthorizationMediaMiddleware::class,
+                                        Middleware\DeleteMediaMiddleware::class,
+                                        LoggerRequestMiddleware::class,
+                                        Handler\Admin\DeleteHandler::class
                                     ),
                                 ],
                             ],

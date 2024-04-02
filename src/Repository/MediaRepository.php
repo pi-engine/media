@@ -5,6 +5,7 @@ namespace Media\Repository;
 use Laminas\Db\Adapter\AdapterInterface;
 use Laminas\Db\Adapter\Driver\ResultInterface;
 use Laminas\Db\ResultSet\HydratingResultSet;
+use Laminas\Db\Sql\Delete;
 use Laminas\Db\Sql\Insert;
 use Laminas\Db\Sql\Predicate\Expression;
 use Laminas\Db\Sql\Sql;
@@ -286,6 +287,26 @@ class MediaRepository implements MediaRepositoryInterface
         }
     }
 
+    public function deleteMedia(int $mediaId, array $params = []): void
+    {
+        // Set where
+        $where = ['id' => $mediaId];
+
+        // Delete from role table
+        $delete = new Delete($this->tableStorage);
+        $delete->where($where);
+
+        $sql       = new Sql($this->db);
+        $statement = $sql->prepareStatementForSqlObject($delete);
+        $result    = $statement->execute();
+
+        if (!$result instanceof ResultInterface) {
+            throw new RuntimeException(
+                'Database error occurred during update operation'
+            );
+        }
+    }
+
     public function updateDownloadCount(int $mediaId): void
     {
         $update = new Update($this->tableStorage);
@@ -301,6 +322,22 @@ class MediaRepository implements MediaRepositoryInterface
                 'Database error occurred during update operation'
             );
         }
+    }
+
+    public function duplicatedMedia(array $params = []): int{
+        // Set where
+        $columns = ['count' => new Expression('count(*)')];
+        $where   = ['slug' => $params['slug']];
+        if (isset($params['id']) && (int)$params['id'] > 0) {
+            $where['id <> ?'] = $params['id'];
+        }
+
+        $sql       = new Sql($this->db);
+        $select    = $sql->select($this->tableStorage)->columns($columns)->where($where);
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $row       = $statement->execute()->current();
+
+        return (int)$row['count'];
     }
 
     public function getMediaRelation(array $params = []): array|Relation
@@ -384,6 +421,26 @@ class MediaRepository implements MediaRepositoryInterface
         return $resultSet;
     }
 
+    public function deleteMediaRelation(int $mediaId): void
+    {
+        // Set where
+        $where = ['storage_id' => $mediaId];
+
+        // Delete from role table
+        $delete = new Delete($this->tableRelation);
+        $delete->where($where);
+
+        $sql       = new Sql($this->db);
+        $statement = $sql->prepareStatementForSqlObject($delete);
+        $result    = $statement->execute();
+
+        if (!$result instanceof ResultInterface) {
+            throw new RuntimeException(
+                'Database error occurred during update operation'
+            );
+        }
+    }
+
     public function analytic($params): array|ResultInterface
     {
         $columns = [
@@ -406,5 +463,24 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         return $result;
+    }
+
+    public function calculateStorage(array $params = []): int
+    {
+        $columns = ['sum' => new Expression('SUM(size)')];
+        $where   = [];
+        if (isset($params['company_id']) && !empty($params['company_id'])) {
+            $where['company_id'] = $params['company_id'];
+        }
+        if (isset($params['user_id']) && !empty($params['user_id'])) {
+            $where['user_id'] = $params['user_id'];
+        }
+
+        $sql       = new Sql($this->db);
+        $select    = $sql->select($this->tableStorage)->columns($columns)->where($where);
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $row       = $statement->execute()->current();
+
+        return $row['sum'];
     }
 }

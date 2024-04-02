@@ -79,5 +79,16 @@ return [
                 'admin',
             ],
         ],
+        [
+            'title'       => 'Admin media delete',
+            'module'      => 'media',
+            'section'     => 'admin',
+            'package'     => 'media',
+            'handler'     => 'delete',
+            'permissions' => 'media-delete',
+            'role'        => [
+                'admin',
+            ],
+        ],
     ],
 ];
