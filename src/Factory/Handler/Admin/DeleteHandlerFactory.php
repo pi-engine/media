@@ -5,7 +5,6 @@ namespace Media\Factory\Handler\Admin;
 use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Handler\Admin\DeleteHandler;
-use Media\Handler\Admin\GetHandler;
 use Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;

@@ -60,7 +60,7 @@ class AuthorizationMediaMiddleware implements MiddlewareInterface
         $routeMatch  = $request->getAttribute('Laminas\Router\RouteMatch');
         $routeParams = $routeMatch->getParams();
         $requestBody = $request->getParsedBody();
-        $package = $routeParams['media_access'] ?? $routeParams['package'];
+        $package     = $routeParams['media_access'] ?? $routeParams['package'];
 
         // Check package and section
         if (!in_array($package, $this->config['authorization']['access'])) {

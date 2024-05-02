@@ -324,7 +324,8 @@ class MediaRepository implements MediaRepositoryInterface
         }
     }
 
-    public function duplicatedMedia(array $params = []): int{
+    public function duplicatedMedia(array $params = []): int
+    {
         // Set where
         $columns = ['count' => new Expression('count(*)')];
         $where   = ['slug' => $params['slug']];

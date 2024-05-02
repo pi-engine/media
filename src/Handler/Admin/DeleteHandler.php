@@ -35,7 +35,7 @@ class DeleteHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $authorization = $request->getAttribute('media_authorization');
-        $media = $request->getAttribute('media_item');
+        $media         = $request->getAttribute('media_item');
 
         // Delete media
         $this->mediaService->deleteMedia($media, $authorization);

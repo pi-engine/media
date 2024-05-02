@@ -5,7 +5,6 @@ namespace Media\Factory\Middleware;
 use Interop\Container\Containerinterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Middleware\DeleteMediaMiddleware;
-use Media\Middleware\GetMediaMiddleware;
 use Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;

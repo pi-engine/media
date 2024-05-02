@@ -65,8 +65,8 @@ class UploadMediaMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $uploadFiles = $request->getUploadedFiles();
-        $requestBody = $request->getParsedBody();
+        $uploadFiles   = $request->getUploadedFiles();
+        $requestBody   = $request->getParsedBody();
         $authorization = $request->getAttribute('media_authorization');
 
         // Check valid
@@ -137,7 +137,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
 
                 // Set validator params and create slug
                 $params = [
-                    'slug' => $this->utilityService->slug($slug)
+                    'slug' => $this->utilityService->slug($slug),
                 ];
 
                 // Call validator
