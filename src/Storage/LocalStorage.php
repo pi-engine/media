@@ -11,6 +11,7 @@ use Laminas\Filter\FilterChain;
 use Laminas\Filter\PregReplace;
 use Laminas\Filter\StringToLower;
 use Laminas\Filter\Word\SeparatorToDash;
+use Laminas\Math\Rand;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Traversable;
@@ -44,8 +45,14 @@ class LocalStorage implements StorageInterface
         // Save file to storage
         $uploadFile->moveTo($filePath);
 
+        // Set name
+        $originalName = $uploadFile->getClientFilename();
+        if (isset($params['random_name']) && (int)$params['random_name'] === 1) {
+            $originalName = sprintf('%s-%s-%s', $originalName, time(), Rand::getString('8', 'abcdefghijklmnopqrstuvwxyz0123456789'));
+        }
+
         return [
-            'original_name'  => $uploadFile->getClientFilename(),
+            'original_name'  => $originalName,
             'file_title'     => $fileInfo['filename'],
             'file_extension' => strtolower($fileInfo['extension']),
             'file_size'      => $fileSize,

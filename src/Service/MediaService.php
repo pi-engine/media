@@ -85,6 +85,7 @@ class MediaService implements ServiceInterface
             'storage'    => $this->storage,
             'access'     => $params['access'],
             'local_path' => $path,
+            'random_name' => $params['random_name'] ?? 0,
         ];
 
         // Store media
