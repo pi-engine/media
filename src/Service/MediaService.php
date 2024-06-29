@@ -32,15 +32,35 @@ class MediaService implements ServiceInterface
 
     protected array $defaultTypes
         = [
-            'image'        => 0,
+            'image'        => [
+                'key'   => 'image',
+                'title' => 'Image',
+                'value' => 0,
+            ],
+            'document'     => [
+                'key'   => 'document',
+                'title' => 'Document',
+                'value' => 0,
+            ],
+            'spreadsheet'  => [
+                'key'   => 'spreadsheet',
+                'title' => 'Spreadsheet',
+                'value' => 0,
+            ],
+            'presentation' => [
+                'key'   => 'presentation',
+                'title' => 'Presentation',
+                'value' => 0,
+            ],
+            'pdf'          => [
+                'key'   => 'pdf',
+                'title' => 'Pdf',
+                'value' => 0,
+            ],
             //'video'        => 0,
             //'audio'        => 0,
             //'archive'      => 0,
-            'document'     => 0,
-            'spreadsheet'  => 0,
-            'presentation' => 0,
             //'script'       => 0,
-            'pdf'          => 0,
             //'executable'   => 0,
             //'font'         => 0,
             //'config'       => 0,
@@ -503,10 +523,10 @@ class MediaService implements ServiceInterface
 
         $result = $this->mediaRepository->analytic($params);
         foreach ($result as $row) {
-            $this->defaultTypes[$row['type']] = $row['count'];
+            $this->defaultTypes[$row['type']]['value'] = $row['count'];
         }
 
-        return $this->defaultTypes;
+        return array_values($this->defaultTypes);
     }
 
     public function isDuplicated($slug): bool
