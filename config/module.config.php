@@ -8,6 +8,7 @@ use Laminas\Router\Http\Literal;
 use Logger\Middleware\LoggerRequestMiddleware;
 use User\Middleware\AuthenticationMiddleware;
 use User\Middleware\AuthorizationMiddleware;
+use User\Middleware\RequestPreparationMiddleware;
 use User\Middleware\SecurityMiddleware;
 
 return [
@@ -71,6 +72,7 @@ return [
                                         'handler'    => 'add-public',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
@@ -94,6 +96,7 @@ return [
                                         'handler'    => 'add-private',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
@@ -117,6 +120,7 @@ return [
                                         'handler'    => 'add-relation',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
@@ -140,6 +144,7 @@ return [
                                         'handler'    => 'list',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
@@ -162,6 +167,7 @@ return [
                                         'handler'    => 'get',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
@@ -185,6 +191,7 @@ return [
                                         'handler'    => 'stream',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
@@ -208,6 +215,7 @@ return [
                                         'handler'    => 'update',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
@@ -231,6 +239,7 @@ return [
                                         'handler'    => 'delete',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
@@ -263,6 +272,7 @@ return [
                                         'handler'    => 'add-private',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
@@ -284,6 +294,7 @@ return [
                                         'handler'    => 'add-relation',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
@@ -305,6 +316,7 @@ return [
                                         'handler'    => 'list',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
@@ -325,6 +337,7 @@ return [
                                         'handler'    => 'get',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
@@ -346,6 +359,7 @@ return [
                                         'handler'    => 'stream',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
@@ -367,6 +381,7 @@ return [
                                         'handler'    => 'update',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
@@ -388,6 +403,7 @@ return [
                                         'handler'    => 'delete',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
@@ -418,6 +434,7 @@ return [
                                         'handler'    => 'get',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
@@ -438,6 +455,7 @@ return [
                                         'handler'    => 'stream',
                                         'controller' => PipeSpec::class,
                                         'middleware' => new PipeSpec(
+                                            RequestPreparationMiddleware::class,
                                             SecurityMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
@@ -471,7 +489,8 @@ return [
                                     'handler'     => 'add-public',
                                     'permissions' => 'media-add-public',
                                     'controller'  => PipeSpec::class,
-                                    'middleware'  => new PipeSpec(
+                                    'middleware' => new PipeSpec(
+                                        RequestPreparationMiddleware::class,
                                         SecurityMiddleware::class,
                                         AuthenticationMiddleware::class,
                                         AuthorizationMiddleware::class,
@@ -494,7 +513,8 @@ return [
                                     'handler'     => 'add-private',
                                     'permissions' => 'media-add-private',
                                     'controller'  => PipeSpec::class,
-                                    'middleware'  => new PipeSpec(
+                                    'middleware' => new PipeSpec(
+                                        RequestPreparationMiddleware::class,
                                         SecurityMiddleware::class,
                                         AuthenticationMiddleware::class,
                                         AuthorizationMiddleware::class,
@@ -517,7 +537,8 @@ return [
                                     'handler'     => 'add-relation',
                                     'permissions' => 'media-add-relation',
                                     'controller'  => PipeSpec::class,
-                                    'middleware'  => new PipeSpec(
+                                    'middleware' => new PipeSpec(
+                                        RequestPreparationMiddleware::class,
                                         SecurityMiddleware::class,
                                         AuthenticationMiddleware::class,
                                         AuthorizationMiddleware::class,
@@ -540,7 +561,8 @@ return [
                                     'handler'     => 'list',
                                     'permissions' => 'media-list',
                                     'controller'  => PipeSpec::class,
-                                    'middleware'  => new PipeSpec(
+                                    'middleware' => new PipeSpec(
+                                        RequestPreparationMiddleware::class,
                                         SecurityMiddleware::class,
                                         AuthenticationMiddleware::class,
                                         AuthorizationMiddleware::class,
@@ -562,7 +584,8 @@ return [
                                     'handler'     => 'get',
                                     'permissions' => 'media-get',
                                     'controller'  => PipeSpec::class,
-                                    'middleware'  => new PipeSpec(
+                                    'middleware' => new PipeSpec(
+                                        RequestPreparationMiddleware::class,
                                         SecurityMiddleware::class,
                                         AuthenticationMiddleware::class,
                                         AuthorizationMiddleware::class,
@@ -585,7 +608,8 @@ return [
                                     'handler'     => 'stream',
                                     'permissions' => 'media-stream',
                                     'controller'  => PipeSpec::class,
-                                    'middleware'  => new PipeSpec(
+                                    'middleware' => new PipeSpec(
+                                        RequestPreparationMiddleware::class,
                                         SecurityMiddleware::class,
                                         AuthenticationMiddleware::class,
                                         AuthorizationMiddleware::class,
@@ -608,7 +632,8 @@ return [
                                     'handler'     => 'update',
                                     'permissions' => 'media-update',
                                     'controller'  => PipeSpec::class,
-                                    'middleware'  => new PipeSpec(
+                                    'middleware' => new PipeSpec(
+                                        RequestPreparationMiddleware::class,
                                         SecurityMiddleware::class,
                                         AuthenticationMiddleware::class,
                                         AuthorizationMiddleware::class,
@@ -631,7 +656,8 @@ return [
                                     'handler'     => 'delete',
                                     'permissions' => 'media-delete',
                                     'controller'  => PipeSpec::class,
-                                    'middleware'  => new PipeSpec(
+                                    'middleware' => new PipeSpec(
+                                        RequestPreparationMiddleware::class,
                                         SecurityMiddleware::class,
                                         AuthenticationMiddleware::class,
                                         AuthorizationMiddleware::class,
