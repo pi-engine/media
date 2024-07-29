@@ -8,7 +8,7 @@ return [
             'section'     => 'admin',
             'package'     => 'media',
             'handler'     => 'add-public',
-            'permissions' => 'media-add-public',
+            'permissions' => 'media-media-add-public',
             'role'        => [
                 'admin',
             ],
@@ -19,7 +19,7 @@ return [
             'section'     => 'admin',
             'package'     => 'media',
             'handler'     => 'add-private',
-            'permissions' => 'media-add-private',
+            'permissions' => 'media-media-add-private',
             'role'        => [
                 'admin',
             ],
@@ -30,7 +30,7 @@ return [
             'section'     => 'admin',
             'package'     => 'media',
             'handler'     => 'add-relation',
-            'permissions' => 'media-add-relation',
+            'permissions' => 'media-media-add-relation',
             'role'        => [
                 'admin',
             ],
@@ -41,7 +41,7 @@ return [
             'section'     => 'admin',
             'package'     => 'media',
             'handler'     => 'list',
-            'permissions' => 'media-list',
+            'permissions' => 'media-media-list',
             'role'        => [
                 'admin',
             ],
@@ -52,7 +52,7 @@ return [
             'section'     => 'admin',
             'package'     => 'media',
             'handler'     => 'get',
-            'permissions' => 'media-get',
+            'permissions' => 'media-media-get',
             'role'        => [
                 'admin',
             ],
@@ -63,7 +63,7 @@ return [
             'section'     => 'admin',
             'package'     => 'media',
             'handler'     => 'stream',
-            'permissions' => 'media-stream',
+            'permissions' => 'media-media-stream',
             'role'        => [
                 'admin',
             ],
@@ -74,7 +74,7 @@ return [
             'section'     => 'admin',
             'package'     => 'media',
             'handler'     => 'update',
-            'permissions' => 'media-update',
+            'permissions' => 'media-media-update',
             'role'        => [
                 'admin',
             ],
@@ -85,7 +85,7 @@ return [
             'section'     => 'admin',
             'package'     => 'media',
             'handler'     => 'delete',
-            'permissions' => 'media-delete',
+            'permissions' => 'media-media-delete',
             'role'        => [
                 'admin',
             ],

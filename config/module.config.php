@@ -8,6 +8,7 @@ use Laminas\Router\Http\Literal;
 use Logger\Middleware\LoggerRequestMiddleware;
 use User\Middleware\AuthenticationMiddleware;
 use User\Middleware\AuthorizationMiddleware;
+use User\Middleware\InstallerMiddleware;
 use User\Middleware\RequestPreparationMiddleware;
 use User\Middleware\SecurityMiddleware;
 
@@ -42,6 +43,7 @@ return [
             Handler\Admin\StreamHandler::class             => Factory\Handler\Admin\StreamHandlerFactory::class,
             Handler\Admin\UpdateHandler::class             => Factory\Handler\Admin\UpdateHandlerFactory::class,
             Handler\Admin\DeleteHandler::class             => Factory\Handler\Admin\DeleteHandlerFactory::class,
+            Handler\InstallerHandler::class                => Factory\Handler\InstallerHandlerFactory::class,
         ],
     ],
     'router'          => [
@@ -471,202 +473,230 @@ return [
             ],
             // Admin section
             'admin_media' => [
-                'type'         => Literal::class,
-                'options'      => [
+                'type'    => Literal::class,
+                'options' => [
                     'route'    => '/admin/media',
                     'defaults' => [],
                 ],
+
                 'child_routes' => [
-                    'child_routes' => [
-                        'add-public'   => [
-                            'type'    => Literal::class,
-                            'options' => [
-                                'route'    => '/add-public',
-                                'defaults' => [
-                                    'module'      => 'media',
-                                    'section'     => 'admin',
-                                    'package'     => 'media',
-                                    'handler'     => 'add-public',
-                                    'permissions' => 'media-add-public',
-                                    'controller'  => PipeSpec::class,
-                                    'middleware' => new PipeSpec(
-                                        RequestPreparationMiddleware::class,
-                                        SecurityMiddleware::class,
-                                        AuthenticationMiddleware::class,
-                                        AuthorizationMiddleware::class,
-                                        Middleware\AuthorizationMediaMiddleware::class,
-                                        Middleware\UploadMediaMiddleware::class,
-                                        LoggerRequestMiddleware::class,
-                                        Handler\Admin\AddPublicHandler::class
-                                    ),
-                                ],
+                    'add-public'   => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/add-public',
+                            'defaults' => [
+                                'module'       => 'media',
+                                'section'      => 'admin',
+                                'package'      => 'media',
+                                'handler'      => 'add-public',
+                                'media_access' => 'admin',
+                                'permissions'  => 'media-add-public',
+                                'controller'   => PipeSpec::class,
+                                'middleware'   => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    AuthorizationMiddleware::class,
+                                    Middleware\AuthorizationMediaMiddleware::class,
+                                    Middleware\UploadMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
+                                    Handler\Admin\AddPublicHandler::class
+                                ),
                             ],
                         ],
-                        'add-private'  => [
-                            'type'    => Literal::class,
-                            'options' => [
-                                'route'    => '/add-private',
-                                'defaults' => [
-                                    'module'      => 'media',
-                                    'section'     => 'admin',
-                                    'package'     => 'media',
-                                    'handler'     => 'add-private',
-                                    'permissions' => 'media-add-private',
-                                    'controller'  => PipeSpec::class,
-                                    'middleware' => new PipeSpec(
-                                        RequestPreparationMiddleware::class,
-                                        SecurityMiddleware::class,
-                                        AuthenticationMiddleware::class,
-                                        AuthorizationMiddleware::class,
-                                        Middleware\AuthorizationMediaMiddleware::class,
-                                        Middleware\UploadMediaMiddleware::class,
-                                        LoggerRequestMiddleware::class,
-                                        Handler\Admin\AddPrivateHandler::class
-                                    ),
-                                ],
+                    ],
+                    'add-private'  => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/add-private',
+                            'defaults' => [
+                                'module'       => 'media',
+                                'section'      => 'admin',
+                                'package'      => 'media',
+                                'media_access' => 'admin',
+                                'handler'      => 'add-private',
+                                'permissions'  => 'media-add-private',
+                                'controller'   => PipeSpec::class,
+                                'middleware'   => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    AuthorizationMiddleware::class,
+                                    Middleware\AuthorizationMediaMiddleware::class,
+                                    Middleware\UploadMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
+                                    Handler\Admin\AddPrivateHandler::class
+                                ),
                             ],
                         ],
-                        'add-relation' => [
-                            'type'    => Literal::class,
-                            'options' => [
-                                'route'    => '/add-relation',
-                                'defaults' => [
-                                    'module'      => 'media',
-                                    'section'     => 'admin',
-                                    'package'     => 'media',
-                                    'handler'     => 'add-relation',
-                                    'permissions' => 'media-add-relation',
-                                    'controller'  => PipeSpec::class,
-                                    'middleware' => new PipeSpec(
-                                        RequestPreparationMiddleware::class,
-                                        SecurityMiddleware::class,
-                                        AuthenticationMiddleware::class,
-                                        AuthorizationMiddleware::class,
-                                        Middleware\AuthorizationMediaMiddleware::class,
-                                        Middleware\GetMediaMiddleware::class,
-                                        LoggerRequestMiddleware::class,
-                                        Handler\Admin\AddRelationHandler::class
-                                    ),
-                                ],
+                    ],
+                    'add-relation' => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/add-relation',
+                            'defaults' => [
+                                'module'       => 'media',
+                                'section'      => 'admin',
+                                'package'      => 'media',
+                                'media_access' => 'admin',
+                                'handler'      => 'add-relation',
+                                'permissions'  => 'media-add-relation',
+                                'controller'   => PipeSpec::class,
+                                'middleware'   => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    AuthorizationMiddleware::class,
+                                    Middleware\AuthorizationMediaMiddleware::class,
+                                    Middleware\GetMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
+                                    Handler\Admin\AddRelationHandler::class
+                                ),
                             ],
                         ],
-                        'list'         => [
-                            'type'    => Literal::class,
-                            'options' => [
-                                'route'    => '/list',
-                                'defaults' => [
-                                    'module'      => 'media',
-                                    'section'     => 'admin',
-                                    'package'     => 'media',
-                                    'handler'     => 'list',
-                                    'permissions' => 'media-list',
-                                    'controller'  => PipeSpec::class,
-                                    'middleware' => new PipeSpec(
-                                        RequestPreparationMiddleware::class,
-                                        SecurityMiddleware::class,
-                                        AuthenticationMiddleware::class,
-                                        AuthorizationMiddleware::class,
-                                        Middleware\AuthorizationMediaMiddleware::class,
-                                        LoggerRequestMiddleware::class,
-                                        Handler\Admin\ListHandler::class
-                                    ),
-                                ],
+                    ],
+                    'list'         => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/list',
+                            'defaults' => [
+                                'module'       => 'media',
+                                'section'      => 'admin',
+                                'package'      => 'media',
+                                'handler'      => 'list',
+                                'media_access' => 'admin',
+                                'permissions'  => 'media-list',
+                                'controller'   => PipeSpec::class,
+                                'middleware'   => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    AuthorizationMiddleware::class,
+                                    Middleware\AuthorizationMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
+                                    Handler\Admin\ListHandler::class
+                                ),
                             ],
                         ],
-                        'get'          => [
-                            'type'    => Literal::class,
-                            'options' => [
-                                'route'    => '/get',
-                                'defaults' => [
-                                    'module'      => 'media',
-                                    'section'     => 'admin',
-                                    'package'     => 'media',
-                                    'handler'     => 'get',
-                                    'permissions' => 'media-get',
-                                    'controller'  => PipeSpec::class,
-                                    'middleware' => new PipeSpec(
-                                        RequestPreparationMiddleware::class,
-                                        SecurityMiddleware::class,
-                                        AuthenticationMiddleware::class,
-                                        AuthorizationMiddleware::class,
-                                        Middleware\AuthorizationMediaMiddleware::class,
-                                        Middleware\GetMediaMiddleware::class,
-                                        LoggerRequestMiddleware::class,
-                                        Handler\Admin\GetHandler::class
-                                    ),
-                                ],
+                    ],
+                    'get'          => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/get',
+                            'defaults' => [
+                                'module'       => 'media',
+                                'section'      => 'admin',
+                                'package'      => 'media',
+                                'handler'      => 'get',
+                                'media_access' => 'admin',
+                                'permissions'  => 'media-get',
+                                'controller'   => PipeSpec::class,
+                                'middleware'   => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    AuthorizationMiddleware::class,
+                                    Middleware\AuthorizationMediaMiddleware::class,
+                                    Middleware\GetMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
+                                    Handler\Admin\GetHandler::class
+                                ),
                             ],
                         ],
-                        'stream'       => [
-                            'type'    => Literal::class,
-                            'options' => [
-                                'route'    => '/stream',
-                                'defaults' => [
-                                    'module'      => 'media',
-                                    'section'     => 'admin',
-                                    'package'     => 'media',
-                                    'handler'     => 'stream',
-                                    'permissions' => 'media-stream',
-                                    'controller'  => PipeSpec::class,
-                                    'middleware' => new PipeSpec(
-                                        RequestPreparationMiddleware::class,
-                                        SecurityMiddleware::class,
-                                        AuthenticationMiddleware::class,
-                                        AuthorizationMiddleware::class,
-                                        Middleware\AuthorizationMediaMiddleware::class,
-                                        Middleware\GetMediaMiddleware::class,
-                                        LoggerRequestMiddleware::class,
-                                        Handler\Admin\StreamHandler::class
-                                    ),
-                                ],
+                    ],
+                    'stream'       => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/stream',
+                            'defaults' => [
+                                'module'       => 'media',
+                                'section'      => 'admin',
+                                'package'      => 'media',
+                                'handler'      => 'stream',
+                                'media_access' => 'admin',
+                                'permissions'  => 'media-stream',
+                                'controller'   => PipeSpec::class,
+                                'middleware'   => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    AuthorizationMiddleware::class,
+                                    Middleware\AuthorizationMediaMiddleware::class,
+                                    Middleware\GetMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
+                                    Handler\Admin\StreamHandler::class
+                                ),
                             ],
                         ],
-                        'update'       => [
-                            'type'    => Literal::class,
-                            'options' => [
-                                'route'    => '/update',
-                                'defaults' => [
-                                    'module'      => 'media',
-                                    'section'     => 'admin',
-                                    'package'     => 'media',
-                                    'handler'     => 'update',
-                                    'permissions' => 'media-update',
-                                    'controller'  => PipeSpec::class,
-                                    'middleware' => new PipeSpec(
-                                        RequestPreparationMiddleware::class,
-                                        SecurityMiddleware::class,
-                                        AuthenticationMiddleware::class,
-                                        AuthorizationMiddleware::class,
-                                        Middleware\AuthorizationMediaMiddleware::class,
-                                        Middleware\GetMediaMiddleware::class,
-                                        LoggerRequestMiddleware::class,
-                                        Handler\Api\UpdateHandler::class
-                                    ),
-                                ],
+                    ],
+                    'update'       => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/update',
+                            'defaults' => [
+                                'module'       => 'media',
+                                'section'      => 'admin',
+                                'package'      => 'media',
+                                'handler'      => 'update',
+                                'media_access' => 'admin',
+                                'permissions'  => 'media-update',
+                                'controller'   => PipeSpec::class,
+                                'middleware'   => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    AuthorizationMiddleware::class,
+                                    Middleware\AuthorizationMediaMiddleware::class,
+                                    Middleware\GetMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
+                                    Handler\Api\UpdateHandler::class
+                                ),
                             ],
                         ],
-                        'delete'       => [
-                            'type'    => Literal::class,
-                            'options' => [
-                                'route'    => '/delete',
-                                'defaults' => [
-                                    'module'      => 'media',
-                                    'section'     => 'admin',
-                                    'package'     => 'media',
-                                    'handler'     => 'delete',
-                                    'permissions' => 'media-delete',
-                                    'controller'  => PipeSpec::class,
-                                    'middleware' => new PipeSpec(
-                                        RequestPreparationMiddleware::class,
-                                        SecurityMiddleware::class,
-                                        AuthenticationMiddleware::class,
-                                        AuthorizationMiddleware::class,
-                                        Middleware\AuthorizationMediaMiddleware::class,
-                                        Middleware\DeleteMediaMiddleware::class,
-                                        LoggerRequestMiddleware::class,
-                                        Handler\Admin\DeleteHandler::class
-                                    ),
-                                ],
+                    ],
+                    'delete'       => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/delete',
+                            'defaults' => [
+                                'module'       => 'media',
+                                'section'      => 'admin',
+                                'package'      => 'media',
+                                'handler'      => 'delete',
+                                'media_access' => 'admin',
+                                'permissions'  => 'media-delete',
+                                'controller'   => PipeSpec::class,
+                                'middleware'   => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    AuthorizationMiddleware::class,
+                                    Middleware\AuthorizationMediaMiddleware::class,
+                                    Middleware\DeleteMediaMiddleware::class,
+                                    LoggerRequestMiddleware::class,
+                                    Handler\Admin\DeleteHandler::class
+                                ),
+                            ],
+                        ],
+                    ],
+                    // Admin installer
+                    'installer' => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/installer',
+                            'defaults' => [
+                                'module'     => 'risk',
+                                'section'    => 'admin',
+                                'package'    => 'installer',
+                                'handler'    => 'installer',
+                                'controller' => PipeSpec::class,
+                                'middleware' => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    InstallerMiddleware::class,
+                                    Handler\InstallerHandler::class
+                                ),
                             ],
                         ],
                     ],
