@@ -625,6 +625,9 @@ class MediaService implements ServiceInterface
         // Clean up
         if (isset($options['view']) && $options['view'] == 'limited') {
             unset($storage['information']['storage']);
+            foreach ($storage['information']['history'] as $key => $value) {
+                unset($storage['information']['history'][$key]['storage']);
+            }
         }
 
         return $storage;

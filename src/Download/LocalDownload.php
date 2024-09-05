@@ -26,7 +26,7 @@ class LocalDownload implements DownloadInterface
 
     public function makePrivateUrl($params): string
     {
-        return '';
+        return sprintf('%s/media/%s/stream', $this->config['stream_uri'], $params['access']);
     }
 
     /**
