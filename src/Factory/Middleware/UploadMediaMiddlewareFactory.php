@@ -2,7 +2,7 @@
 
 namespace Media\Factory\Middleware;
 
-use Interop\Container\Containerinterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Middleware\UploadMediaMiddleware;
 use Media\Service\MediaService;

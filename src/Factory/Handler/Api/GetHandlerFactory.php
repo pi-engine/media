@@ -2,7 +2,7 @@
 
 namespace Media\Factory\Handler\Api;
 
-use Interop\Container\Containerinterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Handler\Api\GetHandler;
 use Media\Service\MediaService;

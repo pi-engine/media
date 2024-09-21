@@ -2,7 +2,7 @@
 
 namespace Media\Factory\Handler\Admin;
 
-use Interop\Container\Containerinterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Handler\Admin\AddRelationHandler;
 use Media\Service\MediaService;

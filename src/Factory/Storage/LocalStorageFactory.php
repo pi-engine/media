@@ -2,7 +2,7 @@
 
 namespace Media\Factory\Storage;
 
-use Interop\Container\Containerinterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Storage\LocalStorage;
 

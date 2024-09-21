@@ -2,7 +2,7 @@
 
 namespace Media\Factory\Validator;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Service\MediaService;
 use Media\Validator\SlugValidator;

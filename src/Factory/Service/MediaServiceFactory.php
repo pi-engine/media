@@ -2,7 +2,7 @@
 
 namespace Media\Factory\Service;
 
-use Interop\Container\Containerinterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Download\LocalDownload;
 use Media\Repository\MediaRepositoryInterface;
