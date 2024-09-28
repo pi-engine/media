@@ -2,23 +2,27 @@
 
 namespace Media\Service;
 
-/**
- * $filePath = 'path/to/your/file.pdf'; // Change this to your file path
- * $fileReader = new FileReader($filePath);
- * $output = $fileReader->readFile();
- */
+use Exception;
+use Smalot\PdfParser\Parser as PdfParser;
+use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
+use PhpOffice\PhpWord\IOFactory as WordIOFactory;
+
 class FileReader implements ServiceInterface
 {
     private string $filePath;
 
-    public function __construct($filePath)
+    public function __construct(string $filePath)
     {
         $this->filePath = $filePath;
     }
 
     public function readFile(): array
     {
-        $extension = pathinfo($this->filePath, PATHINFO_EXTENSION);
+        if (!$this->isFileValid()) {
+            return ['result' => false, 'data' => [], 'error' => ['message' => "File is not readable or does not exist: {$this->filePath}"]];
+        }
+
+        $extension = strtolower(pathinfo($this->filePath, PATHINFO_EXTENSION));
 
         switch ($extension) {
             case 'pdf':
@@ -35,68 +39,112 @@ class FileReader implements ServiceInterface
             case 'txt':
                 return $this->readTxt();
             default:
-                throw new Exception("Unsupported file type: $extension");
+                return ['result' => false, 'data' => [], 'error' => ['message' => "Unsupported file type: $extension"]];
         }
+    }
+
+    private function isFileValid(): bool
+    {
+        return file_exists($this->filePath) && is_readable($this->filePath);
     }
 
     private function readPdf(): array
     {
-        $parser = new \Smalot\PdfParser\Parser();
-        $pdf = $parser->parseFile($this->filePath);
-        $text = $pdf->getText();
-        return explode("\n", $text); // Return as array of lines
+        try {
+            $parser = new PdfParser();
+            $pdf = $parser->parseFile($this->filePath);
+            $text = $pdf->getText();
+
+            if (empty(trim($text))) {
+                return ['result' => false, 'data' => [], 'error' => ['message' => 'PDF contains non-readable content (e.g., images or non-extractable text).']];
+            }
+
+            return ['result' => true, 'data' => explode("\n", $text), 'error' => []]; // Return as array of lines
+        } catch (Exception $e) {
+            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading PDF file: ' . $e->getMessage()]];
+        }
     }
 
     private function readExcel(): array
     {
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($this->filePath);
-        $data = [];
-        foreach ($spreadsheet->getAllSheets() as $sheet) {
-            foreach ($sheet->getRowIterator() as $row) {
-                $rowData = [];
-                foreach ($row->getCellIterator() as $cell) {
-                    $rowData[] = $cell->getValue();
+        try {
+            $spreadsheet = SpreadsheetIOFactory::load($this->filePath);
+            $data = [];
+
+            foreach ($spreadsheet->getAllSheets() as $sheet) {
+                foreach ($sheet->getRowIterator() as $row) {
+                    $rowData = [];
+                    foreach ($row->getCellIterator() as $cell) {
+                        $rowData[] = $cell->getValue();
+                    }
+                    $data[] = $rowData; // Add row to data
                 }
-                $data[] = $rowData; // Add row to data
             }
+
+            return ['result' => true, 'data' => $data, 'error' => []];
+        } catch (Exception $e) {
+            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading Excel file: ' . $e->getMessage()]];
         }
-        return $data;
     }
 
     private function readCsv(): array
     {
-        $data = [];
-        if (($file = fopen($this->filePath, 'r')) !== false) {
-            while (($row = fgetcsv($file)) !== false) {
-                $data[] = $row; // Add row to data
+        try {
+            $data = [];
+            if (($file = fopen($this->filePath, 'r')) !== false) {
+                while (($row = fgetcsv($file)) !== false) {
+                    $data[] = $row; // Add row to data
+                }
+                fclose($file);
             }
-            fclose($file);
+
+            return ['result' => true, 'data' => $data, 'error' => []];
+        } catch (Exception $e) {
+            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading CSV file: ' . $e->getMessage()]];
         }
-        return $data;
     }
 
     private function readJson(): array
     {
-        $data = json_decode(file_get_contents($this->filePath), true);
-        return is_array($data) ? $data : []; // Return as array
+        try {
+            $data = json_decode(file_get_contents($this->filePath), true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return ['result' => false, 'data' => [], 'error' => ['message' => 'Invalid JSON file format.']];
+            }
+
+            return ['result' => true, 'data' => is_array($data) ? $data : [], 'error' => []];
+        } catch (Exception $e) {
+            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading JSON file: ' . $e->getMessage()]];
+        }
     }
 
     private function readWord(): array
     {
-        $phpWord = \PhpOffice\PhpWord\IOFactory::load($this->filePath);
-        $text = '';
-        foreach ($phpWord->getSections() as $section) {
-            foreach ($section->getElements() as $element) {
-                if (method_exists($element, 'getText')) {
-                    $text .= $element->getText() . "\n"; // Concatenate text
+        try {
+            $phpWord = WordIOFactory::load($this->filePath);
+            $text = '';
+
+            foreach ($phpWord->getSections() as $section) {
+                foreach ($section->getElements() as $element) {
+                    if (method_exists($element, 'getText')) {
+                        $text .= $element->getText() . "\n"; // Concatenate text
+                    }
                 }
             }
+
+            return ['result' => true, 'data' => explode("\n", trim($text)), 'error' => []];
+        } catch (Exception $e) {
+            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading Word file: ' . $e->getMessage()]];
         }
-        return explode("\n", trim($text)); // Return as array of lines
     }
 
     private function readTxt(): array
     {
-        return explode("\n", file_get_contents($this->filePath)); // Return as array of lines
+        try {
+            return ['result' => true, 'data' => explode("\n", file_get_contents($this->filePath)), 'error' => []];
+        } catch (Exception $e) {
+            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading text file: ' . $e->getMessage()]];
+        }
     }
 }
