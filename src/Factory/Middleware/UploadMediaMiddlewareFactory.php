@@ -2,6 +2,8 @@
 
 namespace Media\Factory\Middleware;
 
+use Media\Storage\LocalStorage;
+use Media\Storage\MinioStorage;
 use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Middleware\UploadMediaMiddleware;

@@ -24,8 +24,8 @@ class AddPublicHandler implements RequestHandlerInterface
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface $streamFactory,
-        MediaService $mediaService
+        StreamFactoryInterface   $streamFactory,
+        MediaService             $mediaService
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;
@@ -35,11 +35,12 @@ class AddPublicHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $authorization = $request->getAttribute('account');
+        $storeInfo     = $request->getAttribute('store_information');
         $requestBody   = $request->getParsedBody();
         $uploadFiles   = $request->getUploadedFiles();
 
         // Add media
-        $media = $this->mediaService->addMedia(array_shift($uploadFiles), $authorization, $requestBody);
+        $media = $this->mediaService->addMedia(array_shift($uploadFiles), $authorization, $requestBody, $storeInfo);
 
         $result = [
             'result' => true,

@@ -42,10 +42,10 @@ class AuthorizationMediaMiddleware implements MiddlewareInterface
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface $streamFactory,
-        ErrorHandler $errorHandler,
-        MediaService $mediaService,
-        $config
+        StreamFactoryInterface   $streamFactory,
+        ErrorHandler             $errorHandler,
+        MediaService             $mediaService,
+                                 $config
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;

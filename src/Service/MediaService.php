@@ -2,9 +2,12 @@
 
 namespace Media\Service;
 
+use Fig\Http\Message\StatusCodeInterface;
 use Media\Download\LocalDownload;
+use Media\Download\MinioDownload;
 use Media\Repository\MediaRepositoryInterface;
 use Media\Storage\LocalStorage;
+use Media\Storage\MinioStorage;
 use User\Service\AccountService;
 use User\Service\UtilityService;
 
@@ -22,8 +25,14 @@ class MediaService implements ServiceInterface
     /** @var LocalStorage */
     protected LocalStorage $localStorage;
 
+    /** @var MinioStorage */
+    protected MinioStorage $minioStorage;
+
     /** @var LocalDownload */
     protected LocalDownload $localDownload;
+
+    /** @var MinioDownload */
+    protected MinioDownload $minioDownload;
 
     /* @var array */
     protected array $config;
@@ -68,74 +77,105 @@ class MediaService implements ServiceInterface
 
     public function __construct(
         MediaRepositoryInterface $mediaRepository,
-        AccountService $accountService,
-        UtilityService $utilityService,
-        LocalStorage $localStorage,
-        LocalDownload $localDownload,
-        $config
+        AccountService           $accountService,
+        UtilityService           $utilityService,
+        LocalStorage             $localStorage,
+        MinioStorage             $minioStorage,
+        LocalDownload            $localDownload,
+        MinioDownload            $minioDownload,
+                                 $config
     ) {
         $this->mediaRepository = $mediaRepository;
         $this->accountService  = $accountService;
         $this->utilityService  = $utilityService;
         $this->localStorage    = $localStorage;
+        $this->minioStorage    = $minioStorage;
         $this->localDownload   = $localDownload;
+        $this->minioDownload   = $minioDownload;
         $this->config          = $config;
+    }
+
+    public function addMedia($uploadFile, $authorization, $params, $storeInfo = []): array
+    {
+        // Store media
+        if (empty($storeInfo)) {
+            $storeInfo = $this->storeMedia($uploadFile, $authorization, $params);
+        }
+
+        // Save and return
+        return $this->saveMedia($authorization, $params, $storeInfo);
     }
 
     public function storeMedia($uploadFile, $authorization, $params): array
     {
-        // Set path
-        switch ($params['access']) {
-            case 'company':
-                $path = sprintf('%s/%s/%s', $authorization['company']['hash'], date('Y'), date('m'));
-                break;
+        // Set storage
+        if (isset($params['storage']) && in_array($params['storage'], ['local', 'minio'])) {
+            $this->storage = $params['storage'];
+        } elseif (isset($this->config['storage']) && in_array($this->config['storage'], ['local', 'minio'])) {
+            $this->storage = $this->config['storage'] ?? 'local';
+        }
 
-            case 'private':
-                $path = sprintf('%s/%s/%s', $authorization['user']['hash'], date('Y'), date('m'));
-                break;
-
+        // Set
+        switch ($this->storage) {
             default:
-            case 'public':
-                $path = sprintf('%s/%s', date('Y'), date('m'));
+            case 'local':
+                // Set path
+                switch ($params['access']) {
+                    case 'company':
+                        $path = sprintf('%s/%s/%s', $authorization['company']['hash'], date('Y'), date('m'));
+                        break;
+
+                    case 'private':
+                        $path = sprintf('%s/%s/%s', $authorization['user']['hash'], date('Y'), date('m'));
+                        break;
+
+                    default:
+                    case 'public':
+                        $path = sprintf('%s/%s', date('Y'), date('m'));
+                        break;
+                }
+
+                // Set storage params
+                $storageParams = [
+                    'storage'     => $this->storage,
+                    'access'      => $params['access'],
+                    'local_path'  => $path,
+                    'random_name' => $params['random_name'] ?? 0,
+                ];
+
+                // Store media
+                $result = $this->localStorage->storeMedia($uploadFile, $storageParams);
+                break;
+
+            case 'minio':
+                // Set storage params
+                $storageParams = [
+                    'storage'     => $this->storage,
+                    'access'      => $authorization['access'],
+                    'bucket'      => $authorization['company']['slug'],
+                    'random_name' => $params['random_name'] ?? 0,
+                    'company_id'  => $authorization['company_id'],
+                    'user_id'     => $authorization['user_id'],
+                ];
+
+                $result = $this->minioStorage->storeMedia($uploadFile, $storageParams);
                 break;
         }
 
-        // Set storage params
-        $storageParams = [
-            'storage'    => $this->storage,
-            'access'     => $params['access'],
-            'local_path' => $path,
-            'random_name' => $params['random_name'] ?? 0,
-        ];
-
-        // Store media
-        return $this->localStorage->storeMedia($uploadFile, $storageParams);
-    }
-
-    public function addMedia($uploadFile, $authorization, $params): array
-    {
-        // Store media
-        $storeInfo = $this->storeMedia($uploadFile, $authorization, $params);
-
-        // Save and return
-        return $this->saveMedia($authorization, $params, $storeInfo);
-    }
-
-    public function createMedia($authorization, $params, $storageParams): array
-    {
-        // Store media
-        $storeInfo = $this->localStorage->createMedia($storageParams);
-
-        // Save and return
-        return $this->saveMedia($authorization, $params, $storeInfo);
+        return $result;
     }
 
     public function saveMedia($authorization, $params, $storeInfo): array
     {
         // Make download info
         $downloadInfo = [
-            'public_uri' => ($params['access'] == 'public') ? $this->localDownload->makePublicUri($storeInfo) : '',
+            'public_uri' => '',
+            'private_uri' => '',
         ];
+
+        if ($this->storage == 'local' && $params['access'] == 'public') {
+            $downloadInfo['public_uri'] = $this->localDownload->makePublicUri($storeInfo);
+        }
 
         // Set storage params
         $addStorage = [
@@ -230,323 +270,6 @@ class MediaService implements ServiceInterface
         }
 
         return $storage;
-    }
-
-    public function getMediaList($authorization, $params): array
-    {
-        if (!in_array($authorization['access'], ['private', 'company', 'group', 'admin'])) {
-            return [
-                'result' => false,
-                'data'   => [],
-                'error'  => [
-                    'message' => 'Please select the true access type !',
-                ],
-            ];
-        }
-
-        $view   = (isset($params['view']) && in_array($params['view'], ['limited', 'compressed'])) ? $params['view'] : 'limited';
-        $limit  = (int)($params['limit'] ?? 25);
-        $page   = (int)($params['page'] ?? 1);
-        $order  = $params['order'] ?? ['time_create DESC'];
-        $offset = ($page - 1) * $limit;
-
-        $listParams = [
-            'order'  => $order,
-            'offset' => $offset,
-            'limit'  => $limit,
-        ];
-
-        if ($authorization['access'] == 'company') {
-            $listParams['access']     = 'company';
-            $listParams['company_id'] = $authorization['company_id'];
-            if (!$authorization['is_admin']) {
-                $listParams['user_id'] = $authorization['user_id'];
-            } elseif (isset($params['user_id']) && !empty($params['user_id'])) {
-                $listParams['user_id'] = $params['user_id'];
-            }
-        } elseif ($authorization['access'] == 'private') {
-            $listParams['access']  = 'private';
-            $listParams['user_id'] = $authorization['user_id'];
-        } elseif ($authorization['access'] == 'admin') {
-            if (isset($params['user_id']) && !empty($params['user_id'])) {
-                $listParams['user_id'] = $params['user_id'];
-            }
-        }
-
-        if (isset($params['status']) && !empty($params['status'])) {
-            $listParams['status'] = $params['status'];
-        }
-        if (isset($params['slug']) && !empty($params['slug'])) {
-            $listParams['slug'] = $params['slug'];
-        }
-        if (isset($params['id']) && !empty($params['id'])) {
-            $listParams['id'] = $params['id'];
-        }
-
-        // Check request has relation information
-        if (isset($params['relation_module']) && !empty($params['relation_module'])
-            && isset($params['relation_section'])
-            && !empty($params['relation_section'])
-            && isset($params['relation_item'])
-            && !empty($params['relation_item'])
-        ) {
-            $listParams['relation_module']  = $params['relation_module'];
-            $listParams['relation_section'] = $params['relation_section'];
-            $listParams['relation_item']    = $params['relation_item'];
-
-            // Get list
-            $list   = [];
-            $rowSet = $this->mediaRepository->getMediaListByRelationList($listParams);
-            foreach ($rowSet as $row) {
-                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => $view]);
-            }
-
-            // Get count
-            $count = $this->mediaRepository->getMediaListByRelationCount($listParams);
-        } else {
-            // Get list
-            $list   = [];
-            $rowSet = $this->mediaRepository->getMediaList($listParams);
-            foreach ($rowSet as $row) {
-                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => $view]);
-            }
-
-            if (!empty($list) && $view != 'compressed') {
-                $rowSet = $this->mediaRepository->getMediaRelationList(['storage_id' => array_keys($list)]);
-                foreach ($rowSet as $row) {
-                    $list[$row->getStorageId()]['relation'][] = $this->canonizeRelation($row);
-                }
-            }
-
-            // Get count
-            $count = $this->mediaRepository->getMediaCount($listParams);
-        }
-
-        return [
-            'result' => true,
-            'data'   => [
-                'list'      => array_values($list),
-                'paginator' => [
-                    'count' => $count,
-                    'limit' => $limit,
-                    'page'  => $page,
-                ],
-            ],
-            'error'  => [],
-        ];
-    }
-
-    public function getMedia($params): array
-    {
-        $media = $this->mediaRepository->getMedia(['id' => $params['id']]);
-        return $this->canonizeStorage($media);
-    }
-
-    public function addRelation($storage, $authorization, $params): array
-    {
-        // Set relation params
-        $addRelation = [
-            'storage_id'       => $storage['id'],
-            'user_id'          => $authorization['user_id'],
-            'company_id'       => $authorization['company_id'],
-            'access'           => $storage['access'],
-            'relation_module'  => $params['relation_module'],
-            'relation_section' => $params['relation_section'],
-            'relation_item'    => (int)$params['relation_item'],
-            'status'           => 1,
-            'time_create'      => time(),
-            'time_update'      => time(),
-            'information'      => json_encode(
-                [
-                    'relation_item_title'      => $params['relation_item_title'] ?? null,
-                    'relation_framework_id'    => $params['relation_framework_id'] ?? null,
-                    'relation_framework_title' => $params['relation_framework_title'] ?? null,
-                    'relation_domain_id'       => $params['relation_domain_id'] ?? null,
-                    'relation_domain_title'    => $params['relation_domain_title'] ?? null,
-                ],
-                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
-            ),
-        ];
-
-        // Save relation
-        $relation              = $this->mediaRepository->addMediaRelation($addRelation);
-        $storage['relation'][] = $this->canonizeRelation($relation);
-
-        // Clean up
-        unset($storage['information']['storage']);
-
-        return $storage;
-    }
-
-    public function updateMediaWhitFile($media, $uploadFile, $authorization, $params): array
-    {
-        // Store media
-        $storeInfo = $this->storeMedia($uploadFile, $authorization, $params);
-
-        // Set download uri
-        $downloadInfo = [
-            'public_uri' => ($params['access'] == 'public') ? $this->localDownload->makePublicUri($storeInfo) : '',
-        ];
-
-        // Set update params
-        $updateParams = [
-            'time_update' => time(),
-        ];
-        if (isset($params['title']) && !empty($params['title'])) {
-            $updateParams['title'] = $params['title'];
-        }
-        if (isset($params['status']) && is_numeric($params['status'])) {
-            $updateParams['status'] = (int)$params['status'];
-        }
-        if (isset($storeInfo['file_extension']) && !empty($storeInfo['file_extension'])) {
-            $updateParams['extension'] = $storeInfo['file_extension'];
-            $updateParams['type']      = $this->localStorage->makeFileType($storeInfo['file_extension']);
-        }
-        if (isset($storeInfo['file_size']) && !empty($storeInfo['file_size'])) {
-            $updateParams['size'] = $storeInfo['file_size'];
-        }
-
-        // Set information
-        $information             = $media['information'];
-        $information['download'] = $downloadInfo;
-        if (isset($storeInfo) && !empty($storeInfo)) {
-            $information['storage'] = $storeInfo;
-        }
-        if (isset($params['category']) && !empty($params['category'])) {
-            $information['category'] = $params['category'];
-        }
-        if (isset($params['review']) && !empty($params['review'])) {
-            $information['review'][] = $params['review'];
-        }
-
-        // Set history
-        $information['history'][] = [
-            'action'  => 'update',
-            'storage' => $storeInfo,
-            'user_id' => $authorization['user_id'],
-            'data'    => $updateParams,
-        ];
-
-        // Set information
-        $updateParams['information'] = json_encode(
-            $information,
-            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
-        );
-
-        // Save and get
-        $this->mediaRepository->updateMedia((int)$media['id'], $updateParams);
-        return $this->getMedia($media);
-    }
-
-    public function updateMedia($media, $authorization, $params): array
-    {
-        // Set update params
-        $updateParams = [
-            'time_update' => time(),
-        ];
-        if (isset($params['title']) && !empty($params['title'])) {
-            $updateParams['title'] = $params['title'];
-        }
-        if (isset($params['status']) && is_numeric($params['status'])) {
-            $updateParams['status'] = (int)$params['status'];
-        }
-
-        // Set information
-        $information = $media['information'];
-        if (isset($params['category']) && !empty($params['category'])) {
-            $information['category'] = $params['category'];
-        }
-        if (isset($params['review']) && !empty($params['review'])) {
-            $information['review'][] = $params['review'];
-        }
-
-        // Set history
-        $information['history'][] = [
-            'action'  => 'update',
-            'storage' => [],
-            'user_id' => $authorization['user_id'],
-            'data'    => $updateParams,
-        ];
-
-        // Set information
-        $updateParams['information'] = json_encode(
-            $information,
-            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
-        );
-
-        // Save and get
-        $this->mediaRepository->updateMedia((int)$media['id'], $updateParams);
-        return $this->getMedia($media);
-    }
-
-    public function deleteMedia($media, $authorization): void
-    {
-        // Delete the file
-        $this->localStorage->remove($media['information']['storage']['file_path']);
-
-        // Delete relation
-        $this->mediaRepository->deleteMedia((int)$media['id']);
-
-        // Delete storage
-        $this->mediaRepository->deleteMedia((int)$media['id']);
-    }
-
-    public function streamMedia($media): string
-    {
-        // Update download count
-        $this->mediaRepository->updateDownloadCount((int)$media['id']);
-
-        // Set options
-        $options = [];
-        if (isset($media['information']['storage']['original_name'])) {
-            $options['filename'] = $media['information']['storage']['original_name'];
-            $options['filename'] = $this->replacePersianCharacters($options['filename']);
-        }
-        if (isset($media['information']['storage']['file_extension'])) {
-            $options['content_type'] = $media['information']['storage']['file_extension'];
-        }
-
-        // Start stream
-        return $this->localDownload->stream($media['information']['storage']['file_path'], $options);
-    }
-
-    public function streamFile($filePath, $options = []): string
-    {
-        // Start stream
-        return $this->localDownload->stream($filePath, $options);
-    }
-
-    public function analytic($authorization): array
-    {
-        $params = [
-            'company_id' => $authorization['company_id'],
-        ];
-
-        $result = $this->mediaRepository->analytic($params);
-        foreach ($result as $row) {
-            $this->defaultTypes[$row['type']]['value'] = $row['count'];
-        }
-
-        return array_values($this->defaultTypes);
-    }
-
-    public function isDuplicated($slug): bool
-    {
-        return (bool)$this->mediaRepository->duplicatedMedia(
-            [
-                'slug' => $slug,
-            ]
-        );
-    }
-
-    public function calculateStorage($params): array
-    {
-        $size = $this->mediaRepository->calculateStorage($params);
-
-        return [
-            'storage_size'      => $size,
-            'storage_size_view' => $this->localStorage->transformSize($size),
-        ];
     }
 
     public function canonizeStorage($storage, $options = []): array
@@ -707,11 +430,343 @@ class MediaService implements ServiceInterface
         return $relation;
     }
 
+    public function createMedia($authorization, $params, $storageParams): array
+    {
+        // Store media
+        $storeInfo = $this->localStorage->createMedia($storageParams);
+
+        // Save and return
+        return $this->saveMedia($authorization, $params, $storeInfo);
+    }
+
+    public function getMediaList($authorization, $params): array
+    {
+        if (!in_array($authorization['access'], ['private', 'company', 'group', 'admin'])) {
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => 'Please select the true access type !',
+                ],
+            ];
+        }
+
+        $view   = (isset($params['view']) && in_array($params['view'], ['limited', 'compressed'])) ? $params['view'] : 'limited';
+        $limit  = (int)($params['limit'] ?? 25);
+        $page   = (int)($params['page'] ?? 1);
+        $order  = $params['order'] ?? ['time_create DESC'];
+        $offset = ($page - 1) * $limit;
+
+        $listParams = [
+            'order'  => $order,
+            'offset' => $offset,
+            'limit'  => $limit,
+        ];
+
+        if ($authorization['access'] == 'company') {
+            $listParams['access']     = 'company';
+            $listParams['company_id'] = $authorization['company_id'];
+            if (!$authorization['is_admin']) {
+                $listParams['user_id'] = $authorization['user_id'];
+            } elseif (isset($params['user_id']) && !empty($params['user_id'])) {
+                $listParams['user_id'] = $params['user_id'];
+            }
+        } elseif ($authorization['access'] == 'private') {
+            $listParams['access']  = 'private';
+            $listParams['user_id'] = $authorization['user_id'];
+        } elseif ($authorization['access'] == 'admin') {
+            if (isset($params['user_id']) && !empty($params['user_id'])) {
+                $listParams['user_id'] = $params['user_id'];
+            }
+        }
+
+        if (isset($params['status']) && !empty($params['status'])) {
+            $listParams['status'] = $params['status'];
+        }
+        if (isset($params['slug']) && !empty($params['slug'])) {
+            $listParams['slug'] = $params['slug'];
+        }
+        if (isset($params['id']) && !empty($params['id'])) {
+            $listParams['id'] = $params['id'];
+        }
+
+        // Check request has relation information
+        if (isset($params['relation_module']) && !empty($params['relation_module'])
+            && isset($params['relation_section'])
+            && !empty($params['relation_section'])
+            && isset($params['relation_item'])
+            && !empty($params['relation_item'])
+        ) {
+            $listParams['relation_module']  = $params['relation_module'];
+            $listParams['relation_section'] = $params['relation_section'];
+            $listParams['relation_item']    = $params['relation_item'];
+
+            // Get list
+            $list   = [];
+            $rowSet = $this->mediaRepository->getMediaListByRelationList($listParams);
+            foreach ($rowSet as $row) {
+                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => $view]);
+            }
+
+            // Get count
+            $count = $this->mediaRepository->getMediaListByRelationCount($listParams);
+        } else {
+            // Get list
+            $list   = [];
+            $rowSet = $this->mediaRepository->getMediaList($listParams);
+            foreach ($rowSet as $row) {
+                $list[$row->getId()] = $this->canonizeStorage($row, ['view' => $view]);
+            }
+
+            if (!empty($list) && $view != 'compressed') {
+                $rowSet = $this->mediaRepository->getMediaRelationList(['storage_id' => array_keys($list)]);
+                foreach ($rowSet as $row) {
+                    $list[$row->getStorageId()]['relation'][] = $this->canonizeRelation($row);
+                }
+            }
+
+            // Get count
+            $count = $this->mediaRepository->getMediaCount($listParams);
+        }
+
+        return [
+            'result' => true,
+            'data'   => [
+                'list'      => array_values($list),
+                'paginator' => [
+                    'count' => $count,
+                    'limit' => $limit,
+                    'page'  => $page,
+                ],
+            ],
+            'error'  => [],
+        ];
+    }
+
+    public function addRelation($storage, $authorization, $params): array
+    {
+        // Set relation params
+        $addRelation = [
+            'storage_id'       => $storage['id'],
+            'user_id'          => $authorization['user_id'],
+            'company_id'       => $authorization['company_id'],
+            'access'           => $storage['access'],
+            'relation_module'  => $params['relation_module'],
+            'relation_section' => $params['relation_section'],
+            'relation_item'    => (int)$params['relation_item'],
+            'status'           => 1,
+            'time_create'      => time(),
+            'time_update'      => time(),
+            'information'      => json_encode(
+                [
+                    'relation_item_title'      => $params['relation_item_title'] ?? null,
+                    'relation_framework_id'    => $params['relation_framework_id'] ?? null,
+                    'relation_framework_title' => $params['relation_framework_title'] ?? null,
+                    'relation_domain_id'       => $params['relation_domain_id'] ?? null,
+                    'relation_domain_title'    => $params['relation_domain_title'] ?? null,
+                ],
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
+            ),
+        ];
+
+        // Save relation
+        $relation              = $this->mediaRepository->addMediaRelation($addRelation);
+        $storage['relation'][] = $this->canonizeRelation($relation);
+
+        // Clean up
+        unset($storage['information']['storage']);
+
+        return $storage;
+    }
+
+    public function updateMediaWhitFile($media, $uploadFile, $authorization, $params): array
+    {
+        // Store media
+        $storeInfo = $this->storeMedia($uploadFile, $authorization, $params);
+
+        // Set download uri
+        $downloadInfo = [
+            'public_uri' => ($params['access'] == 'public') ? $this->localDownload->makePublicUri($storeInfo) : '',
+        ];
+
+        // Set update params
+        $updateParams = [
+            'time_update' => time(),
+        ];
+        if (isset($params['title']) && !empty($params['title'])) {
+            $updateParams['title'] = $params['title'];
+        }
+        if (isset($params['status']) && is_numeric($params['status'])) {
+            $updateParams['status'] = (int)$params['status'];
+        }
+        if (isset($storeInfo['file_extension']) && !empty($storeInfo['file_extension'])) {
+            $updateParams['extension'] = $storeInfo['file_extension'];
+            $updateParams['type']      = $this->localStorage->makeFileType($storeInfo['file_extension']);
+        }
+        if (isset($storeInfo['file_size']) && !empty($storeInfo['file_size'])) {
+            $updateParams['size'] = $storeInfo['file_size'];
+        }
+
+        // Set information
+        $information             = $media['information'];
+        $information['download'] = $downloadInfo;
+        if (isset($storeInfo) && !empty($storeInfo)) {
+            $information['storage'] = $storeInfo;
+        }
+        if (isset($params['category']) && !empty($params['category'])) {
+            $information['category'] = $params['category'];
+        }
+        if (isset($params['review']) && !empty($params['review'])) {
+            $information['review'][] = $params['review'];
+        }
+
+        // Set history
+        $information['history'][] = [
+            'action'  => 'update',
+            'storage' => $storeInfo,
+            'user_id' => $authorization['user_id'],
+            'data'    => $updateParams,
+        ];
+
+        // Set information
+        $updateParams['information'] = json_encode(
+            $information,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
+        );
+
+        // Save and get
+        $this->mediaRepository->updateMedia((int)$media['id'], $updateParams);
+        return $this->getMedia($media);
+    }
+
+    public function updateMedia($media, $authorization, $params): array
+    {
+        // Set update params
+        $updateParams = [
+            'time_update' => time(),
+        ];
+        if (isset($params['title']) && !empty($params['title'])) {
+            $updateParams['title'] = $params['title'];
+        }
+        if (isset($params['status']) && is_numeric($params['status'])) {
+            $updateParams['status'] = (int)$params['status'];
+        }
+
+        // Set information
+        $information = $media['information'];
+        if (isset($params['category']) && !empty($params['category'])) {
+            $information['category'] = $params['category'];
+        }
+        if (isset($params['review']) && !empty($params['review'])) {
+            $information['review'][] = $params['review'];
+        }
+
+        // Set history
+        $information['history'][] = [
+            'action'  => 'update',
+            'storage' => [],
+            'user_id' => $authorization['user_id'],
+            'data'    => $updateParams,
+        ];
+
+        // Set information
+        $updateParams['information'] = json_encode(
+            $information,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
+        );
+
+        // Save and get
+        $this->mediaRepository->updateMedia((int)$media['id'], $updateParams);
+        return $this->getMedia($media);
+    }
+
+    public function getMedia($params): array
+    {
+        $media = $this->mediaRepository->getMedia(['id' => $params['id']]);
+        return $this->canonizeStorage($media);
+    }
+
+    public function deleteMedia($media, $authorization): void
+    {
+        // Delete the file
+        $this->localStorage->remove($media['information']['storage']['file_path']);
+
+        // Delete relation
+        $this->mediaRepository->deleteMedia((int)$media['id']);
+
+        // Delete storage
+        $this->mediaRepository->deleteMedia((int)$media['id']);
+    }
+
+    public function streamMedia($media): string
+    {
+        // Update download count
+        $this->mediaRepository->updateDownloadCount((int)$media['id']);
+
+        // Set options
+        $options = [];
+        if (isset($media['information']['storage']['original_name'])) {
+            $options['filename'] = $media['information']['storage']['original_name'];
+            $options['filename'] = $this->replacePersianCharacters($options['filename']);
+        }
+        if (isset($media['information']['storage']['file_extension'])) {
+            $options['content_type'] = $media['information']['storage']['file_extension'];
+        }
+
+        // Start stream
+        return $this->localDownload->stream($media['information']['storage']['file_path'], $options);
+    }
+
     public function replacePersianCharacters($string): array|string
     {
-        $persianChars = ['ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه', 'ی'];
-        $englishChars = ['a', 'b', 'p', 't', 's', 'j', 'ch', 'h', 'kh', 'd', 'z', 'r', 'z', 'zh', 's', 'sh', 's', 'z', 't', 'z', 'a', 'gh', 'f', 'gh', 'k', 'g', 'l', 'm', 'n', 'v', 'h', 'y'];
+        $persianChars = [
+            'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن',
+            'و', 'ه', 'ی',
+        ];
+        $englishChars = [
+            'a', 'b', 'p', 't', 's', 'j', 'ch', 'h', 'kh', 'd', 'z', 'r', 'z', 'zh', 's', 'sh', 's', 'z', 't', 'z', 'a', 'gh', 'f', 'gh', 'k', 'g', 'l', 'm',
+            'n', 'v', 'h', 'y',
+        ];
 
         return str_replace($persianChars, $englishChars, $string);
+    }
+
+    public function streamFile($filePath, $options = []): string
+    {
+        // Start stream
+        return $this->localDownload->stream($filePath, $options);
+    }
+
+    public function analytic($authorization): array
+    {
+        $params = [
+            'company_id' => $authorization['company_id'],
+        ];
+
+        $result = $this->mediaRepository->analytic($params);
+        foreach ($result as $row) {
+            $this->defaultTypes[$row['type']]['value'] = $row['count'];
+        }
+
+        return array_values($this->defaultTypes);
+    }
+
+    public function isDuplicated($slug): bool
+    {
+        return (bool)$this->mediaRepository->duplicatedMedia(
+            [
+                'slug' => $slug,
+            ]
+        );
+    }
+
+    public function calculateStorage($params): array
+    {
+        $size = $this->mediaRepository->calculateStorage($params);
+
+        return [
+            'storage_size'      => $size,
+            'storage_size_view' => $this->localStorage->transformSize($size),
+        ];
     }
 }

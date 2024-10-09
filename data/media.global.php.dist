@@ -5,6 +5,7 @@ return [
         'authorization'     => [
             'access' => ['public', 'company', 'user', 'group', 'admin'],
         ],
+        'storage'           => 'local', // local or minio
         'download_uri'      => 'https://...',
         'stream_uri'        => 'https://...',
         'private_path'      => 'PRIVATE_PATH',

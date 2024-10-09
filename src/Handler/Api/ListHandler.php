@@ -24,8 +24,8 @@ class ListHandler implements RequestHandlerInterface
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface $streamFactory,
-        MediaService $mediaService
+        StreamFactoryInterface   $streamFactory,
+        MediaService             $mediaService
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;

@@ -3,13 +3,19 @@
 namespace Media\Middleware;
 
 use Fig\Http\Message\StatusCodeInterface;
+use Laminas\Filter\FilterChain;
+use Laminas\Filter\PregReplace;
+use Laminas\Filter\StringToLower;
 use Laminas\InputFilter\Input;
 use Laminas\InputFilter\InputFilter;
+use Laminas\Math\Rand;
 use Laminas\Validator\File\Extension;
 use Laminas\Validator\File\MimeType;
 use Laminas\Validator\File\Size;
 use Laminas\Validator\File\UploadFile;
 use Media\Service\MediaService;
+use Media\Storage\LocalStorage;
+use Media\Storage\MinioStorage;
 use Media\Validator\SlugValidator;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -49,11 +55,11 @@ class UploadMediaMiddleware implements MiddlewareInterface
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface $streamFactory,
-        ErrorHandler $errorHandler,
-        MediaService $mediaService,
-        UtilityService $utilityService,
-        $config
+        StreamFactoryInterface   $streamFactory,
+        ErrorHandler             $errorHandler,
+        MediaService             $mediaService,
+        UtilityService           $utilityService,
+                                 $config
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;
@@ -85,25 +91,36 @@ class UploadMediaMiddleware implements MiddlewareInterface
             return $this->errorHandler->handle($request);
         }
 
+        $uploadFile = array_shift($uploadFiles);
+        $store      = $this->mediaService->storeMedia($uploadFile, $authorization, $requestBody);
+        if (!$store['status']) {
+            $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
+            $request = $request->withAttribute(
+                'error',
+                [
+                    'message' => $store['error']['message'],
+                    'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
+                ]
+            );
+            return $this->errorHandler->handle($request);
+        }
+
+        $request = $request->withAttribute('store_information', $store['data']);
         return $handler->handle($request);
     }
 
-    protected function setErrorHandler($inputFilter): array
+    protected function attacheIsValid($uploadFiles, $authorization, $requestBody): array
     {
-        $message = [];
-        foreach ($inputFilter->getInvalidInput() as $error) {
-            $message[$error->getName()] = $error->getName() . ': ' . implode(', ', $error->getMessages());
+        // Check file is set
+        if (empty($uploadFiles)) {
+            return $this->validationResult = [
+                'status'  => false,
+                'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
+                'message' => 'No file uploaded',
+            ];
         }
 
-        return $this->validationResult = [
-            'status'  => false,
-            'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
-            'message' => implode(', ', $message),
-        ];
-    }
-
-    protected function attacheIsValid($uploadFiles, $authorization, $requestBody)
-    {
+        // Set check class
         $validatorUpload    = new UploadFile();
         $validatorExtension = new Extension($this->config['allowed_extension']);
         $validatorMimeType  = new MimeType($this->config['mime_type']);
@@ -153,5 +170,21 @@ class UploadMediaMiddleware implements MiddlewareInterface
                 }
             }
         }
+
+        return $this->validationResult;
+    }
+
+    protected function setErrorHandler($inputFilter): array
+    {
+        $message = [];
+        foreach ($inputFilter->getInvalidInput() as $error) {
+            $message[$error->getName()] = $error->getName() . ': ' . implode(', ', $error->getMessages());
+        }
+
+        return $this->validationResult = [
+            'status'  => false,
+            'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
+            'message' => implode(', ', $message),
+        ];
     }
 }

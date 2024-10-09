@@ -31,10 +31,10 @@ class MediaRepository implements MediaRepositoryInterface
     private Relation $relationPrototype;
 
     public function __construct(
-        AdapterInterface $db,
+        AdapterInterface  $db,
         HydratorInterface $hydrator,
-        Storage $storagePrototype,
-        Relation $relationPrototype
+        Storage           $storagePrototype,
+        Relation          $relationPrototype
     ) {
         $this->db                = $db;
         $this->hydrator          = $hydrator;
@@ -223,6 +223,26 @@ class MediaRepository implements MediaRepositoryInterface
         return (int)$row['count'];
     }
 
+    public function addMedia(array $params = []): array|Storage
+    {
+        $insert = new Insert($this->tableStorage);
+        $insert->values($params);
+
+        $sql       = new Sql($this->db);
+        $statement = $sql->prepareStatementForSqlObject($insert);
+        $result    = $statement->execute();
+
+        if (!$result instanceof ResultInterface) {
+            throw new RuntimeException(
+                'Database error occurred during blog post insert operation'
+            );
+        }
+
+        $id = $result->getGeneratedValue();
+
+        return $this->getMedia(['id' => $id]);
+    }
+
     public function getMedia(array $params = []): array|Storage
     {
         // Set
@@ -248,26 +268,6 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         return $storage;
-    }
-
-    public function addMedia(array $params = []): array|Storage
-    {
-        $insert = new Insert($this->tableStorage);
-        $insert->values($params);
-
-        $sql       = new Sql($this->db);
-        $statement = $sql->prepareStatementForSqlObject($insert);
-        $result    = $statement->execute();
-
-        if (!$result instanceof ResultInterface) {
-            throw new RuntimeException(
-                'Database error occurred during blog post insert operation'
-            );
-        }
-
-        $id = $result->getGeneratedValue();
-
-        return $this->getMedia(['id' => $id]);
     }
 
     public function updateMedia(int $mediaId, array $params = []): void
@@ -341,6 +341,26 @@ class MediaRepository implements MediaRepositoryInterface
         return (int)$row['count'];
     }
 
+    public function addMediaRelation(array $params = []): array|Relation
+    {
+        $insert = new Insert($this->tableRelation);
+        $insert->values($params);
+
+        $sql       = new Sql($this->db);
+        $statement = $sql->prepareStatementForSqlObject($insert);
+        $result    = $statement->execute();
+
+        if (!$result instanceof ResultInterface) {
+            throw new RuntimeException(
+                'Database error occurred during blog post insert operation'
+            );
+        }
+
+        $id = $result->getGeneratedValue();
+
+        return $this->getMediaRelation(['id' => $id]);
+    }
+
     public function getMediaRelation(array $params = []): array|Relation
     {
         // Set
@@ -366,26 +386,6 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         return $relation;
-    }
-
-    public function addMediaRelation(array $params = []): array|Relation
-    {
-        $insert = new Insert($this->tableRelation);
-        $insert->values($params);
-
-        $sql       = new Sql($this->db);
-        $statement = $sql->prepareStatementForSqlObject($insert);
-        $result    = $statement->execute();
-
-        if (!$result instanceof ResultInterface) {
-            throw new RuntimeException(
-                'Database error occurred during blog post insert operation'
-            );
-        }
-
-        $id = $result->getGeneratedValue();
-
-        return $this->getMediaRelation(['id' => $id]);
     }
 
     public function getMediaRelationList($params = []): HydratingResultSet

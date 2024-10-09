@@ -2,6 +2,4 @@
 
 namespace Media\Service;
 
-interface ServiceInterface
-{
-}
+interface ServiceInterface {}

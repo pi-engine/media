@@ -25,7 +25,7 @@ class SlugValidator extends AbstractValidator
      */
     public function __construct(
         MediaService $mediaService,
-        $options = []
+                     $options = []
     ) {
         $this->mediaService = $mediaService;
         $this->options      = array_merge($this->options, $options);

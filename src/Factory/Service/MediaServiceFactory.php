@@ -2,6 +2,8 @@
 
 namespace Media\Factory\Service;
 
+use Media\Download\MinioDownload;
+use Media\Storage\MinioStorage;
 use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Download\LocalDownload;
@@ -23,7 +25,9 @@ class MediaServiceFactory implements FactoryInterface
             $container->get(AccountService::class),
             $container->get(UtilityService::class),
             $container->get(LocalStorage::class),
+            $container->get(MinioStorage::class),
             $container->get(LocalDownload::class),
+            $container->get(MinioDownload::class),
             $config
         );
     }

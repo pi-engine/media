@@ -10,7 +10,6 @@ use FilesystemIterator;
 use Laminas\Filter\FilterChain;
 use Laminas\Filter\PregReplace;
 use Laminas\Filter\StringToLower;
-use Laminas\Filter\Word\SeparatorToDash;
 use Laminas\Math\Rand;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -31,13 +30,14 @@ class LocalStorage implements StorageInterface
      */
     public function storeMedia($uploadFile, $params): array
     {
+        // Set file name
+        $fileName = $this->makeFileName($uploadFile->getClientFilename());
+        $fileInfo = pathinfo($uploadFile->getClientFilename());
+
+        // Set path
         $mainPath = ($params['access'] == 'public') ? $this->config['public_path'] : $this->config['private_path'];
         $fullPath = sprintf('%s/%s', $mainPath, $params['local_path']);
-        $fileInfo = pathinfo($uploadFile->getClientFilename());
-        $fileName = $this->makeFileName($fileInfo['filename']);
-        $fileName = strtolower(sprintf('%s-%s-%s.%s', $fileName, date('Y-m-d-H-i-s'), rand(1000, 9999), $fileInfo['extension']));
         $filePath = sprintf('%s/%s', $fullPath, $fileName);
-        $fileSize = $uploadFile->getSize();
 
         // Check and make path
         $this->mkdir($fullPath);
@@ -52,15 +52,19 @@ class LocalStorage implements StorageInterface
         }
 
         return [
-            'original_name'  => $originalName,
-            'file_title'     => $fileInfo['filename'],
-            'file_extension' => strtolower($fileInfo['extension']),
-            'file_size'      => $fileSize,
-            'file_name'      => $fileName,
-            'file_path'      => $filePath,
-            'full_path'      => $fullPath,
-            'main_path'      => $mainPath,
-            'local_path'     => $params['local_path'],
+            'status' => true,
+            'data'   => [
+                'original_name'  => $originalName,
+                'file_title'     => $fileInfo['filename'],
+                'file_extension' => strtolower($fileInfo['extension']),
+                'file_size'      => $uploadFile->getSize(),
+                'file_name'      => $fileName,
+                'file_path'      => $filePath,
+                'full_path'      => $fullPath,
+                'main_path'      => $mainPath,
+                'local_path'     => $params['local_path'],
+            ],
+            'error'  => [],
         ];
     }
 
@@ -85,6 +89,28 @@ class LocalStorage implements StorageInterface
             'main_path'      => $mainPath,
             'local_path'     => $params['local_path'],
         ];
+    }
+
+    public function makeFileName($file): string
+    {
+        // Extract the file information
+        $fileInfo = pathinfo($file);
+
+        // Initialize the filter chain
+        $filterChain = new FilterChain();
+        $filterChain->attach(new StringToLower()) // Convert to lowercase
+        ->attach(new PregReplace('/\s+/', '-')) // Replace spaces with a single dash
+        ->attach(new PregReplace('/[^a-z0-9-]/', '-')) // Replace non-alphanumeric characters with dashes
+        ->attach(new PregReplace('/--+/', '-')); // Replace consecutive single dashes with double dashes
+
+        // Filter the filename
+        $fileName = $filterChain->filter($fileInfo['filename']);
+
+        // Format the new filename
+        $timestamp    = date('Y-m-d-H-i-s');
+        $randomString = Rand::getString('8', 'abcdefghijklmnopqrstuvwxyz0123456789');
+
+        return sprintf('%s-%s-%s.%s', $fileName, $timestamp, $randomString, $fileInfo['extension']);
     }
 
     public function makeFileType($extension): string
@@ -203,14 +229,48 @@ class LocalStorage implements StorageInterface
         }
     }
 
-    public function makeFileName($fileName)
+    /**
+     * Creates a directory recursively.
+     *
+     * @param string|iterable $dirs The directory path
+     * @param int             $mode The directory mode
+     *
+     * @return $this
+     *
+     * @throws Exception On any directory creation failure
+     */
+    public function mkdir(string|iterable $dirs, int $mode = 0777)
     {
-        $filterChain = new FilterChain();
-        $filterChain->attach(new StringToLower())
-            ->attach(new SeparatorToDash())
-            ->attach(new PregReplace('/[^a-zA-Z0-9-]/', '-'));
+        foreach ($this->toIterator($dirs) as $dir) {
+            if (is_dir($dir)) {
+                continue;
+            }
 
-        return $filterChain->filter($fileName);
+            if (true !== @mkdir($dir, $mode, true)) {
+                throw new Exception(sprintf('Failed to create %s', $dir));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Transform array to iterator
+     *
+     * @param mixed $files
+     *
+     * @return Traversable|ArrayObject
+     */
+    protected function toIterator(mixed $files): Traversable|ArrayObject
+    {
+        if (!$files instanceof Traversable) {
+            $files = new ArrayObject(
+                is_array($files)
+                    ? $files : [$files]
+            );
+        }
+
+        return $files;
     }
 
     /**
@@ -248,80 +308,14 @@ class LocalStorage implements StorageInterface
     }
 
     /**
-     * Copies a file.
-     *
-     * This method only copies the file if the origin file is newer
-     * than the target file.
-     *
-     * By default, if the target already exists, it is not overridden.
-     *
-     * @param string $originFile The original filename
-     * @param string $targetFile The target filename
-     * @param bool   $override   Whether to override an existing file
-     *
-     * @return $this
-     *
-     * @throws Exception When copy fails
-     */
-    public function copy(string $originFile, string $targetFile, bool $override = false): static
-    {
-        $this->mkdir(dirname($targetFile));
-
-        if (!$override && is_file($targetFile)) {
-            $doCopy = filemtime($originFile) > filemtime($targetFile);
-        } else {
-            $doCopy = true;
-        }
-
-        if ($doCopy) {
-            if (true !== @copy($originFile, $targetFile)) {
-                throw new Exception(
-                    sprintf(
-                        'Failed to copy %s to %s',
-                        $originFile,
-                        $targetFile
-                    )
-                );
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Creates a directory recursively.
-     *
-     * @param string|array|Traversable $dirs The directory path
-     * @param int                      $mode The directory mode
-     *
-     * @return $this
-     *
-     * @throws Exception On any directory creation failure
-     */
-    public function mkdir($dirs, $mode = 0777)
-    {
-        foreach ($this->toIterator($dirs) as $dir) {
-            if (is_dir($dir)) {
-                continue;
-            }
-
-            if (true !== @mkdir($dir, $mode, true)) {
-                throw new Exception(sprintf('Failed to create %s', $dir));
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * Checks the existence of files or directories.
      *
-     * @param string|array|Traversable $files A filename,
+     * @param string|iterable $files          A filename,
      *                                        an array of files, or a Traversable instance to check
      *
      * @return Bool
      */
-    public function exists($files): bool
+    public function exists(string|iterable $files): bool
     {
         foreach ($this->toIterator($files) as $file) {
             if (!file_exists($file)) {
@@ -335,18 +329,18 @@ class LocalStorage implements StorageInterface
     /**
      * Sets access and modification time of file.
      *
-     * @param string|array|Traversable $files
+     * @param string|iterable $files
      *      A filename, an array of files, or a Traversable instance to create
-     * @param int|null                 $time
+     * @param int|null        $time
      *      The touch time as a unix timestamp
-     * @param int|null                 $atime
+     * @param int|null        $atime
      *      The access time as a unix timestamp
      *
      * @return $this
      *
      * @throws Exception When touch fails
      */
-    public function touch($files, int $time = null, int $atime = null): static
+    public function touch(string|iterable $files, int $time = null, int $atime = null): static
     {
         if (null === $time) {
             $time = time();
@@ -364,11 +358,12 @@ class LocalStorage implements StorageInterface
     /**
      * Empties directories.
      *
-     * @param string|array|Traversable $dirs The directory path
+     * @param string|iterable $dirs The directory path
      *
      * @return $this
+     * @throws Exception
      */
-    public function flush($dirs): static
+    public function flush(string|iterable $dirs): static
     {
         $dirs = iterator_to_array($this->toIterator($dirs));
         foreach ($dirs as $dir) {
@@ -438,19 +433,19 @@ class LocalStorage implements StorageInterface
     /**
      * Change mode for an array of files or directories.
      *
-     * @param string|array|Traversable $files
+     * @param string|iterable $files
      *                                        A filename, an array of files,
      *                                        or a Traversable instance to change mode
-     * @param int                      $mode  The new mode (octal)
-     * @param int                      $umask The mode mask (octal)
-     * @param Bool                     $recursive
+     * @param int             $mode  The new mode (octal)
+     * @param int             $umask The mode mask (octal)
+     * @param Bool            $recursive
      *                                        Whether change the mod recursively or not
      *
      * @return $this
      *
      * @throws Exception When the change fail
      */
-    public function chmod($files, int $mode, int $umask = 0000, bool $recursive = false): static
+    public function chmod(string|iterable $files, int $mode, int $umask = 0000, bool $recursive = false): static
     {
         foreach ($this->toIterator($files) as $file) {
             if ($recursive && is_dir($file) && !is_link($file)) {
@@ -472,18 +467,18 @@ class LocalStorage implements StorageInterface
     /**
      * Change the owner of an array of files or directories
      *
-     * @param string|array|Traversable $files
+     * @param string|iterable $files
      *                                       A filename, an array of files,
      *                                       or a \Traversable instance to change owner
-     * @param string                   $user The new owner user name
-     * @param Bool                     $recursive
+     * @param string          $user The new owner user name
+     * @param Bool            $recursive
      *                                       Whether change the owner recursively or not
      *
      * @return $this
      *
      * @throws Exception When the change fail
      */
-    public function chown($files, string $user, bool $recursive = false): static
+    public function chown(string|iterable $files, string $user, bool $recursive = false): static
     {
         foreach ($this->toIterator($files) as $file) {
             if ($recursive && is_dir($file) && !is_link($file)) {
@@ -510,7 +505,7 @@ class LocalStorage implements StorageInterface
     /**
      * Change the group of an array of files or directories
      *
-     * @param string|array|Traversable $files
+     * @param Traversable|array|string $files
      *                                        A filename, an array of files,
      *                                        or a Traversable instance to change group
      * @param string                   $group The group name
@@ -521,7 +516,7 @@ class LocalStorage implements StorageInterface
      *
      * @throws Exception When the change fail
      */
-    public function chgrp($files, string $group, bool $recursive = false): static
+    public function chgrp(Traversable|array|string $files, string $group, bool $recursive = false): static
     {
         foreach ($this->toIterator($files) as $file) {
             if ($recursive && is_dir($file) && !is_link($file)) {
@@ -593,8 +588,8 @@ class LocalStorage implements StorageInterface
     public function symlink(
         string $originDir,
         string $targetDir,
-        bool $copyOnWindows = true,
-        bool $override = false
+        bool   $copyOnWindows = true,
+        bool   $override = false
     ): static {
         if (!function_exists('symlink')
             || (defined('PHP_WINDOWS_VERSION_MAJOR') && $copyOnWindows)
@@ -655,54 +650,6 @@ class LocalStorage implements StorageInterface
     }
 
     /**
-     * Given an existing path,
-     * convert it to a path relative to a given starting path
-     *
-     * @param string $endPath   Absolute path of target
-     * @param string $startPath Absolute path where traversal begins
-     *
-     * @return string Path of target relative to starting path
-     */
-    public function makePathRelative(string $endPath, string $startPath): string
-    {
-        // Normalize separators on windows
-        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
-            $endPath   = strtr($endPath, '\\', '/');
-            $startPath = strtr($startPath, '\\', '/');
-        }
-
-        // Split the paths into arrays
-        $startPathArr = explode('/', trim($startPath, '/'));
-        $endPathArr   = explode('/', trim($endPath, '/'));
-
-        // Find for which directory the common path stops
-        $index = 0;
-        while (isset($startPathArr[$index])
-               && isset($endPathArr[$index])
-               && $startPathArr[$index] === $endPathArr[$index]
-        ) {
-            $index++;
-        }
-
-        // Determine how deep the start path is relative to the common path
-        // (ie, "web/bundles" = 2 levels)
-        $depth = count($startPathArr) - $index;
-
-        // Repeated "../" for each level need to reach the common path
-        $traverser = str_repeat('../', $depth);
-
-        $endPathRemainder = implode('/', array_slice($endPathArr, $index));
-
-        // Construct $endPath from traversing to the common path,
-        // then to the remaining $endPath
-        $relativePath = $traverser
-                        . (strlen($endPathRemainder) > 0
-                ? $endPathRemainder . '/' : '');
-
-        return (strlen($relativePath) === 0) ? './' : $relativePath;
-    }
-
-    /**
      * Mirrors a directory to another.
      *
      * With options
@@ -712,20 +659,20 @@ class LocalStorage implements StorageInterface
      *  - copy_on_windows: Whether to copy files instead of links on Windows
      *      {@see symlink()}.
      *
-     * @param string      $originDir The origin directory
-     * @param string      $targetDir The target directory
-     * @param Traversable $iterator  A Traversable instance
-     * @param array       $options   An array of bool options
+     * @param string           $originDir The origin directory
+     * @param string           $targetDir The target directory
+     * @param Traversable|null $iterator  A Traversable instance
+     * @param array            $options   An array of bool options
      *
      * @return $this
      *
      * @throws Exception When file type is unknown
      */
     public function mirror(
-        string $originDir,
-        string $targetDir,
+        string      $originDir,
+        string      $targetDir,
         Traversable $iterator = null,
-        array $options = []
+        array       $options = []
     ): static {
         $copyOnWindows = true;
         if (isset($options['copy_on_windows'])
@@ -776,47 +723,92 @@ class LocalStorage implements StorageInterface
     }
 
     /**
-     * Returns whether the file path is an absolute path.
+     * Copies a file.
      *
-     * @param string $file A file path
+     * This method only copies the file if the origin file is newer
+     * than the target file.
      *
-     * @return Bool
+     * By default, if the target already exists, it is not overridden.
+     *
+     * @param string $originFile The original filename
+     * @param string $targetFile The target filename
+     * @param bool   $override   Whether to override an existing file
+     *
+     * @return $this
+     *
+     * @throws Exception When copy fails
      */
-    public function isAbsolutePath($file): bool
+    public function copy(string $originFile, string $targetFile, bool $override = false): static
     {
-        //$result = preg_match('|^([a-zA-Z]:)?/|', $path);
-        $result = false;
-        if (strspn($file, '/\\', 0, 1)
-            || (
-                strlen($file) > 3 && ctype_alpha($file[0])
-                && substr($file, 1, 1) === ':'
-                && (strspn($file, '/\\', 2, 1))
-            )
-            || null !== parse_url($file, PHP_URL_SCHEME)
-        ) {
-            $result = true;
+        $this->mkdir(dirname($targetFile));
+
+        if (!$override && is_file($targetFile)) {
+            $doCopy = filemtime($originFile) > filemtime($targetFile);
+        } else {
+            $doCopy = true;
         }
 
-        return $result;
+        if ($doCopy) {
+            if (true !== @copy($originFile, $targetFile)) {
+                throw new Exception(
+                    sprintf(
+                        'Failed to copy %s to %s',
+                        $originFile,
+                        $targetFile
+                    )
+                );
+            }
+        }
+
+        return $this;
     }
 
     /**
-     * Transform array to iterator
+     * Given an existing path,
+     * convert it to a path relative to a given starting path
      *
-     * @param mixed $files
+     * @param string $endPath   Absolute path of target
+     * @param string $startPath Absolute path where traversal begins
      *
-     * @return Traversable
+     * @return string Path of target relative to starting path
      */
-    protected function toIterator($files)
+    public function makePathRelative(string $endPath, string $startPath): string
     {
-        if (!$files instanceof Traversable) {
-            $files = new ArrayObject(
-                is_array($files)
-                    ? $files : [$files]
-            );
+        // Normalize separators on windows
+        if (defined('PHP_WINDOWS_VERSION_MAJOR')) {
+            $endPath   = strtr($endPath, '\\', '/');
+            $startPath = strtr($startPath, '\\', '/');
         }
 
-        return $files;
+        // Split the paths into arrays
+        $startPathArr = explode('/', trim($startPath, '/'));
+        $endPathArr   = explode('/', trim($endPath, '/'));
+
+        // Find for which directory the common path stops
+        $index = 0;
+        while (isset($startPathArr[$index])
+               && isset($endPathArr[$index])
+               && $startPathArr[$index] === $endPathArr[$index]
+        ) {
+            $index++;
+        }
+
+        // Determine how deep the start path is relative to the common path
+        // (ie, "web/bundles" = 2 levels)
+        $depth = count($startPathArr) - $index;
+
+        // Repeated "../" for each level need to reach the common path
+        $traverser = str_repeat('../', $depth);
+
+        $endPathRemainder = implode('/', array_slice($endPathArr, $index));
+
+        // Construct $endPath from traversing to the common path,
+        // then to the remaining $endPath
+        $relativePath = $traverser
+                        . (strlen($endPathRemainder) > 0
+                ? $endPathRemainder . '/' : '');
+
+        return (strlen($relativePath) === 0) ? './' : $relativePath;
     }
 
     /**
@@ -828,7 +820,7 @@ class LocalStorage implements StorageInterface
      *
      * @return array
      */
-    public function getList($path, $filter = null, bool $recursive = false): array
+    public function getList(DirectoryIterator|string $path, Closure $filter = null, bool $recursive = false): array
     {
         $result   = [];
         $iterator = null;
@@ -871,6 +863,31 @@ class LocalStorage implements StorageInterface
                 }
                 $result[] = $filedata;
             }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Returns whether the file path is an absolute path.
+     *
+     * @param string $file A file path
+     *
+     * @return Bool
+     */
+    public function isAbsolutePath(string $file): bool
+    {
+        //$result = preg_match('|^([a-zA-Z]:)?/|', $path);
+        $result = false;
+        if (strspn($file, '/\\', 0, 1)
+            || (
+                strlen($file) > 3 && ctype_alpha($file[0])
+                && substr($file, 1, 1) === ':'
+                && (strspn($file, '/\\', 2, 1))
+            )
+            || null !== parse_url($file, PHP_URL_SCHEME)
+        ) {
+            $result = true;
         }
 
         return $result;

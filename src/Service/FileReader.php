@@ -52,8 +52,8 @@ class FileReader implements ServiceInterface
     {
         try {
             $parser = new PdfParser();
-            $pdf = $parser->parseFile($this->filePath);
-            $text = $pdf->getText();
+            $pdf    = $parser->parseFile($this->filePath);
+            $text   = $pdf->getText();
 
             if (empty(trim($text))) {
                 return ['result' => false, 'data' => [], 'error' => ['message' => 'PDF contains non-readable content (e.g., images or non-extractable text).']];
@@ -69,7 +69,7 @@ class FileReader implements ServiceInterface
     {
         try {
             $spreadsheet = SpreadsheetIOFactory::load($this->filePath);
-            $data = [];
+            $data        = [];
 
             foreach ($spreadsheet->getAllSheets() as $sheet) {
                 foreach ($sheet->getRowIterator() as $row) {
@@ -123,7 +123,7 @@ class FileReader implements ServiceInterface
     {
         try {
             $phpWord = WordIOFactory::load($this->filePath);
-            $text = '';
+            $text    = '';
 
             foreach ($phpWord->getSections() as $section) {
                 foreach ($section->getElements() as $element) {

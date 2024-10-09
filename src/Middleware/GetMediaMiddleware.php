@@ -31,10 +31,10 @@ class GetMediaMiddleware implements MiddlewareInterface
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface $streamFactory,
-        ErrorHandler $errorHandler,
-        MediaService $mediaService,
-        $config
+        StreamFactoryInterface   $streamFactory,
+        ErrorHandler             $errorHandler,
+        MediaService             $mediaService,
+                                 $config
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory   = $streamFactory;
@@ -45,10 +45,10 @@ class GetMediaMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $account = $request->getAttribute('account');
-        $roles = $request->getAttribute('roles');
+        $account       = $request->getAttribute('account');
+        $roles         = $request->getAttribute('roles');
         $authorization = $request->getAttribute('media_authorization');
-        $requestBody = $request->getParsedBody();
+        $requestBody   = $request->getParsedBody();
 
         // Check ID is set
         if (empty($requestBody['id']) || !is_numeric($requestBody['id'])) {
