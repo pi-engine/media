@@ -30,7 +30,6 @@ class MinioStorage implements StorageInterface
                 'key'    => $config['minio']['accessKey'],
                 'secret' => $config['minio']['secretKey'],
             ],
-            //'signature_version' => 'v4',
         ]);
 
         $this->config = $config;
@@ -69,19 +68,22 @@ class MinioStorage implements StorageInterface
                 ],
             ]);
 
-            $response['@metadata']['key']         = $fileName;
-            $response['@metadata']['bucket']      = $params['bucket'];
-            $response['@metadata']['fileRequest'] = $uploadFile->getClientFilename();
-
             return [
                 'status' => true,
                 'data'   => [
-                    'minio'          => $response['@metadata'],
+                    'minio'          => [
+                        'key'          => $fileName,
+                        'bucket'       => $params['bucket'],
+                        'fileRequest'  => $uploadFile->getClientFilename(),
+                        'effectiveUri' => $response['@metadata']['effectiveUri'],
+                    ],
                     'original_name'  => $originalName,
+                    'file_name'      => $fileName,
                     'file_title'     => $fileInfo['filename'],
                     'file_extension' => strtolower($fileInfo['extension']),
                     'file_size'      => $uploadFile->getSize(),
-                    'file_name'      => $fileName,
+                    'file_type'      => $this->makeFileType(strtolower($fileInfo['extension'])),
+                    'file_size_view' => $this->transformSize($uploadFile->getSize()),
                 ],
                 'error'  => [],
             ];
@@ -297,5 +299,44 @@ class MinioStorage implements StorageInterface
         } else {
             return 'unknown';
         }
+    }
+
+    /**
+     * Transform file size
+     *
+     * @param int|string $value
+     *
+     * @return float|bool|int|string
+     */
+    public function transformSize(int|string $value): float|bool|int|string
+    {
+        $result = false;
+        $sizes  = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        if (is_numeric($value)) {
+            $value = (int)$value;
+            for ($i = 0; $value >= 1024 && $i < 9; $i++) {
+                $value /= 1024;
+            }
+
+            $result = round($value, 2) . $sizes[$i];
+        } else {
+            $value   = trim($value);
+            $pattern = '/^([0-9]+)[\s]?(' . implode('|', $sizes) . ')$/i';
+            if (preg_match($pattern, $value, $matches)) {
+                $value = (int)$matches[1];
+                $unit  = strtoupper($matches[2]);
+                $idx   = array_search($unit, $sizes);
+                if (false !== $idx) {
+                    $result = $value * pow(1024, $idx);
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    public function remove(string|iterable $files): void
+    {
+
     }
 }

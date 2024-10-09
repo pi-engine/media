@@ -32,18 +32,21 @@ class LocalDownload implements DownloadInterface
     /**
      * Stream the file to the client (Download)
      *
-     * @param string|array $source  File or file meta to download
-     * @param array        $options Options for the file(s) to send
+     * @param array $params
      *
      * @return bool
      * @throws Exception
      */
-    public function stream($source, array $options = []): bool
+    public function stream(array $params): bool
     {
         $error = '';
+        $source = $params['source'];
+        unset($params['source']);
+        $options = $params;
 
         // Canonize download options
         $source = $this->canonizeDownload($source, $options);
+
         if (!$source) {
             $error = 'Invalid source';
         } elseif ('raw' == $options['type']) {
@@ -90,7 +93,7 @@ class LocalDownload implements DownloadInterface
      * @param array|string $source  File or file meta to download
      * @param array        $options Options for the file(s) to send
      *
-     * @return string
+     * @return array|string
      */
     protected function canonizeDownload(array|string $source, array &$options = []): array|string
     {
@@ -202,7 +205,9 @@ class LocalDownload implements DownloadInterface
             header('Content-Length: ' . $contentLength);
         }
 
-        ob_clean();
+        if (ob_get_level() > 0) {
+            ob_clean();
+        }
         flush();
         if (is_resource($source)) {
             // Send the content in chunks

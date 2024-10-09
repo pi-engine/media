@@ -54,15 +54,19 @@ class LocalStorage implements StorageInterface
         return [
             'status' => true,
             'data'   => [
+                'local'          => [
+                    'file_path'  => $filePath,
+                    'full_path'  => $fullPath,
+                    'main_path'  => $mainPath,
+                    'local_path' => $params['local_path'],
+                ],
                 'original_name'  => $originalName,
+                'file_name'      => $fileName,
                 'file_title'     => $fileInfo['filename'],
                 'file_extension' => strtolower($fileInfo['extension']),
                 'file_size'      => $uploadFile->getSize(),
-                'file_name'      => $fileName,
-                'file_path'      => $filePath,
-                'full_path'      => $fullPath,
-                'main_path'      => $mainPath,
-                'local_path'     => $params['local_path'],
+                'file_type'      => $this->makeFileType($fileInfo['extension']),
+                'file_size_view' => $this->transformSize($uploadFile->getSize()),
             ],
             'error'  => [],
         ];
@@ -70,8 +74,11 @@ class LocalStorage implements StorageInterface
 
     public function createMedia($params): array
     {
-        $mainPath = ($params['access'] == 'public') ? $this->config['public_path'] : $this->config['private_path'];
+        // Set file name
         $fileName = strtolower(sprintf('%s-%s-%s.%s', $params['filename'], date('Y-m-d-H-i-s'), rand(1000, 9999), $params['extension']));
+
+        // Set path
+        $mainPath = ($params['access'] == 'public') ? $this->config['public_path'] : $this->config['private_path'];
         $fullPath = sprintf('%s/%s', $mainPath, $params['local_path']);
         $filePath = sprintf('%s/%s', $fullPath, $fileName);
 
@@ -79,15 +86,19 @@ class LocalStorage implements StorageInterface
         $this->mkdir($fullPath);
 
         return [
+            'local'          => [
+                'file_path'  => $filePath,
+                'full_path'  => $fullPath,
+                'main_path'  => $mainPath,
+                'local_path' => $params['local_path'],
+            ],
             'original_name'  => $params['original_name'] ?? $fileName,
+            'file_name'      => $fileName,
             'file_title'     => $params['filename'],
             'file_extension' => strtolower($params['extension']),
             'file_size'      => 0,
-            'file_name'      => $fileName,
-            'file_path'      => $filePath,
-            'full_path'      => $fullPath,
-            'main_path'      => $mainPath,
-            'local_path'     => $params['local_path'],
+            'file_type'      => $this->makeFileType(strtolower($params['extension'])),
+            'file_size_view' => $this->transformSize(0),
         ];
     }
 
@@ -386,7 +397,7 @@ class LocalStorage implements StorageInterface
      *
      * @throws Exception When removal fails
      */
-    public function remove(string|iterable $files): static
+    public function remove(string|iterable $files): void
     {
         $files = iterator_to_array($this->toIterator($files));
         $files = array_reverse($files);
@@ -426,8 +437,6 @@ class LocalStorage implements StorageInterface
                 }
             }
         }
-
-        return $this;
     }
 
     /**
@@ -436,8 +445,8 @@ class LocalStorage implements StorageInterface
      * @param string|iterable $files
      *                                        A filename, an array of files,
      *                                        or a Traversable instance to change mode
-     * @param int             $mode  The new mode (octal)
-     * @param int             $umask The mode mask (octal)
+     * @param int             $mode           The new mode (octal)
+     * @param int             $umask          The mode mask (octal)
      * @param Bool            $recursive
      *                                        Whether change the mod recursively or not
      *
@@ -470,7 +479,7 @@ class LocalStorage implements StorageInterface
      * @param string|iterable $files
      *                                       A filename, an array of files,
      *                                       or a \Traversable instance to change owner
-     * @param string          $user The new owner user name
+     * @param string          $user          The new owner user name
      * @param Bool            $recursive
      *                                       Whether change the owner recursively or not
      *

@@ -2,7 +2,6 @@
 
 namespace Media\Service;
 
-use Fig\Http\Message\StatusCodeInterface;
 use Media\Download\LocalDownload;
 use Media\Download\MinioDownload;
 use Media\Repository\MediaRepositoryInterface;
@@ -167,16 +166,6 @@ class MediaService implements ServiceInterface
 
     public function saveMedia($authorization, $params, $storeInfo): array
     {
-        // Make download info
-        $downloadInfo = [
-            'public_uri' => '',
-            'private_uri' => '',
-        ];
-
-        if ($this->storage == 'local' && $params['access'] == 'public') {
-            $downloadInfo['public_uri'] = $this->localDownload->makePublicUri($storeInfo);
-        }
-
         // Set storage params
         $addStorage = [
             'title'       => $params['title'] ?? $storeInfo['file_title'],
@@ -184,7 +173,7 @@ class MediaService implements ServiceInterface
             'company_id'  => $authorization['company_id'],
             'access'      => $params['access'],
             'storage'     => $this->storage,
-            'type'        => $this->localStorage->makeFileType($storeInfo['file_extension']),
+            'type'        => $storeInfo['file_type'],
             'extension'   => $storeInfo['file_extension'],
             'status'      => 1,
             'size'        => $storeInfo['file_size'],
@@ -193,17 +182,15 @@ class MediaService implements ServiceInterface
             'information' => json_encode(
                 [
                     'storage'  => $storeInfo,
-                    'download' => $downloadInfo,
                     'category' => $params['category'] ?? [],
                     'review'   => (isset($params['review']) && !empty($params['review'])) ? [$params['review']] : [],
                     'history'  => [
                         [
                             'action'  => 'add',
-                            'storage' => $storeInfo,
                             'user_id' => $authorization['user_id'],
                             'data'    => [
                                 'title'       => $params['title'] ?? $storeInfo['file_title'],
-                                'type'        => $this->localStorage->makeFileType($storeInfo['file_extension']),
+                                'type'        => $storeInfo['file_type'],
                                 'extension'   => $storeInfo['file_extension'],
                                 'status'      => 1,
                                 'size'        => $storeInfo['file_size'],
@@ -339,7 +326,7 @@ class MediaService implements ServiceInterface
         $storage['original_name'] = $storage['information']['storage']['original_name'] ?? '';
 
         // Set size view
-        $storage['size_view'] = $this->localStorage->transformSize($storage['size']);
+        $storage['size_view'] = $storage['information']['storage']['file_size_view'];
 
         // Set private uri
         if (in_array($storage['access'], ['private', 'company', 'group', 'admin'])) {
@@ -349,9 +336,6 @@ class MediaService implements ServiceInterface
         // Clean up
         if (isset($options['view']) && $options['view'] == 'limited') {
             unset($storage['information']['storage']);
-            foreach ($storage['information']['history'] as $key => $value) {
-                unset($storage['information']['history'][$key]['storage']);
-            }
         }
 
         return $storage;
@@ -584,11 +568,6 @@ class MediaService implements ServiceInterface
         // Store media
         $storeInfo = $this->storeMedia($uploadFile, $authorization, $params);
 
-        // Set download uri
-        $downloadInfo = [
-            'public_uri' => ($params['access'] == 'public') ? $this->localDownload->makePublicUri($storeInfo) : '',
-        ];
-
         // Set update params
         $updateParams = [
             'time_update' => time(),
@@ -601,15 +580,14 @@ class MediaService implements ServiceInterface
         }
         if (isset($storeInfo['file_extension']) && !empty($storeInfo['file_extension'])) {
             $updateParams['extension'] = $storeInfo['file_extension'];
-            $updateParams['type']      = $this->localStorage->makeFileType($storeInfo['file_extension']);
+            $updateParams['type']      = $storeInfo['file_type'];
         }
         if (isset($storeInfo['file_size']) && !empty($storeInfo['file_size'])) {
             $updateParams['size'] = $storeInfo['file_size'];
         }
 
         // Set information
-        $information             = $media['information'];
-        $information['download'] = $downloadInfo;
+        $information = $media['information'];
         if (isset($storeInfo) && !empty($storeInfo)) {
             $information['storage'] = $storeInfo;
         }
@@ -623,7 +601,6 @@ class MediaService implements ServiceInterface
         // Set history
         $information['history'][] = [
             'action'  => 'update',
-            'storage' => $storeInfo,
             'user_id' => $authorization['user_id'],
             'data'    => $updateParams,
         ];
@@ -664,7 +641,6 @@ class MediaService implements ServiceInterface
         // Set history
         $information['history'][] = [
             'action'  => 'update',
-            'storage' => [],
             'user_id' => $authorization['user_id'],
             'data'    => $updateParams,
         ];
@@ -689,7 +665,15 @@ class MediaService implements ServiceInterface
     public function deleteMedia($media, $authorization): void
     {
         // Delete the file
-        $this->localStorage->remove($media['information']['storage']['file_path']);
+        switch ($media['storage']) {
+            case 'local':
+                $this->localStorage->remove($media['information']['storage']['local']['file_path']);
+                break;
+
+            case 'minio':
+                $this->minioStorage->remove($media['storage']['minio']);
+                break;
+        }
 
         // Delete relation
         $this->mediaRepository->deleteMedia((int)$media['id']);
@@ -703,38 +687,44 @@ class MediaService implements ServiceInterface
         // Update download count
         $this->mediaRepository->updateDownloadCount((int)$media['id']);
 
-        // Set options
-        $options = [];
-        if (isset($media['information']['storage']['original_name'])) {
-            $options['filename'] = $media['information']['storage']['original_name'];
-            $options['filename'] = $this->replacePersianCharacters($options['filename']);
-        }
-        if (isset($media['information']['storage']['file_extension'])) {
-            $options['content_type'] = $media['information']['storage']['file_extension'];
-        }
+        switch ($media['storage']) {
+            default:
+            case 'local':
+                // Set stream params
+                $params = [
+                    'source' => $media['information']['storage']['local']['file_path'],
+                ];
+                if (isset($media['information']['storage']['original_name'])) {
+                    $params['filename'] = $media['information']['storage']['original_name'];
+                }
+                if (isset($media['information']['storage']['file_extension'])) {
+                    $params['content_type'] = $media['information']['storage']['file_extension'];
+                }
 
-        // Start stream
-        return $this->localDownload->stream($media['information']['storage']['file_path'], $options);
+                // Start stream
+                return $this->localDownload->stream($params);
+                break;
+
+            case 'minio':
+                // Set stream params
+                $params = [
+                    'key'    => $media['information']['storage']['minio']['key'],
+                    'bucket' => $media['information']['storage']['minio']['bucket'],
+                ];
+
+                // Start stream
+                return $this->minioDownload->stream($params);
+                break;
+        }
     }
 
-    public function replacePersianCharacters($string): array|string
+    public function streamFile($filePath): string
     {
-        $persianChars = [
-            'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن',
-            'و', 'ه', 'ی',
-        ];
-        $englishChars = [
-            'a', 'b', 'p', 't', 's', 'j', 'ch', 'h', 'kh', 'd', 'z', 'r', 'z', 'zh', 's', 'sh', 's', 'z', 't', 'z', 'a', 'gh', 'f', 'gh', 'k', 'g', 'l', 'm',
-            'n', 'v', 'h', 'y',
-        ];
+        // Set params
+        $params = ['source' => $filePath];
 
-        return str_replace($persianChars, $englishChars, $string);
-    }
-
-    public function streamFile($filePath, $options = []): string
-    {
         // Start stream
-        return $this->localDownload->stream($filePath, $options);
+        return $this->localDownload->stream($params);
     }
 
     public function analytic($authorization): array
