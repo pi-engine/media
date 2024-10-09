@@ -39,7 +39,7 @@ class LocalDownload implements DownloadInterface
      */
     public function stream(array $params): bool
     {
-        $error = '';
+        $error  = '';
         $source = $params['source'];
         unset($params['source']);
         $options = $params;

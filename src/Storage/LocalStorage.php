@@ -72,36 +72,6 @@ class LocalStorage implements StorageInterface
         ];
     }
 
-    public function createMedia($params): array
-    {
-        // Set file name
-        $fileName = strtolower(sprintf('%s-%s-%s.%s', $params['filename'], date('Y-m-d-H-i-s'), rand(1000, 9999), $params['extension']));
-
-        // Set path
-        $mainPath = ($params['access'] == 'public') ? $this->config['public_path'] : $this->config['private_path'];
-        $fullPath = sprintf('%s/%s', $mainPath, $params['local_path']);
-        $filePath = sprintf('%s/%s', $fullPath, $fileName);
-
-        // Check and make path
-        $this->mkdir($fullPath);
-
-        return [
-            'local'          => [
-                'file_path'  => $filePath,
-                'full_path'  => $fullPath,
-                'main_path'  => $mainPath,
-                'local_path' => $params['local_path'],
-            ],
-            'original_name'  => $params['original_name'] ?? $fileName,
-            'file_name'      => $fileName,
-            'file_title'     => $params['filename'],
-            'file_extension' => strtolower($params['extension']),
-            'file_size'      => 0,
-            'file_type'      => $this->makeFileType(strtolower($params['extension'])),
-            'file_size_view' => $this->transformSize(0),
-        ];
-    }
-
     public function makeFileName($file): string
     {
         // Extract the file information
@@ -122,6 +92,50 @@ class LocalStorage implements StorageInterface
         $randomString = Rand::getString('8', 'abcdefghijklmnopqrstuvwxyz0123456789');
 
         return sprintf('%s-%s-%s.%s', $fileName, $timestamp, $randomString, $fileInfo['extension']);
+    }
+
+    /**
+     * Creates a directory recursively.
+     *
+     * @param string|iterable $dirs The directory path
+     * @param int             $mode The directory mode
+     *
+     * @return $this
+     *
+     * @throws Exception On any directory creation failure
+     */
+    public function mkdir(string|iterable $dirs, int $mode = 0777)
+    {
+        foreach ($this->toIterator($dirs) as $dir) {
+            if (is_dir($dir)) {
+                continue;
+            }
+
+            if (true !== @mkdir($dir, $mode, true)) {
+                throw new Exception(sprintf('Failed to create %s', $dir));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Transform array to iterator
+     *
+     * @param mixed $files
+     *
+     * @return Traversable|ArrayObject
+     */
+    protected function toIterator(mixed $files): Traversable|ArrayObject
+    {
+        if (!$files instanceof Traversable) {
+            $files = new ArrayObject(
+                is_array($files)
+                    ? $files : [$files]
+            );
+        }
+
+        return $files;
     }
 
     public function makeFileType($extension): string
@@ -241,50 +255,6 @@ class LocalStorage implements StorageInterface
     }
 
     /**
-     * Creates a directory recursively.
-     *
-     * @param string|iterable $dirs The directory path
-     * @param int             $mode The directory mode
-     *
-     * @return $this
-     *
-     * @throws Exception On any directory creation failure
-     */
-    public function mkdir(string|iterable $dirs, int $mode = 0777)
-    {
-        foreach ($this->toIterator($dirs) as $dir) {
-            if (is_dir($dir)) {
-                continue;
-            }
-
-            if (true !== @mkdir($dir, $mode, true)) {
-                throw new Exception(sprintf('Failed to create %s', $dir));
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Transform array to iterator
-     *
-     * @param mixed $files
-     *
-     * @return Traversable|ArrayObject
-     */
-    protected function toIterator(mixed $files): Traversable|ArrayObject
-    {
-        if (!$files instanceof Traversable) {
-            $files = new ArrayObject(
-                is_array($files)
-                    ? $files : [$files]
-            );
-        }
-
-        return $files;
-    }
-
-    /**
      * Transform file size
      *
      * @param int|string $value
@@ -316,6 +286,36 @@ class LocalStorage implements StorageInterface
         }
 
         return $result;
+    }
+
+    public function createMedia($params): array
+    {
+        // Set file name
+        $fileName = strtolower(sprintf('%s-%s-%s.%s', $params['filename'], date('Y-m-d-H-i-s'), rand(1000, 9999), $params['extension']));
+
+        // Set path
+        $mainPath = ($params['access'] == 'public') ? $this->config['public_path'] : $this->config['private_path'];
+        $fullPath = sprintf('%s/%s', $mainPath, $params['local_path']);
+        $filePath = sprintf('%s/%s', $fullPath, $fileName);
+
+        // Check and make path
+        $this->mkdir($fullPath);
+
+        return [
+            'local'          => [
+                'file_path'  => $filePath,
+                'full_path'  => $fullPath,
+                'main_path'  => $mainPath,
+                'local_path' => $params['local_path'],
+            ],
+            'original_name'  => $params['original_name'] ?? $fileName,
+            'file_name'      => $fileName,
+            'file_title'     => $params['filename'],
+            'file_extension' => strtolower($params['extension']),
+            'file_size'      => 0,
+            'file_type'      => $this->makeFileType(strtolower($params['extension'])),
+            'file_size_view' => $this->transformSize(0),
+        ];
     }
 
     /**

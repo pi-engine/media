@@ -682,7 +682,7 @@ return [
                         ],
                     ],
                     // Admin installer
-                    'installer' => [
+                    'installer'    => [
                         'type'    => Literal::class,
                         'options' => [
                             'route'    => '/installer',
