@@ -2,12 +2,10 @@
 
 namespace Media\Factory\Middleware;
 
-use Media\Storage\LocalStorage;
-use Media\Storage\MinioStorage;
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Middleware\UploadMediaMiddleware;
 use Media\Service\MediaService;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use User\Handler\ErrorHandler;

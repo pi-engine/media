@@ -3,19 +3,13 @@
 namespace Media\Middleware;
 
 use Fig\Http\Message\StatusCodeInterface;
-use Laminas\Filter\FilterChain;
-use Laminas\Filter\PregReplace;
-use Laminas\Filter\StringToLower;
 use Laminas\InputFilter\Input;
 use Laminas\InputFilter\InputFilter;
-use Laminas\Math\Rand;
 use Laminas\Validator\File\Extension;
 use Laminas\Validator\File\MimeType;
 use Laminas\Validator\File\Size;
 use Laminas\Validator\File\UploadFile;
 use Media\Service\MediaService;
-use Media\Storage\LocalStorage;
-use Media\Storage\MinioStorage;
 use Media\Validator\SlugValidator;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;

@@ -3,9 +3,9 @@
 namespace Media\Service;
 
 use Exception;
-use Smalot\PdfParser\Parser as PdfParser;
 use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
 use PhpOffice\PhpWord\IOFactory as WordIOFactory;
+use Smalot\PdfParser\Parser as PdfParser;
 
 class FileReader implements ServiceInterface
 {

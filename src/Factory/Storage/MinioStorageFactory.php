@@ -2,9 +2,9 @@
 
 namespace Media\Factory\Storage;
 
+use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Storage\MinioStorage;
 use Psr\Container\ContainerInterface;
-use Laminas\ServiceManager\Factory\FactoryInterface;
 
 class MinioStorageFactory implements FactoryInterface
 {

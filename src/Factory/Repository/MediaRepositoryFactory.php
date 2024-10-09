@@ -2,13 +2,13 @@
 
 namespace Media\Factory\Repository;
 
-use Psr\Container\ContainerInterface;
 use Laminas\Db\Adapter\AdapterInterface;
 use Laminas\Hydrator\ReflectionHydrator;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Model\Relation;
 use Media\Model\Storage;
 use Media\Repository\MediaRepository;
+use Psr\Container\ContainerInterface;
 
 class MediaRepositoryFactory implements FactoryInterface
 {

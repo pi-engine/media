@@ -2,9 +2,9 @@
 
 namespace Media\Factory\Download;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Download\LocalDownload;
+use Psr\Container\ContainerInterface;
 
 class LocalDownloadFactory implements FactoryInterface
 {

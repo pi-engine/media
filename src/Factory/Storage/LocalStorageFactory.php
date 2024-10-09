@@ -2,9 +2,9 @@
 
 namespace Media\Factory\Storage;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Storage\LocalStorage;
+use Psr\Container\ContainerInterface;
 
 class LocalStorageFactory implements FactoryInterface
 {

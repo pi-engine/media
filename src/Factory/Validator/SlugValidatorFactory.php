@@ -2,11 +2,11 @@
 
 namespace Media\Factory\Validator;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Service\MediaService;
 use Media\Validator\SlugValidator;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use User\Validator\MobileValidator;
 

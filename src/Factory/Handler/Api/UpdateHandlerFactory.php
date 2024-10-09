@@ -2,10 +2,10 @@
 
 namespace Media\Factory\Handler\Api;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Handler\Api\UpdateHandler;
 use Media\Service\MediaService;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 

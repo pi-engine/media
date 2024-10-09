@@ -2,10 +2,10 @@
 
 namespace Media\Factory\Handler\Admin;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Handler\Admin\GetHandler;
 use Media\Service\MediaService;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 

@@ -2,14 +2,14 @@
 
 namespace Media\Factory\Service;
 
-use Media\Download\MinioDownload;
-use Media\Storage\MinioStorage;
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Download\LocalDownload;
+use Media\Download\MinioDownload;
 use Media\Repository\MediaRepositoryInterface;
 use Media\Service\MediaService;
 use Media\Storage\LocalStorage;
+use Media\Storage\MinioStorage;
+use Psr\Container\ContainerInterface;
 use User\Service\AccountService;
 use User\Service\UtilityService;
 

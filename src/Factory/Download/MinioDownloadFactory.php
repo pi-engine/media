@@ -2,9 +2,9 @@
 
 namespace Media\Factory\Download;
 
+use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Download\MinioDownload;
 use Psr\Container\ContainerInterface;
-use Laminas\ServiceManager\Factory\FactoryInterface;
 
 class MinioDownloadFactory implements FactoryInterface
 {
