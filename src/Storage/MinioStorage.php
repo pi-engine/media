@@ -19,20 +19,9 @@ class MinioStorage implements StorageInterface
 
     public function __construct($config)
     {
-        // Get IP by : docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <minio_container_name>
         // Set MinIO connection parameters
-        $this->s3Client = new S3Client([
-            'version'                 => 'latest',
-            'region'                  => 'us-east-1',
-            'endpoint'                => $config['minio']['url'],
-            'use_path_style_endpoint' => true,
-            'credentials'             => [
-                'key'    => $config['minio']['accessKey'],
-                'secret' => $config['minio']['secretKey'],
-            ],
-        ]);
-
-        $this->config = $config;
+        $this->s3Client = new S3Client($config['minio']);
+        $this->config   = $config;
     }
 
     public function storeMedia($uploadFile, $params): array
