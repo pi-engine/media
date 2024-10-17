@@ -36,5 +36,16 @@ return [
             'min' => '1kB',
             'max' => '10MB',
         ],
+        'minio'             => [
+            'version'                     => 'latest',
+            'region'                      => 'us-east-1',
+            'endpoint'                    => 'XXX',
+            'use_path_style_endpoint'     => true,
+            'use_aws_shared_config_files' => false,
+            'credentials'                 => [
+                'key'    => 'XXX',
+                'secret' => 'XXX',
+            ],
+        ],
     ],
 ];
