@@ -102,7 +102,7 @@ class MediaService implements ServiceInterface
         }
 
         // Save and return
-        return $this->saveMedia($authorization, $params, $storeInfo);
+        return $this->saveMedia($authorization, $params, $storeInfo['data']);
     }
 
     public function storeMedia($uploadFile, $authorization, $params): array
@@ -567,6 +567,7 @@ class MediaService implements ServiceInterface
     {
         // Store media
         $storeInfo = $this->storeMedia($uploadFile, $authorization, $params);
+        $storeInfo = $storeInfo['data'];
 
         // Set update params
         $updateParams = [
