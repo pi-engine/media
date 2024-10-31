@@ -99,10 +99,11 @@ class MediaService implements ServiceInterface
         // Store media
         if (empty($storeInfo)) {
             $storeInfo = $this->storeMedia($uploadFile, $authorization, $params);
+            $storeInfo = $storeInfo['data'];
         }
 
         // Save and return
-        return $this->saveMedia($authorization, $params, $storeInfo['data']);
+        return $this->saveMedia($authorization, $params, $storeInfo);
     }
 
     public function storeMedia($uploadFile, $authorization, $params): array
@@ -435,7 +436,7 @@ class MediaService implements ServiceInterface
             ];
         }
 
-        $view   = (isset($params['view']) && in_array($params['view'], ['limited', 'compressed'])) ? $params['view'] : 'limited';
+        $view   = (isset($params['view']) && in_array($params['view'], ['limited', 'compressed', 'full'])) ? $params['view'] : 'limited';
         $limit  = (int)($params['limit'] ?? 25);
         $page   = (int)($params['page'] ?? 1);
         $order  = $params['order'] ?? ['time_create DESC'];
