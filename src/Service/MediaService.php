@@ -7,8 +7,8 @@ use Media\Download\MinioDownload;
 use Media\Repository\MediaRepositoryInterface;
 use Media\Storage\LocalStorage;
 use Media\Storage\MinioStorage;
+use Pi\Core\Service\UtilityService;
 use User\Service\AccountService;
-use User\Service\UtilityService;
 
 class MediaService implements ServiceInterface
 {

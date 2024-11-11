@@ -5,10 +5,10 @@ namespace Media\Factory\Middleware;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Middleware\GetMediaMiddleware;
 use Media\Service\MediaService;
+use Pi\Core\Handler\ErrorHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use User\Handler\ErrorHandler;
 
 class GetMediaMiddlewareFactory implements FactoryInterface
 {

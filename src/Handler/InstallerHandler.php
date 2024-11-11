@@ -3,13 +3,13 @@
 namespace Media\Handler;
 
 use Laminas\Diactoros\Response\JsonResponse;
+use Pi\Core\Service\InstallerService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use stdClass;
-use User\Service\InstallerService;
 
 class InstallerHandler implements RequestHandlerInterface
 {

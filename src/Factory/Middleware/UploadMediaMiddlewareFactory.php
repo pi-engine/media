@@ -5,11 +5,11 @@ namespace Media\Factory\Middleware;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Media\Middleware\UploadMediaMiddleware;
 use Media\Service\MediaService;
+use Pi\Core\Handler\ErrorHandler;
+use Pi\Core\Service\UtilityService;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use User\Handler\ErrorHandler;
-use User\Service\UtilityService;
 
 class UploadMediaMiddlewareFactory implements FactoryInterface
 {

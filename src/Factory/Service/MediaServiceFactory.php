@@ -9,9 +9,9 @@ use Media\Repository\MediaRepositoryInterface;
 use Media\Service\MediaService;
 use Media\Storage\LocalStorage;
 use Media\Storage\MinioStorage;
+use Pi\Core\Service\UtilityService;
 use Psr\Container\ContainerInterface;
 use User\Service\AccountService;
-use User\Service\UtilityService;
 
 class MediaServiceFactory implements FactoryInterface
 {
