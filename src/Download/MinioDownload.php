@@ -1,6 +1,6 @@
 <?php
 
-namespace Media\Download;
+namespace Pi\Media\Download;
 
 use Aws\Exception\AwsException;
 use Aws\S3\S3Client;

@@ -1,10 +1,10 @@
 <?php
 
-namespace Media\Factory\Handler;
+namespace Pi\Media\Factory\Handler;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Handler\InstallerHandler;
 use Pi\Core\Service\InstallerService;
+use Pi\Media\Handler\InstallerHandler;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;

@@ -1,10 +1,10 @@
 <?php
 
-namespace Media\Factory\Handler\Api;
+namespace Pi\Media\Factory\Handler\Api;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Handler\Api\DeleteHandler;
-use Media\Service\MediaService;
+use Pi\Media\Handler\Api\DeleteHandler;
+use Pi\Media\Service\MediaService;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;

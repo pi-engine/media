@@ -1,6 +1,6 @@
 <?php
 
-namespace Media\Download;
+namespace Pi\Media\Download;
 
 interface DownloadInterface
 {

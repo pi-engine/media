@@ -1,9 +1,9 @@
 <?php
 
-namespace Media\Validator;
+namespace Pi\Media\Validator;
 
 use Laminas\Validator\AbstractValidator;
-use Media\Service\MediaService;
+use Pi\Media\Service\MediaService;
 
 class SlugValidator extends AbstractValidator
 {

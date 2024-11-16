@@ -1,9 +1,9 @@
 <?php
 
-namespace Media\Factory\Storage;
+namespace Pi\Media\Factory\Storage;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Storage\MinioStorage;
+use Pi\Media\Storage\MinioStorage;
 use Psr\Container\ContainerInterface;
 
 class MinioStorageFactory implements FactoryInterface

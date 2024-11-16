@@ -1,9 +1,9 @@
 <?php
 
-namespace Media\Factory\Storage;
+namespace Pi\Media\Factory\Storage;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Storage\LocalStorage;
+use Pi\Media\Storage\LocalStorage;
 use Psr\Container\ContainerInterface;
 
 class LocalStorageFactory implements FactoryInterface

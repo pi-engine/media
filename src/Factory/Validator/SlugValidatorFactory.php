@@ -1,10 +1,10 @@
 <?php
 
-namespace Media\Factory\Validator;
+namespace Pi\Media\Factory\Validator;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Service\MediaService;
-use Media\Validator\SlugValidator;
+use Pi\Media\Service\MediaService;
+use Pi\Media\Validator\SlugValidator;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;

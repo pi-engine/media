@@ -1,6 +1,6 @@
 <?php
 
-namespace Media\Storage;
+namespace Pi\Media\Storage;
 
 interface StorageInterface
 {

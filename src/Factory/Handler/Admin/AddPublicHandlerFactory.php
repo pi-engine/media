@@ -1,10 +1,10 @@
 <?php
 
-namespace Media\Factory\Handler\Admin;
+namespace Pi\Media\Factory\Handler\Admin;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Handler\Admin\AddPublicHandler;
-use Media\Service\MediaService;
+use Pi\Media\Handler\Admin\AddPublicHandler;
+use Pi\Media\Service\MediaService;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;

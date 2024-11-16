@@ -1,10 +1,10 @@
 <?php
 
-namespace Media\Factory\Middleware;
+namespace Pi\Media\Factory\Middleware;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Middleware\UploadMediaMiddleware;
-use Media\Service\MediaService;
+use Pi\Media\Middleware\UploadMediaMiddleware;
+use Pi\Media\Service\MediaService;
 use Pi\Core\Handler\ErrorHandler;
 use Pi\Core\Service\UtilityService;
 use Psr\Container\ContainerInterface;

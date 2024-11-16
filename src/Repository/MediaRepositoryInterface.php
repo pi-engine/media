@@ -1,11 +1,11 @@
 <?php
 
-namespace Media\Repository;
+namespace Pi\Media\Repository;
 
 use Laminas\Db\Adapter\Driver\ResultInterface;
 use Laminas\Db\ResultSet\HydratingResultSet;
-use Media\Model\Relation;
-use Media\Model\Storage;
+use Pi\Media\Model\Relation;
+use Pi\Media\Model\Storage;
 
 interface MediaRepositoryInterface
 {

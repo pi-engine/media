@@ -1,6 +1,6 @@
 <?php
 
-namespace Media\Middleware;
+namespace Pi\Media\Middleware;
 
 use Fig\Http\Message\StatusCodeInterface;
 use Laminas\InputFilter\Input;
@@ -9,8 +9,8 @@ use Laminas\Validator\File\Extension;
 use Laminas\Validator\File\MimeType;
 use Laminas\Validator\File\Size;
 use Laminas\Validator\File\UploadFile;
-use Media\Service\MediaService;
-use Media\Validator\SlugValidator;
+use Pi\Media\Service\MediaService;
+use Pi\Media\Validator\SlugValidator;
 use Pi\Core\Handler\ErrorHandler;
 use Pi\Core\Service\UtilityService;
 use Psr\Http\Message\ResponseFactoryInterface;

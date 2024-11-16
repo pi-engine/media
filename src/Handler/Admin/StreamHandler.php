@@ -1,10 +1,10 @@
 <?php
 
-namespace Media\Handler\Admin;
+namespace Pi\Media\Handler\Admin;
 
 use Exception;
 use Laminas\Diactoros\Response\JsonResponse;
-use Media\Service\MediaService;
+use Pi\Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

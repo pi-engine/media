@@ -1,13 +1,13 @@
 <?php
 
-namespace Media\Factory\Repository;
+namespace Pi\Media\Factory\Repository;
 
 use Laminas\Db\Adapter\AdapterInterface;
 use Laminas\Hydrator\ReflectionHydrator;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Model\Relation;
-use Media\Model\Storage;
-use Media\Repository\MediaRepository;
+use Pi\Media\Model\Relation;
+use Pi\Media\Model\Storage;
+use Pi\Media\Repository\MediaRepository;
 use Psr\Container\ContainerInterface;
 
 class MediaRepositoryFactory implements FactoryInterface

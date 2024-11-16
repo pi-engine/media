@@ -1,9 +1,9 @@
 <?php
 
-namespace Media\Factory\Download;
+namespace Pi\Media\Factory\Download;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Download\MinioDownload;
+use Pi\Media\Download\MinioDownload;
 use Psr\Container\ContainerInterface;
 
 class MinioDownloadFactory implements FactoryInterface

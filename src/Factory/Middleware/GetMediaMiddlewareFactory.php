@@ -1,11 +1,11 @@
 <?php
 
-namespace Media\Factory\Middleware;
+namespace Pi\Media\Factory\Middleware;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Middleware\GetMediaMiddleware;
-use Media\Service\MediaService;
 use Pi\Core\Handler\ErrorHandler;
+use Pi\Media\Middleware\GetMediaMiddleware;
+use Pi\Media\Service\MediaService;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;

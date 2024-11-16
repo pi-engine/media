@@ -1,6 +1,6 @@
 <?php
 
-namespace Media;
+namespace Pi\Media;
 
 use Laminas\Mvc\MvcEvent;
 

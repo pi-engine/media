@@ -1,6 +1,6 @@
 <?php
 
-namespace Media\Service;
+namespace Pi\Media\Service;
 
 use Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;

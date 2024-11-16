@@ -1,6 +1,6 @@
 <?php
 
-namespace Media\Storage;
+namespace Pi\Media\Storage;
 
 use ArrayObject;
 use Closure;

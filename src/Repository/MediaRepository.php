@@ -1,6 +1,6 @@
 <?php
 
-namespace Media\Repository;
+namespace Pi\Media\Repository;
 
 use Laminas\Db\Adapter\AdapterInterface;
 use Laminas\Db\Adapter\Driver\ResultInterface;
@@ -11,8 +11,8 @@ use Laminas\Db\Sql\Predicate\Expression;
 use Laminas\Db\Sql\Sql;
 use Laminas\Db\Sql\Update;
 use Laminas\Hydrator\HydratorInterface;
-use Media\Model\Relation;
-use Media\Model\Storage;
+use Pi\Media\Model\Relation;
+use Pi\Media\Model\Storage;
 use RuntimeException;
 
 class MediaRepository implements MediaRepositoryInterface

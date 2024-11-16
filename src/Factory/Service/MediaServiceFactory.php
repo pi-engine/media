@@ -1,15 +1,15 @@
 <?php
 
-namespace Media\Factory\Service;
+namespace Pi\Media\Factory\Service;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Download\LocalDownload;
-use Media\Download\MinioDownload;
-use Media\Repository\MediaRepositoryInterface;
-use Media\Service\MediaService;
-use Media\Storage\LocalStorage;
-use Media\Storage\MinioStorage;
 use Pi\Core\Service\UtilityService;
+use Pi\Media\Download\LocalDownload;
+use Pi\Media\Download\MinioDownload;
+use Pi\Media\Repository\MediaRepositoryInterface;
+use Pi\Media\Service\MediaService;
+use Pi\Media\Storage\LocalStorage;
+use Pi\Media\Storage\MinioStorage;
 use Pi\User\Service\AccountService;
 use Psr\Container\ContainerInterface;
 

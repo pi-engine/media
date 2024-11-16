@@ -1,10 +1,10 @@
 <?php
 
-namespace Media\Middleware;
+namespace Pi\Media\Middleware;
 
 use Fig\Http\Message\StatusCodeInterface;
-use Media\Service\MediaService;
 use Pi\Core\Handler\ErrorHandler;
+use Pi\Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

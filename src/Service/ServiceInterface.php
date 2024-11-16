@@ -1,5 +1,5 @@
 <?php
 
-namespace Media\Service;
+namespace Pi\Media\Service;
 
 interface ServiceInterface {}

@@ -1,9 +1,9 @@
 <?php
 
-namespace Media\Factory\Download;
+namespace Pi\Media\Factory\Download;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Media\Download\LocalDownload;
+use Pi\Media\Download\LocalDownload;
 use Psr\Container\ContainerInterface;
 
 class LocalDownloadFactory implements FactoryInterface

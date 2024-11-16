@@ -1,10 +1,10 @@
 <?php
 
-namespace Media\Handler\Api;
+namespace Pi\Media\Handler\Api;
 
 use Fig\Http\Message\StatusCodeInterface;
 use Laminas\Diactoros\Response\JsonResponse;
-use Media\Service\MediaService;
+use Pi\Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

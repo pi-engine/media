@@ -1,6 +1,6 @@
 <?php
 
-namespace Media\Model;
+namespace Pi\Media\Model;
 
 class Relation
 {

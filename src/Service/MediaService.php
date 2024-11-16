@@ -1,13 +1,13 @@
 <?php
 
-namespace Media\Service;
+namespace Pi\Media\Service;
 
-use Media\Download\LocalDownload;
-use Media\Download\MinioDownload;
-use Media\Repository\MediaRepositoryInterface;
-use Media\Storage\LocalStorage;
-use Media\Storage\MinioStorage;
 use Pi\Core\Service\UtilityService;
+use Pi\Media\Download\LocalDownload;
+use Pi\Media\Download\MinioDownload;
+use Pi\Media\Repository\MediaRepositoryInterface;
+use Pi\Media\Storage\LocalStorage;
+use Pi\Media\Storage\MinioStorage;
 use Pi\User\Service\AccountService;
 
 class MediaService implements ServiceInterface
