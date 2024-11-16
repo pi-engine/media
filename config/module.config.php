@@ -9,8 +9,8 @@ use Logger\Middleware\LoggerRequestResponseMiddleware;
 use Pi\Core\Middleware\InstallerMiddleware;
 use Pi\Core\Middleware\RequestPreparationMiddleware;
 use Pi\Core\Middleware\SecurityMiddleware;
-use User\Middleware\AuthenticationMiddleware;
-use User\Middleware\AuthorizationMiddleware;
+use Pi\User\Middleware\AuthenticationMiddleware;
+use Pi\User\Middleware\AuthorizationMiddleware;
 
 return [
     'service_manager' => [

@@ -8,7 +8,7 @@ use Media\Repository\MediaRepositoryInterface;
 use Media\Storage\LocalStorage;
 use Media\Storage\MinioStorage;
 use Pi\Core\Service\UtilityService;
-use User\Service\AccountService;
+use Pi\User\Service\AccountService;
 
 class MediaService implements ServiceInterface
 {

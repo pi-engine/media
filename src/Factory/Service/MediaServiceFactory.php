@@ -10,8 +10,8 @@ use Media\Service\MediaService;
 use Media\Storage\LocalStorage;
 use Media\Storage\MinioStorage;
 use Pi\Core\Service\UtilityService;
+use Pi\User\Service\AccountService;
 use Psr\Container\ContainerInterface;
-use User\Service\AccountService;
 
 class MediaServiceFactory implements FactoryInterface
 {

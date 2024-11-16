@@ -8,7 +8,7 @@ use Media\Validator\SlugValidator;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use User\Validator\MobileValidator;
+use Pi\User\Validator\MobileValidator;
 
 class SlugValidatorFactory implements FactoryInterface
 {
