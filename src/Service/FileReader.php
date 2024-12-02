@@ -18,29 +18,36 @@ class FileReader implements ServiceInterface
 
     public function readFile(): array
     {
+        // Check file is valid
         if (!$this->isFileValid()) {
-            return ['result' => false, 'data' => [], 'error' => ['message' => "File is not readable or does not exist: {$this->filePath}"]];
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => "File is not readable or does not exist: {$this->filePath}",
+                ],
+            ];
         }
 
+        // Set extension
         $extension = strtolower(pathinfo($this->filePath, PATHINFO_EXTENSION));
 
-        switch ($extension) {
-            case 'pdf':
-                return $this->readPdf();
-            case 'xlsx':
-            case 'xls':
-                return $this->readExcel();
-            case 'csv':
-                return $this->readCsv();
-            case 'json':
-                return $this->readJson();
-            case 'docx':
-                return $this->readWord();
-            case 'txt':
-                return $this->readTxt();
-            default:
-                return ['result' => false, 'data' => [], 'error' => ['message' => "Unsupported file type: $extension"]];
-        }
+        // Read file
+        return match ($extension) {
+            'pdf'         => $this->readPdf(),
+            'xlsx', 'xls' => $this->readExcel(),
+            'csv'         => $this->readCsv(),
+            'json'        => $this->readJson(),
+            'docx'        => $this->readWord(),
+            'txt'         => $this->readTxt(),
+            default       => [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => "Unsupported file type: $extension",
+                ],
+            ],
+        };
     }
 
     private function isFileValid(): bool
@@ -56,12 +63,28 @@ class FileReader implements ServiceInterface
             $text   = $pdf->getText();
 
             if (empty(trim($text))) {
-                return ['result' => false, 'data' => [], 'error' => ['message' => 'PDF contains non-readable content (e.g., images or non-extractable text).']];
+                return [
+                    'result' => false,
+                    'data'   => [],
+                    'error'  => [
+                        'message' => 'PDF contains non-readable content (e.g., images or non-extractable text).',
+                    ],
+                ];
             }
 
-            return ['result' => true, 'data' => explode("\n", $text), 'error' => []]; // Return as array of lines
+            return [
+                'result' => true,
+                'data'   => explode("\n", $text),
+                'error'  => [],
+            ]; // Return as array of lines
         } catch (Exception $e) {
-            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading PDF file: ' . $e->getMessage()]];
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => 'Error reading PDF file: ' . $e->getMessage(),
+                ],
+            ];
         }
     }
 
@@ -81,9 +104,19 @@ class FileReader implements ServiceInterface
                 }
             }
 
-            return ['result' => true, 'data' => $data, 'error' => []];
+            return [
+                'result' => true,
+                'data'   => $data,
+                'error'  => [],
+            ];
         } catch (Exception $e) {
-            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading Excel file: ' . $e->getMessage()]];
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => 'Error reading Excel file: ' . $e->getMessage(),
+                ],
+            ];
         }
     }
 
@@ -98,9 +131,19 @@ class FileReader implements ServiceInterface
                 fclose($file);
             }
 
-            return ['result' => true, 'data' => $data, 'error' => []];
+            return [
+                'result' => true,
+                'data'   => $data,
+                'error'  => [],
+            ];
         } catch (Exception $e) {
-            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading CSV file: ' . $e->getMessage()]];
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => 'Error reading CSV file: ' . $e->getMessage(),
+                ],
+            ];
         }
     }
 
@@ -113,9 +156,19 @@ class FileReader implements ServiceInterface
                 return ['result' => false, 'data' => [], 'error' => ['message' => 'Invalid JSON file format.']];
             }
 
-            return ['result' => true, 'data' => is_array($data) ? $data : [], 'error' => []];
+            return [
+                'result' => true,
+                'data'   => is_array($data) ? $data : [],
+                'error'  => [],
+            ];
         } catch (Exception $e) {
-            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading JSON file: ' . $e->getMessage()]];
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => 'Error reading JSON file: ' . $e->getMessage(),
+                ],
+            ];
         }
     }
 
@@ -133,18 +186,38 @@ class FileReader implements ServiceInterface
                 }
             }
 
-            return ['result' => true, 'data' => explode("\n", trim($text)), 'error' => []];
+            return [
+                'result' => true,
+                'data'   => explode("\n", trim($text)),
+                'error'  => [],
+            ];
         } catch (Exception $e) {
-            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading Word file: ' . $e->getMessage()]];
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => 'Error reading Word file: ' . $e->getMessage(),
+                ],
+            ];
         }
     }
 
     private function readTxt(): array
     {
         try {
-            return ['result' => true, 'data' => explode("\n", file_get_contents($this->filePath)), 'error' => []];
+            return [
+                'result' => true,
+                'data'   => explode("\n", file_get_contents($this->filePath)),
+                'error'  => [],
+            ];
         } catch (Exception $e) {
-            return ['result' => false, 'data' => [], 'error' => ['message' => 'Error reading text file: ' . $e->getMessage()]];
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'message' => 'Error reading text file: ' . $e->getMessage(),
+                ],
+            ];
         }
     }
 }

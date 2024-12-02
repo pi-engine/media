@@ -729,6 +729,33 @@ class MediaService implements ServiceInterface
         return $this->localDownload->stream($params);
     }
 
+    public function readMedia($media): array
+    {
+        $filePath = '';
+        if (isset($media['information']['storage']['minio'])) {
+            // Set stream params
+            $params = [
+                'key'    => $media['information']['storage']['minio']['key'],
+                'bucket' => $media['information']['storage']['minio']['bucket'],
+            ];
+
+            // Get download and file path
+            $filePath = $this->minioStorage->readMedia($params);
+        } elseif (isset($media['information']['storage']['local']['file_path'])) {
+            $filePath = $this->localStorage->readMedia($media);
+        }
+
+        // Read file
+        $fileReader = new FileReader($filePath);
+        $fileData   = $fileReader->readFile();
+
+        // Check file content and set it to result
+        if ($fileData['result'] && isset($fileData['data']) && !empty($fileData['data'])) {
+            return $fileData['data'];
+        }
+        return [];
+    }
+
     public function analytic($authorization): array
     {
         $params = [

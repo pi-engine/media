@@ -88,6 +88,21 @@ class MinioStorage implements StorageInterface
         }
     }
 
+    public function readMedia($params): string
+    {
+        // Download the file to a temporary location
+        $tempFilePath = sys_get_temp_dir() . '/' . basename($params['key']);
+
+        // Download the private file from MinIO
+        $this->s3Client->getObject([
+            'Bucket' => $params['bucket'],
+            'Key'    => $params['key'],
+            'SaveAs' => $tempFilePath,
+        ]);
+
+        return $tempFilePath;
+    }
+
     public function setOrGetBucket($bucketName): array
     {
         try {

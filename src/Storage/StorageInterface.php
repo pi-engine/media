@@ -6,6 +6,8 @@ interface StorageInterface
 {
     public function storeMedia($uploadFile, $params): array;
 
+    public function readMedia($params): string;
+
     public function makeFileName($file): string;
 
     public function makeFileType($extension): string;

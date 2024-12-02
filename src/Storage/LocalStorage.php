@@ -72,6 +72,11 @@ class LocalStorage implements StorageInterface
         ];
     }
 
+    public function readMedia($params): string
+    {
+        return $params['information']['storage']['local']['file_path'];
+    }
+
     public function makeFileName($file): string
     {
         // Extract the file information
