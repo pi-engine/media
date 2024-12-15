@@ -3,7 +3,7 @@
 namespace Pi\Media\Handler\Api;
 
 use Exception;
-use Laminas\Diactoros\Response\JsonResponse;
+use Pi\Core\Response\EscapingJsonResponse;
 use Pi\Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -39,6 +39,6 @@ class StreamHandler implements RequestHandlerInterface
     {
         $media  = $request->getAttribute('media_item');
         $result = $this->mediaService->streamMedia($media);
-        return new JsonResponse($result);
+        return new EscapingJsonResponse($result);
     }
 }
