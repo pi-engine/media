@@ -8,7 +8,7 @@ use Aws\S3\S3Client;
 use Laminas\Filter\FilterChain;
 use Laminas\Filter\PregReplace;
 use Laminas\Filter\StringToLower;
-use Laminas\Math\Rand;
+use Random\RandomException;
 
 class MinioStorage implements StorageInterface
 {
@@ -24,6 +24,9 @@ class MinioStorage implements StorageInterface
         $this->config   = $config;
     }
 
+    /**
+     * @throws RandomException
+     */
     public function storeMedia($uploadFile, $params): array
     {
         // Check if the bucket exists and create if not exist
@@ -39,7 +42,7 @@ class MinioStorage implements StorageInterface
         // Set name
         $originalName = $uploadFile->getClientFilename();
         if (isset($params['random_name']) && (int)$params['random_name'] === 1) {
-            $originalName = sprintf('%s-%s-%s', $originalName, time(), Rand::getString('8', 'abcdefghijklmnopqrstuvwxyz0123456789'));
+            $originalName = sprintf('%s-%s-%s', $originalName, time(), bin2hex(random_bytes(4)));
         }
 
         // Upload file
@@ -167,6 +170,9 @@ class MinioStorage implements StorageInterface
         }
     }
 
+    /**
+     * @throws RandomException
+     */
     public function makeFileName($file): string
     {
         // Extract the file information
@@ -184,7 +190,7 @@ class MinioStorage implements StorageInterface
 
         // Format the new filename
         $timestamp    = date('Y-m-d-H-i-s');
-        $randomString = Rand::getString('8', 'abcdefghijklmnopqrstuvwxyz0123456789');
+        $randomString = bin2hex(random_bytes(4));
 
         return sprintf('%s-%s-%s.%s', $fileName, $timestamp, $randomString, $fileInfo['extension']);
     }

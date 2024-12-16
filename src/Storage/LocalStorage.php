@@ -10,7 +10,6 @@ use FilesystemIterator;
 use Laminas\Filter\FilterChain;
 use Laminas\Filter\PregReplace;
 use Laminas\Filter\StringToLower;
-use Laminas\Math\Rand;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Traversable;
@@ -48,7 +47,7 @@ class LocalStorage implements StorageInterface
         // Set name
         $originalName = $uploadFile->getClientFilename();
         if (isset($params['random_name']) && (int)$params['random_name'] === 1) {
-            $originalName = sprintf('%s-%s-%s', $originalName, time(), Rand::getString('8', 'abcdefghijklmnopqrstuvwxyz0123456789'));
+            $originalName = sprintf('%s-%s-%s', $originalName, time(), bin2hex(random_bytes(4)));
         }
 
         return [
@@ -94,7 +93,7 @@ class LocalStorage implements StorageInterface
 
         // Format the new filename
         $timestamp    = date('Y-m-d-H-i-s');
-        $randomString = Rand::getString('8', 'abcdefghijklmnopqrstuvwxyz0123456789');
+        $randomString = bin2hex(random_bytes(4));
 
         return sprintf('%s-%s-%s.%s', $fileName, $timestamp, $randomString, $fileInfo['extension']);
     }
