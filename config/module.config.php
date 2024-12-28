@@ -5,6 +5,7 @@ namespace Pi\Media;
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
 use Pi\Company\Middleware\CompanyMiddleware;
+use Pi\Core\Middleware\ErrorMiddleware;
 use Pi\Core\Middleware\InstallerMiddleware;
 use Pi\Core\Middleware\RequestPreparationMiddleware;
 use Pi\Core\Middleware\SecurityMiddleware;
@@ -80,10 +81,10 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
-                                            //PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\UploadMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\AddPublicHandler::class
                                         ),
                                     ],
@@ -104,10 +105,10 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
-                                            //PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\UploadMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\AddPrivateHandler::class
                                         ),
                                     ],
@@ -128,10 +129,10 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
-                                            //PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\AddRelationHandler::class
                                         ),
                                     ],
@@ -152,9 +153,9 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
-                                            //PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\ListHandler::class
                                         ),
                                     ],
@@ -175,10 +176,10 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
-                                            //PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\GetHandler::class
                                         ),
                                     ],
@@ -199,10 +200,10 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
-                                            //PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\StreamHandler::class
                                         ),
                                     ],
@@ -223,10 +224,10 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
-                                            //PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\UpdateHandler::class
                                         ),
                                     ],
@@ -247,10 +248,10 @@ return [
                                             SecurityMiddleware::class,
                                             AuthenticationMiddleware::class,
                                             CompanyMiddleware::class,
-                                            //PackageMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\DeleteMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\DeleteHandler::class
                                         ),
                                     ],
@@ -282,6 +283,7 @@ return [
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\UploadMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\AddPrivateHandler::class
                                         ),
                                     ],
@@ -304,6 +306,7 @@ return [
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\AddRelationHandler::class
                                         ),
                                     ],
@@ -325,6 +328,7 @@ return [
                                             AuthenticationMiddleware::class,
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\ListHandler::class
                                         ),
                                     ],
@@ -347,6 +351,7 @@ return [
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\GetHandler::class
                                         ),
                                     ],
@@ -369,6 +374,7 @@ return [
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\StreamHandler::class
                                         ),
                                     ],
@@ -391,6 +397,7 @@ return [
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\UpdateHandler::class
                                         ),
                                     ],
@@ -413,6 +420,7 @@ return [
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\DeleteMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\DeleteHandler::class
                                         ),
                                     ],
@@ -443,6 +451,7 @@ return [
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\GetHandler::class
                                         ),
                                     ],
@@ -464,6 +473,7 @@ return [
                                             Middleware\AuthorizationMediaMiddleware::class,
                                             Middleware\GetMediaMiddleware::class,
                                             LoggerRequestResponseMiddleware::class,
+                                            ErrorMiddleware::class,
                                             Handler\Api\StreamHandler::class
                                         ),
                                     ],
@@ -502,6 +512,7 @@ return [
                                     Middleware\AuthorizationMediaMiddleware::class,
                                     Middleware\UploadMediaMiddleware::class,
                                     LoggerRequestResponseMiddleware::class,
+                                    ErrorMiddleware::class,
                                     Handler\Admin\AddPublicHandler::class
                                 ),
                             ],
@@ -527,6 +538,7 @@ return [
                                     Middleware\AuthorizationMediaMiddleware::class,
                                     Middleware\UploadMediaMiddleware::class,
                                     LoggerRequestResponseMiddleware::class,
+                                    ErrorMiddleware::class,
                                     Handler\Admin\AddPrivateHandler::class
                                 ),
                             ],
@@ -552,6 +564,7 @@ return [
                                     Middleware\AuthorizationMediaMiddleware::class,
                                     Middleware\GetMediaMiddleware::class,
                                     LoggerRequestResponseMiddleware::class,
+                                    ErrorMiddleware::class,
                                     Handler\Admin\AddRelationHandler::class
                                 ),
                             ],
@@ -576,6 +589,7 @@ return [
                                     AuthorizationMiddleware::class,
                                     Middleware\AuthorizationMediaMiddleware::class,
                                     LoggerRequestResponseMiddleware::class,
+                                    ErrorMiddleware::class,
                                     Handler\Admin\ListHandler::class
                                 ),
                             ],
@@ -601,6 +615,7 @@ return [
                                     Middleware\AuthorizationMediaMiddleware::class,
                                     Middleware\GetMediaMiddleware::class,
                                     LoggerRequestResponseMiddleware::class,
+                                    ErrorMiddleware::class,
                                     Handler\Admin\GetHandler::class
                                 ),
                             ],
@@ -626,6 +641,7 @@ return [
                                     Middleware\AuthorizationMediaMiddleware::class,
                                     Middleware\GetMediaMiddleware::class,
                                     LoggerRequestResponseMiddleware::class,
+                                    ErrorMiddleware::class,
                                     Handler\Admin\StreamHandler::class
                                 ),
                             ],
@@ -651,6 +667,7 @@ return [
                                     Middleware\AuthorizationMediaMiddleware::class,
                                     Middleware\GetMediaMiddleware::class,
                                     LoggerRequestResponseMiddleware::class,
+                                    ErrorMiddleware::class,
                                     Handler\Api\UpdateHandler::class
                                 ),
                             ],
@@ -676,6 +693,7 @@ return [
                                     Middleware\AuthorizationMediaMiddleware::class,
                                     Middleware\DeleteMediaMiddleware::class,
                                     LoggerRequestResponseMiddleware::class,
+                                    ErrorMiddleware::class,
                                     Handler\Admin\DeleteHandler::class
                                 ),
                             ],
