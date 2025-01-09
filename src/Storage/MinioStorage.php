@@ -91,7 +91,7 @@ class MinioStorage implements StorageInterface
         }
     }
 
-    public function readMedia($params): string
+    public function getFilePath($params): string
     {
         // Download the file to a temporary location
         $tempFilePath = sys_get_temp_dir() . '/' . basename($params['key']);

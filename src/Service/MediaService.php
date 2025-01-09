@@ -740,9 +740,9 @@ class MediaService implements ServiceInterface
             ];
 
             // Get download and file path
-            $filePath = $this->minioStorage->readMedia($params);
+            $filePath = $this->minioStorage->getFilePath($params);
         } elseif (isset($media['information']['storage']['local']['file_path'])) {
-            $filePath = $this->localStorage->readMedia($media);
+            $filePath = $this->localStorage->getFilePath($media);
         }
 
         // Read file
@@ -750,7 +750,7 @@ class MediaService implements ServiceInterface
         $fileData   = $fileReader->readFile();
 
         // Check file content and set it to result
-        if ($fileData['result'] && isset($fileData['data']) && !empty($fileData['data'])) {
+        if ($fileData['result'] === true && isset($fileData['data']) && !empty($fileData['data'])) {
             return $fileData['data'];
         }
         return [];
