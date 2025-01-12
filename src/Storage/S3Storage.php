@@ -2,7 +2,6 @@
 
 namespace Pi\Media\Storage;
 
-
 use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
 use Laminas\Filter\FilterChain;
