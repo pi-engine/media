@@ -5,7 +5,7 @@ namespace Pi\Media\Download;
 use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
 
-class MinioDownload implements DownloadInterface
+class S3Download implements DownloadInterface
 {
     /* @var array */
     protected array $config;
@@ -14,8 +14,8 @@ class MinioDownload implements DownloadInterface
 
     public function __construct($config)
     {
-        // Set MinIO connection parameters
-        $this->s3Client = new S3Client($config['minio']);
+        // Set s3 connection parameters
+        $this->s3Client = new S3Client($config['s3']);
         $this->config   = $config;
     }
 
@@ -32,7 +32,7 @@ class MinioDownload implements DownloadInterface
     public function stream(array $params): bool
     {
         try {
-            // Download the private file from MinIO
+            // Download the private file from s3
             $result = $this->s3Client->getObject([
                 'Bucket' => $params['bucket'],
                 'Key'    => $params['key'],

@@ -3,10 +3,10 @@
 namespace Pi\Media\Factory\Middleware;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Pi\Media\Middleware\UploadMediaMiddleware;
-use Pi\Media\Service\MediaService;
 use Pi\Core\Handler\ErrorHandler;
 use Pi\Core\Service\UtilityService;
+use Pi\Media\Middleware\UploadMediaMiddleware;
+use Pi\Media\Service\MediaService;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;

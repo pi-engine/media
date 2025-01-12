@@ -10,7 +10,7 @@ use Laminas\Filter\PregReplace;
 use Laminas\Filter\StringToLower;
 use Random\RandomException;
 
-class MinioStorage implements StorageInterface
+class S3Storage implements StorageInterface
 {
     /* @var array */
     protected array $config;
@@ -19,8 +19,8 @@ class MinioStorage implements StorageInterface
 
     public function __construct($config)
     {
-        // Set MinIO connection parameters
-        $this->s3Client = new S3Client($config['minio']);
+        // Set s3 connection parameters
+        $this->s3Client = new S3Client($config['s3']);
         $this->config   = $config;
     }
 
@@ -47,7 +47,7 @@ class MinioStorage implements StorageInterface
 
         // Upload file
         try {
-            // Upload the file stream to MinIO
+            // Upload the file stream to s3
             $response = $this->s3Client->putObject([
                 'Bucket'   => $params['bucket'],
                 'Key'      => $fileName,
@@ -63,7 +63,7 @@ class MinioStorage implements StorageInterface
             return [
                 'status' => true,
                 'data'   => [
-                    'minio'          => [
+                    's3'             => [
                         'key'          => $fileName,
                         'bucket'       => $params['bucket'],
                         'fileRequest'  => $uploadFile->getClientFilename(),
@@ -96,7 +96,7 @@ class MinioStorage implements StorageInterface
         // Download the file to a temporary location
         $tempFilePath = sys_get_temp_dir() . '/' . basename($params['key']);
 
-        // Download the private file from MinIO
+        // Download the private file from s3
         $this->s3Client->getObject([
             'Bucket' => $params['bucket'],
             'Key'    => $params['key'],

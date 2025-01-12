@@ -5,10 +5,10 @@ namespace Pi\Media\Factory\Validator;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Pi\Media\Service\MediaService;
 use Pi\Media\Validator\SlugValidator;
+use Pi\User\Validator\MobileValidator;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Pi\User\Validator\MobileValidator;
 
 class SlugValidatorFactory implements FactoryInterface
 {

@@ -5,7 +5,7 @@ return [
         'authorization'     => [
             'access' => ['public', 'company', 'user', 'group', 'admin'],
         ],
-        'storage'           => 'local', // local or minio
+        'storage'           => 'local', // local or s3
         'download_uri'      => 'https://...',
         'stream_uri'        => 'https://...',
         'private_path'      => 'PRIVATE_PATH',
@@ -36,7 +36,7 @@ return [
             'min' => '1kB',
             'max' => '10MB',
         ],
-        'minio'             => [
+        's3'             => [
             'version'                     => 'latest',
             'region'                      => 'us-east-1',
             'endpoint'                    => 'XXX',

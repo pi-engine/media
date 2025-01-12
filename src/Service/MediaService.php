@@ -4,10 +4,10 @@ namespace Pi\Media\Service;
 
 use Pi\Core\Service\UtilityService;
 use Pi\Media\Download\LocalDownload;
-use Pi\Media\Download\MinioDownload;
+use Pi\Media\Download\S3Download;
 use Pi\Media\Repository\MediaRepositoryInterface;
 use Pi\Media\Storage\LocalStorage;
-use Pi\Media\Storage\MinioStorage;
+use Pi\Media\Storage\S3Storage;
 use Pi\User\Service\AccountService;
 
 class MediaService implements ServiceInterface
@@ -24,14 +24,14 @@ class MediaService implements ServiceInterface
     /** @var LocalStorage */
     protected LocalStorage $localStorage;
 
-    /** @var MinioStorage */
-    protected MinioStorage $minioStorage;
+    /** @var S3Storage */
+    protected S3Storage $s3Storage;
 
     /** @var LocalDownload */
     protected LocalDownload $localDownload;
 
-    /** @var MinioDownload */
-    protected MinioDownload $minioDownload;
+    /** @var S3Download */
+    protected S3Download $s3Download;
 
     /* @var array */
     protected array $config;
@@ -79,18 +79,18 @@ class MediaService implements ServiceInterface
         AccountService           $accountService,
         UtilityService           $utilityService,
         LocalStorage             $localStorage,
-        MinioStorage             $minioStorage,
+        S3Storage                $s3Storage,
         LocalDownload            $localDownload,
-        MinioDownload            $minioDownload,
+        S3Download               $s3Download,
                                  $config
     ) {
         $this->mediaRepository = $mediaRepository;
         $this->accountService  = $accountService;
         $this->utilityService  = $utilityService;
         $this->localStorage    = $localStorage;
-        $this->minioStorage    = $minioStorage;
+        $this->s3Storage       = $s3Storage;
         $this->localDownload   = $localDownload;
-        $this->minioDownload   = $minioDownload;
+        $this->s3Download      = $s3Download;
         $this->config          = $config;
     }
 
@@ -109,9 +109,9 @@ class MediaService implements ServiceInterface
     public function storeMedia($uploadFile, $authorization, $params): array
     {
         // Set storage
-        if (isset($params['storage']) && in_array($params['storage'], ['local', 'minio'])) {
+        if (isset($params['storage']) && in_array($params['storage'], ['local', 's3'])) {
             $this->storage = $params['storage'];
-        } elseif (isset($this->config['storage']) && in_array($this->config['storage'], ['local', 'minio'])) {
+        } elseif (isset($this->config['storage']) && in_array($this->config['storage'], ['local', 's3'])) {
             $this->storage = $this->config['storage'] ?? 'local';
         }
 
@@ -147,7 +147,7 @@ class MediaService implements ServiceInterface
                 $result = $this->localStorage->storeMedia($uploadFile, $storageParams);
                 break;
 
-            case 'minio':
+            case 's3':
                 // Set storage params
                 $storageParams = [
                     'storage'     => $this->storage,
@@ -158,7 +158,7 @@ class MediaService implements ServiceInterface
                     'user_id'     => $authorization['user_id'],
                 ];
 
-                $result = $this->minioStorage->storeMedia($uploadFile, $storageParams);
+                $result = $this->s3Storage->storeMedia($uploadFile, $storageParams);
                 break;
         }
 
@@ -672,8 +672,8 @@ class MediaService implements ServiceInterface
                 $this->localStorage->remove($media['information']['storage']['local']['file_path']);
                 break;
 
-            case 'minio':
-                $this->minioStorage->remove($media['storage']['minio']);
+            case 's3':
+                $this->s3Storage->remove($media['storage']['s3']);
                 break;
         }
 
@@ -707,15 +707,15 @@ class MediaService implements ServiceInterface
                 return $this->localDownload->stream($params);
                 break;
 
-            case 'minio':
+            case 's3':
                 // Set stream params
                 $params = [
-                    'key'    => $media['information']['storage']['minio']['key'],
-                    'bucket' => $media['information']['storage']['minio']['bucket'],
+                    'key'    => $media['information']['storage']['s3']['key'],
+                    'bucket' => $media['information']['storage']['s3']['bucket'],
                 ];
 
                 // Start stream
-                return $this->minioDownload->stream($params);
+                return $this->s3Download->stream($params);
                 break;
         }
     }
@@ -732,15 +732,15 @@ class MediaService implements ServiceInterface
     public function readMedia($media): array
     {
         $filePath = '';
-        if (isset($media['information']['storage']['minio'])) {
+        if (isset($media['information']['storage']['s3'])) {
             // Set stream params
             $params = [
-                'key'    => $media['information']['storage']['minio']['key'],
-                'bucket' => $media['information']['storage']['minio']['bucket'],
+                'key'    => $media['information']['storage']['s3']['key'],
+                'bucket' => $media['information']['storage']['s3']['bucket'],
             ];
 
             // Get download and file path
-            $filePath = $this->minioStorage->getFilePath($params);
+            $filePath = $this->s3Storage->getFilePath($params);
         } elseif (isset($media['information']['storage']['local']['file_path'])) {
             $filePath = $this->localStorage->getFilePath($media);
         }
