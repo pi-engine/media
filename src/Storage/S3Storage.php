@@ -26,10 +26,10 @@ class S3Storage implements StorageInterface
     /**
      * @throws RandomException
      */
-    public function storeMedia($uploadFile, $params): array
+    public function storeMedia($uploadFile, $params, $acl = 'private'): array
     {
         // Check if the bucket exists and create if not exist
-        $bucket = $this->setOrGetBucket($params['bucket']);
+        $bucket = $this->setOrGetBucket($params['bucket'], $acl);
         if (!$bucket['status']) {
             return $bucket;
         }
@@ -51,7 +51,7 @@ class S3Storage implements StorageInterface
                 'Bucket'   => $params['bucket'],
                 'Key'      => $fileName,
                 'Body'     => $uploadFile->getStream(),
-                'ACL'      => 'private',
+                'ACL'      => $acl,
                 'Metadata' => [
                     'company_id' => $params['company_id'],
                     'user_id'    => $params['company_id'],
@@ -105,7 +105,7 @@ class S3Storage implements StorageInterface
         return $tempFilePath;
     }
 
-    public function setOrGetBucket($bucketName): array
+    public function setOrGetBucket($bucketName, $acl = 'private'): array
     {
         try {
             $this->s3Client->headBucket([
@@ -117,7 +117,7 @@ class S3Storage implements StorageInterface
                     // Create the bucket
                     $this->s3Client->createBucket([
                         'Bucket' => $bucketName,
-                        'ACL'    => 'private', // Ensure bucket is private
+                        'ACL'    => $acl,
                     ]);
 
                     // Wait until the bucket is created
