@@ -3,20 +3,21 @@
 namespace Pi\Media\Download;
 
 use Aws\Exception\AwsException;
-use Aws\S3\S3Client;
+use Pi\Media\Service\S3Service;
 
 class S3Download implements DownloadInterface
 {
+    protected S3Service $s3Service;
+
     /* @var array */
     protected array $config;
 
-    protected S3Client $s3Client;
-
-    public function __construct($config)
-    {
-        // Set s3 connection parameters
-        $this->s3Client = new S3Client($config['s3']);
-        $this->config   = $config;
+    public function __construct(
+        S3Service $s3Service,
+                  $config
+    ) {
+        $this->s3Service = $s3Service;
+        $this->config    = $config;
     }
 
     public function makePublicUri($params): string
@@ -33,7 +34,7 @@ class S3Download implements DownloadInterface
     {
         try {
             // Download the private file from s3
-            $result = $this->s3Client->getObject([
+            $result = $this->s3Service->getFile([
                 'Bucket' => $params['bucket'],
                 'Key'    => $params['key'],
             ]);

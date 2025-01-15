@@ -2,25 +2,25 @@
 
 namespace Pi\Media\Storage;
 
-use Aws\Exception\AwsException;
-use Aws\S3\S3Client;
 use Laminas\Filter\FilterChain;
 use Laminas\Filter\PregReplace;
 use Laminas\Filter\StringToLower;
+use Pi\Media\Service\S3Service;
 use Random\RandomException;
 
 class S3Storage implements StorageInterface
 {
+    protected S3Service $s3Service;
+
     /* @var array */
     protected array $config;
 
-    protected S3Client $s3Client;
-
-    public function __construct($config)
-    {
-        // Set s3 connection parameters
-        $this->s3Client = new S3Client($config['s3']);
-        $this->config   = $config;
+    public function __construct(
+        S3Service $s3Service,
+                  $config
+    ) {
+        $this->s3Service = $s3Service;
+        $this->config    = $config;
     }
 
     /**
@@ -29,7 +29,7 @@ class S3Storage implements StorageInterface
     public function storeMedia($uploadFile, $params, $acl = 'private'): array
     {
         // Check if the bucket exists and create if not exist
-        $bucket = $this->setOrGetBucket($params['bucket'], $acl);
+        $bucket = $this->s3Service->setOrGetBucket($params['bucket']);
         if (!$bucket['status']) {
             return $bucket;
         }
@@ -44,50 +44,44 @@ class S3Storage implements StorageInterface
             $originalName = sprintf('%s-%s-%s', $originalName, time(), bin2hex(random_bytes(4)));
         }
 
-        // Upload file
-        try {
-            // Upload the file stream to s3
-            $response = $this->s3Client->putObject([
-                'Bucket'   => $params['bucket'],
-                'Key'      => $fileName,
-                'Body'     => $uploadFile->getStream(),
-                'ACL'      => $acl,
-                'Metadata' => [
-                    'company_id' => $params['company_id'],
-                    'user_id'    => $params['company_id'],
-                    'access'     => $params['access'],
-                ],
-            ]);
+        // Upload the file stream to s3
+        $response = $this->s3Service->putFile([
+            'Bucket'   => $params['bucket'],
+            'Key'      => $fileName,
+            'Body'     => $uploadFile->getStream(),
+            'ACL'      => $acl,
+            'Metadata' => [
+                'company_id' => $params['company_id'],
+                'user_id'    => $params['company_id'],
+                'access'     => $params['access'],
+            ],
+        ]);
 
-            return [
-                'status' => true,
-                'data'   => [
-                    's3'             => [
-                        'key'          => $fileName,
-                        'bucket'       => $params['bucket'],
-                        'fileRequest'  => $uploadFile->getClientFilename(),
-                        'effectiveUri' => $response['@metadata']['effectiveUri'],
-                    ],
-                    'original_name'  => $originalName,
-                    'file_name'      => $fileName,
-                    'file_title'     => $fileInfo['filename'],
-                    'file_extension' => strtolower($fileInfo['extension']),
-                    'file_size'      => $uploadFile->getSize(),
-                    'file_type'      => $this->makeFileType(strtolower($fileInfo['extension'])),
-                    'file_size_view' => $this->transformSize($uploadFile->getSize()),
-                ],
-                'error'  => [],
-            ];
-        } catch (AwsException $e) {
-            return [
-                'status' => false,
-                'data'   => [],
-                'error'  => [
-                    'code'    => $e->getStatusCode(),
-                    'message' => "Error uploading file: " . $e->getMessage(),
-                ],
-            ];
+        // Check result
+        if (!$response['result']) {
+            return $response;
         }
+
+        // Set result
+        return [
+            'status' => true,
+            'data'   => [
+                's3'             => [
+                    'key'          => $fileName,
+                    'bucket'       => $params['bucket'],
+                    'fileRequest'  => $uploadFile->getClientFilename(),
+                    'effectiveUri' => $response['@metadata']['effectiveUri'],
+                ],
+                'original_name'  => $originalName,
+                'file_name'      => $fileName,
+                'file_title'     => $fileInfo['filename'],
+                'file_extension' => strtolower($fileInfo['extension']),
+                'file_size'      => $uploadFile->getSize(),
+                'file_type'      => $this->makeFileType(strtolower($fileInfo['extension'])),
+                'file_size_view' => $this->transformSize($uploadFile->getSize()),
+            ],
+            'error'  => [],
+        ];
     }
 
     public function getFilePath($params): string
@@ -96,77 +90,13 @@ class S3Storage implements StorageInterface
         $tempFilePath = sys_get_temp_dir() . '/' . basename($params['key']);
 
         // Download the private file from s3
-        $this->s3Client->getObject([
+        $this->s3Service->getFile([
             'Bucket' => $params['bucket'],
             'Key'    => $params['key'],
             'SaveAs' => $tempFilePath,
         ]);
 
         return $tempFilePath;
-    }
-
-    public function setOrGetBucket($bucketName, $acl = 'private'): array
-    {
-        try {
-            $this->s3Client->headBucket([
-                'Bucket' => $bucketName,
-            ]);
-        } catch (AwsException $e) {
-            if ((int)$e->getStatusCode() === 404) {
-                try {
-                    // Create the bucket
-                    $this->s3Client->createBucket([
-                        'Bucket' => $bucketName,
-                        'ACL'    => $acl,
-                    ]);
-
-                    // Wait until the bucket is created
-                    $this->s3Client->waitUntil('BucketExists', [
-                        'Bucket' => $bucketName,
-                    ]);
-                } catch (AwsException $createException) {
-                    return [
-                        'status' => false,
-                        'data'   => [],
-                        'error'  => [
-                            'code'    => $createException->getStatusCode(),
-                            'message' => "Error creating bucket: " . $createException->getMessage(),
-                        ],
-                    ];
-                }
-            } else {
-                return [
-                    'status' => false,
-                    'data'   => [],
-                    'error'  => [
-                        'code'    => $e->getStatusCode(),
-                        'message' => "An error occurred: " . $e->getMessage(),
-                    ],
-                ];
-            }
-        }
-
-        // Get data (objects) from the bucket
-        try {
-            $result = $this->s3Client->listObjects([
-                'Bucket' => $bucketName,
-            ]);
-
-            return [
-                'status' => true,
-                'data'   => $result->toArray(),
-                'error'  => [],
-            ];
-        } catch (AwsException $e) {
-            return [
-                'status' => false,
-                'data'   => [],
-                'error'  => [
-                    'code'    => $e->getStatusCode(),
-                    'message' => "Error retrieving objects from the bucket: " . $e->getMessage(),
-                ],
-            ];
-        }
     }
 
     /**

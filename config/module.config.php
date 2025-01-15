@@ -21,6 +21,7 @@ return [
         'factories' => [
             Repository\MediaRepository::class              => Factory\Repository\MediaRepositoryFactory::class,
             Service\MediaService::class                    => Factory\Service\MediaServiceFactory::class,
+            Service\S3Service::class                       => Factory\Service\S3ServiceFactory::class,
             Storage\LocalStorage::class                    => Factory\Storage\LocalStorageFactory::class,
             Storage\S3Storage::class                       => Factory\Storage\S3StorageFactory::class,
             Download\LocalDownload::class                  => Factory\Download\LocalDownloadFactory::class,

@@ -4,6 +4,7 @@ namespace Pi\Media\Factory\Download;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Pi\Media\Download\S3Download;
+use Pi\Media\Service\S3Service;
 use Psr\Container\ContainerInterface;
 
 class S3DownloadFactory implements FactoryInterface
@@ -13,6 +14,9 @@ class S3DownloadFactory implements FactoryInterface
         $config = $container->get('config');
         $config = $config['media'] ?? [];
 
-        return new S3Download($config);
+        return new S3Download(
+            $container->get(S3Service::class),
+            $config
+        );
     }
 }

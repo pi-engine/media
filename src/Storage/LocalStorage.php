@@ -108,7 +108,7 @@ class LocalStorage implements StorageInterface
      *
      * @throws Exception On any directory creation failure
      */
-    public function mkdir(string|iterable $dirs, int $mode = 0777)
+    public function mkdir(string|iterable $dirs, int $mode = 0777): static
     {
         foreach ($this->toIterator($dirs) as $dir) {
             if (is_dir($dir)) {

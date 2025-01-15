@@ -3,6 +3,7 @@
 namespace Pi\Media\Factory\Storage;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Pi\Media\Service\S3Service;
 use Pi\Media\Storage\S3Storage;
 use Psr\Container\ContainerInterface;
 
@@ -13,6 +14,9 @@ class S3StorageFactory implements FactoryInterface
         $config = $container->get('config');
         $config = $config['media'] ?? [];
 
-        return new S3Storage($config);
+        return new S3Storage(
+            $container->get(S3Service::class),
+            $config
+        );
     }
 }
