@@ -756,12 +756,8 @@ class MediaService implements ServiceInterface
         return [];
     }
 
-    public function analytic($authorization): array
+    public function analytic($params): array
     {
-        $params = [
-            'company_id' => $authorization['company_id'],
-        ];
-
         $result = $this->mediaRepository->analytic($params);
         foreach ($result as $row) {
             $this->defaultTypes[$row['type']]['value'] = $row['count'];

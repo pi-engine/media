@@ -449,10 +449,10 @@ class MediaRepository implements MediaRepositoryInterface
             'count' => new Expression('count(*)'),
         ];
 
-        $where = [
-            'company_id' => $params['company_id'],
-            'status'     => 1,
-        ];
+        $where = ['status' => 1];
+        if (isset($params['company_id']) && !empty($params['company_id'])) {
+            $where['company_id'] = $params['company_id'];
+        }
 
         $sql       = new Sql($this->db);
         $select    = $sql->select($this->tableStorage)->columns($columns)->where($where)->group('type');
