@@ -66,7 +66,7 @@ class MediaRepository implements MediaRepositoryInterface
 
         $sql    = new Sql($this->db);
         $from   = ['storage' => $this->tableStorage];
-        $select = $sql->select()->from($from)->where($where)->order($params['order'])->offset($params['offset'])->limit($params['limit']);
+        $select = $sql->select()->from($from)->where($where);
         $select->join(
             ['account' => $this->tableAccount],
             'storage.user_id=account.id',
@@ -78,6 +78,16 @@ class MediaRepository implements MediaRepositoryInterface
             ],
             $select::JOIN_LEFT . ' ' . $select::JOIN_OUTER
         );
+        if (isset($params['order']) && !empty($params['order'])) {
+            $select->order($params['order']);
+        }
+        if (isset($params['offset']) && !empty($params['offset'])) {
+            $select->offset($params['offset']);
+        }
+        if (isset($params['limit']) && !empty($params['limit'])) {
+            $select->limit($params['limit']);
+        }
+
         $statement = $sql->prepareStatementForSqlObject($select);
         $result    = $statement->execute();
 
@@ -453,6 +463,9 @@ class MediaRepository implements MediaRepositoryInterface
         if (isset($params['company_id']) && !empty($params['company_id'])) {
             $where['company_id'] = $params['company_id'];
         }
+        if (isset($params['user_id']) && !empty($params['user_id'])) {
+            $where['user_id'] = $params['user_id'];
+        }
 
         $sql       = new Sql($this->db);
         $select    = $sql->select($this->tableStorage)->columns($columns)->where($where)->group('type');
@@ -469,7 +482,8 @@ class MediaRepository implements MediaRepositoryInterface
     public function calculateStorage(array $params = []): int
     {
         $columns = ['sum' => new Expression('SUM(size)')];
-        $where   = [];
+
+        $where = ['status' => 1];
         if (isset($params['company_id']) && !empty($params['company_id'])) {
             $where['company_id'] = $params['company_id'];
         }

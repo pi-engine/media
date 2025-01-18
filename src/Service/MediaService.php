@@ -367,6 +367,50 @@ class MediaService implements ServiceInterface
         return $storage;
     }
 
+    public function canonizeStorageLight($storage): array
+    {
+        if (is_object($storage)) {
+            $information = $storage->getInformation();
+            $storage     = [
+                'id'             => $storage->getId(),
+                'title'          => $storage->getTitle(),
+                'type'           => $storage->getType(),
+                'extension'      => $storage->getExtension(),
+                'size'           => $storage->getSize(),
+                'download_count' => $storage->getDownloadCount(),
+                'time_create'    => $storage->getTimeCreate(),
+                'time_update'    => $storage->getTimeUpdate(),
+            ];
+        } else {
+            $information = $storage['information'];
+            $storage     = [
+                'id'             => $storage['id'],
+                'title'          => $storage['title'],
+                'type'           => $storage['type'],
+                'extension'      => $storage['extension'],
+                'size'           => $storage['size'],
+                'download_count' => $storage['download_count'],
+                'time_create'    => $storage['time_create'],
+                'time_update'    => $storage['time_update'],
+            ];
+        }
+
+        // Set information
+        $information = json_decode($information, true);
+
+        // Set original name
+        $storage['original_name'] = $information['storage']['original_name'] ?? '';
+
+        // Set time view
+        $storage['time_create_view'] = $this->utilityService->date($storage['time_create']);
+        $storage['time_update_view'] = $this->utilityService->date($storage['time_update']);
+
+        // Set size view
+        $storage['size_view'] = $storage['information']['storage']['file_size_view'];
+
+        return $storage;
+    }
+
     public function canonizeRelation($relation): array
     {
         if (empty($relation)) {
@@ -782,6 +826,41 @@ class MediaService implements ServiceInterface
         return [
             'storage_size'      => $size,
             'storage_size_view' => $this->localStorage->transformSize($size),
+        ];
+    }
+
+    public function dashboard($params): array
+    {
+        $storage  = $this->calculateStorage($params);
+        $analytic = $this->analytic($params);
+
+        // Set list params
+        $listParams = [
+            'limit'      => 10,
+            'access'     => 'company',
+            'company_id' => $params['company_id'],
+        ];
+
+        // Check is admin
+        if (isset($params['user_id']) && !empty($params['user_id'])) {
+            $listParams['user_id'] = $params['user_id'];
+        }
+
+        // Get list
+        $list   = [];
+        $rowSet = $this->mediaRepository->getMediaList($listParams);
+        foreach ($rowSet as $row) {
+            $list[] = $this->canonizeStorageLight($row);
+        }
+
+        // Get count
+        $count = $this->mediaRepository->getMediaCount($listParams);
+
+        return [
+            'storage'  => $storage,
+            'analytic' => $analytic,
+            'list'     => $list,
+            'count'    => $count,
         ];
     }
 }
