@@ -24,7 +24,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
 {
     public array $validationResult
         = [
-            'status'  => true,
+            'result'  => true,
             'code'    => StatusCodeInterface::STATUS_OK,
             'message' => '',
         ];
@@ -73,7 +73,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
         $this->attacheIsValid($uploadFiles, $authorization, $requestBody);
 
         // Check if validation result is not true
-        if (!$this->validationResult['status']) {
+        if (!$this->validationResult['result']) {
             $request = $request->withAttribute('status', $this->validationResult['code']);
             $request = $request->withAttribute(
                 'error',
@@ -87,7 +87,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
 
         $uploadFile = array_shift($uploadFiles);
         $store      = $this->mediaService->storeMedia($uploadFile, $authorization, $requestBody);
-        if (!$store['status']) {
+        if (!$store['result']) {
             $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
             $request = $request->withAttribute(
                 'error',
@@ -108,7 +108,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
         // Check file is set
         if (empty($uploadFiles)) {
             return $this->validationResult = [
-                'status'  => false,
+                'result'  => false,
                 'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
                 'message' => 'No file uploaded',
             ];
@@ -176,7 +176,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
         }
 
         return $this->validationResult = [
-            'status'  => false,
+            'result'  => false,
             'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
             'message' => implode(', ', $message),
         ];

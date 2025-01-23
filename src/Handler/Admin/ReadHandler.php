@@ -1,9 +1,9 @@
 <?php
 
-namespace Pi\Media\Handler\Api;
+namespace Pi\Media\Handler\Admin;
 
-use Exception;
-use Laminas\Diactoros\Response\JsonResponse;
+use Fig\Http\Message\StatusCodeInterface;
+use Pi\Core\Response\EscapingJsonResponse;
 use Pi\Media\Service\MediaService;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -11,7 +11,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class StreamHandler implements RequestHandlerInterface
+class ReadHandler implements RequestHandlerInterface
 {
     /** @var ResponseFactoryInterface */
     protected ResponseFactoryInterface $responseFactory;
@@ -32,13 +32,11 @@ class StreamHandler implements RequestHandlerInterface
         $this->mediaService    = $mediaService;
     }
 
-    /**
-     * @throws Exception
-     */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $media  = $request->getAttribute('media_item');
-        $result = $this->mediaService->streamMedia($media);
-        return new JsonResponse($result);
+        $media = $request->getAttribute('media_item');
+        $result = $this->mediaService->readMedia($media);
+
+        return new EscapingJsonResponse($result, $result['status'] ?? StatusCodeInterface::STATUS_OK);
     }
 }

@@ -46,6 +46,7 @@ return [
             Handler\Admin\GetHandler::class                => Factory\Handler\Admin\GetHandlerFactory::class,
             Handler\Admin\StreamHandler::class             => Factory\Handler\Admin\StreamHandlerFactory::class,
             Handler\Admin\UpdateHandler::class             => Factory\Handler\Admin\UpdateHandlerFactory::class,
+            Handler\Admin\ReadHandler::class             => Factory\Handler\Admin\ReadHandlerFactory::class,
             Handler\Admin\DeleteHandler::class             => Factory\Handler\Admin\DeleteHandlerFactory::class,
             Handler\InstallerHandler::class                => Factory\Handler\InstallerHandlerFactory::class,
         ],
@@ -500,10 +501,10 @@ return [
                             'defaults' => [
                                 'module'       => 'media',
                                 'section'      => 'admin',
-                                'package'      => 'media',
+                                'package'      => 'general',
                                 'handler'      => 'add-public',
                                 'media_access' => 'admin',
-                                'permissions'  => 'media-add-public',
+                                'permissions'  => 'admin-media-add-public',
                                 'controller'   => PipeSpec::class,
                                 'middleware'   => new PipeSpec(
                                     RequestPreparationMiddleware::class,
@@ -526,10 +527,10 @@ return [
                             'defaults' => [
                                 'module'       => 'media',
                                 'section'      => 'admin',
-                                'package'      => 'media',
+                                'package'      => 'general',
                                 'media_access' => 'admin',
                                 'handler'      => 'add-private',
-                                'permissions'  => 'media-add-private',
+                                'permissions'  => 'admin-media-add-private',
                                 'controller'   => PipeSpec::class,
                                 'middleware'   => new PipeSpec(
                                     RequestPreparationMiddleware::class,
@@ -552,10 +553,10 @@ return [
                             'defaults' => [
                                 'module'       => 'media',
                                 'section'      => 'admin',
-                                'package'      => 'media',
+                                'package'      => 'general',
                                 'media_access' => 'admin',
                                 'handler'      => 'add-relation',
-                                'permissions'  => 'media-add-relation',
+                                'permissions'  => 'admin-media-add-relation',
                                 'controller'   => PipeSpec::class,
                                 'middleware'   => new PipeSpec(
                                     RequestPreparationMiddleware::class,
@@ -578,10 +579,10 @@ return [
                             'defaults' => [
                                 'module'       => 'media',
                                 'section'      => 'admin',
-                                'package'      => 'media',
+                                'package'      => 'general',
                                 'handler'      => 'list',
                                 'media_access' => 'admin',
-                                'permissions'  => 'media-list',
+                                'permissions'  => 'admin-media-list',
                                 'controller'   => PipeSpec::class,
                                 'middleware'   => new PipeSpec(
                                     RequestPreparationMiddleware::class,
@@ -603,10 +604,10 @@ return [
                             'defaults' => [
                                 'module'       => 'media',
                                 'section'      => 'admin',
-                                'package'      => 'media',
+                                'package'      => 'general',
                                 'handler'      => 'get',
                                 'media_access' => 'admin',
-                                'permissions'  => 'media-get',
+                                'permissions'  => 'admin-media-get',
                                 'controller'   => PipeSpec::class,
                                 'middleware'   => new PipeSpec(
                                     RequestPreparationMiddleware::class,
@@ -629,10 +630,10 @@ return [
                             'defaults' => [
                                 'module'       => 'media',
                                 'section'      => 'admin',
-                                'package'      => 'media',
+                                'package'      => 'general',
                                 'handler'      => 'stream',
                                 'media_access' => 'admin',
-                                'permissions'  => 'media-stream',
+                                'permissions'  => 'admin-media-stream',
                                 'controller'   => PipeSpec::class,
                                 'middleware'   => new PipeSpec(
                                     RequestPreparationMiddleware::class,
@@ -655,10 +656,10 @@ return [
                             'defaults' => [
                                 'module'       => 'media',
                                 'section'      => 'admin',
-                                'package'      => 'media',
+                                'package'      => 'general',
                                 'handler'      => 'update',
                                 'media_access' => 'admin',
-                                'permissions'  => 'media-update',
+                                'permissions'  => 'admin-media-update',
                                 'controller'   => PipeSpec::class,
                                 'middleware'   => new PipeSpec(
                                     RequestPreparationMiddleware::class,
@@ -674,6 +675,32 @@ return [
                             ],
                         ],
                     ],
+                    'read'          => [
+                        'type'    => Literal::class,
+                        'options' => [
+                            'route'    => '/read',
+                            'defaults' => [
+                                'module'       => 'media',
+                                'section'      => 'admin',
+                                'package'      => 'general',
+                                'handler'      => 'read',
+                                'media_access' => 'admin',
+                                'permissions'  => 'admin-media-read',
+                                'controller'   => PipeSpec::class,
+                                'middleware'   => new PipeSpec(
+                                    RequestPreparationMiddleware::class,
+                                    SecurityMiddleware::class,
+                                    AuthenticationMiddleware::class,
+                                    AuthorizationMiddleware::class,
+                                    Middleware\AuthorizationMediaMiddleware::class,
+                                    Middleware\GetMediaMiddleware::class,
+                                    LoggerRequestResponseMiddleware::class,
+                                    ErrorMiddleware::class,
+                                    Handler\Admin\ReadHandler::class
+                                ),
+                            ],
+                        ],
+                    ],
                     'delete'       => [
                         'type'    => Literal::class,
                         'options' => [
@@ -681,10 +708,10 @@ return [
                             'defaults' => [
                                 'module'       => 'media',
                                 'section'      => 'admin',
-                                'package'      => 'media',
+                                'package'      => 'general',
                                 'handler'      => 'delete',
                                 'media_access' => 'admin',
-                                'permissions'  => 'media-delete',
+                                'permissions'  => 'admin-media-delete',
                                 'controller'   => PipeSpec::class,
                                 'middleware'   => new PipeSpec(
                                     RequestPreparationMiddleware::class,

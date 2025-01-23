@@ -38,7 +38,7 @@ class FileReader implements ServiceInterface
             'xlsx', 'xls' => $this->readExcel(),
             'csv'         => $this->readCsv(),
             'json'        => $this->readJson(),
-            'docx'        => $this->readWord(),
+            'docx', 'doc' => $this->readWord(),
             'txt'         => $this->readTxt(),
             default       => [
                 'result' => false,
@@ -52,7 +52,7 @@ class FileReader implements ServiceInterface
 
     private function isFileValid(): bool
     {
-        return file_exists($this->filePath) && is_readable($this->filePath);
+        return file_exists($this->filePath)/* && is_readable($this->filePath)*/ ;
     }
 
     private function readPdf(): array

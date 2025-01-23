@@ -43,7 +43,7 @@ return [
             'use_path_style_endpoint'     => true,
             'use_aws_shared_config_files' => false,
             'credentials'                 => [
-                'key'    => 'XXX',
+                'Key'    => 'XXX',
                 'secret' => 'XXX',
             ],
         ],

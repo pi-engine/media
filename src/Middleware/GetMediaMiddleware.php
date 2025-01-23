@@ -67,50 +67,54 @@ class GetMediaMiddleware implements MiddlewareInterface
         $media = $this->mediaService->getMedia($requestBody);
 
         // Check media
-        if (empty($media) || (int)$media['status'] !== 1 || $media['access'] != $authorization['access']) {
-            $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
-            $request = $request->withAttribute(
-                'error',
-                [
-                    'message' => 'You should select media !',
-                    'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
-                ]
-            );
-            return $this->errorHandler->handle($request);
+        if (empty($media) || (int)$media['status'] !== 1) {
+            if ($authorization['access'] !== 'admin' || $media['access'] !== $authorization['access']) {
+                $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
+                $request = $request->withAttribute(
+                    'error',
+                    [
+                        'message' => 'You should select media !',
+                        'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
+                    ]
+                );
+                return $this->errorHandler->handle($request);
+            }
         }
 
         // Check media
         $hasAccess = true;
-        switch ($media['access']) {
-            case 'company':
-                // Check company access
-                if ((int)$media['company_id'] !== $authorization['company_id']) {
-                    $hasAccess = false;
-                }
-
-                // Check just admin allow doenload other users media
-                if ((int)$account['id'] !== (int)$media['user_id']) {
-                    if (!$authorization['is_admin']) {
+        if ($authorization['access'] !== 'admin') {
+            switch ($media['access']) {
+                case 'company':
+                    // Check company access
+                    if ((int)$media['company_id'] !== $authorization['company_id']) {
                         $hasAccess = false;
                     }
-                }
-                break;
 
-            case 'private':
-                /* if ((int)$account['id'] !== (int)$media['user_id']) {
-                    $hasAccess = false;
-                } */
-                break;
-
-            case 'group':
-                if ((int)$account['id'] !== (int)$media['user_id']) {
-                    if (!isset($media['information']['access']) || empty($media['information']['access'])) {
-                        $hasAccess = false;
-                    } elseif (!in_array((int)$account['id'], $media['information']['access'])) {
-                        $hasAccess = false;
+                    // Check just admin allow doenload other users media
+                    if ((int)$account['id'] !== (int)$media['user_id']) {
+                        if (!$authorization['is_admin']) {
+                            $hasAccess = false;
+                        }
                     }
-                }
-                break;
+                    break;
+
+                case 'private':
+                    /* if ((int)$account['id'] !== (int)$media['user_id']) {
+                        $hasAccess = false;
+                    } */
+                    break;
+
+                case 'group':
+                    if ((int)$account['id'] !== (int)$media['user_id']) {
+                        if (!isset($media['information']['access']) || empty($media['information']['access'])) {
+                            $hasAccess = false;
+                        } elseif (!in_array((int)$account['id'], $media['information']['access'])) {
+                            $hasAccess = false;
+                        }
+                    }
+                    break;
+            }
         }
 
         if (!$hasAccess) {

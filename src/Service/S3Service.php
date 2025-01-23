@@ -14,24 +14,16 @@ class S3Service implements ServiceInterface
 
     public function __construct($config)
     {
+        $this->s3Client = new S3Client($config['s3']);
         $this->config = $config;
     }
 
     public function putFile($params): array
     {
-        // Set s3 connection parameters
-        $this->s3Client = new S3Client($this->config['s3']);
-
         // Create s3 client
         try {
             // Upload the file stream to s3
-            $response = $this->s3Client->putObject([
-                'Bucket'     => $params['Bucket'],
-                'Key'        => $params['Key'],
-                'SourceFile' => $params['SourceFile'],
-                'ACL'        => $params['ACL'] ?? 'private',
-                'Metadata'   => $params['Metadata'] ?? [],
-            ]);
+            $response = $this->s3Client->putObject($params);
 
             return [
                 'result' => true,
@@ -52,15 +44,12 @@ class S3Service implements ServiceInterface
 
     public function getFile($params): array
     {
-        // Set s3 connection parameters
-        $this->s3Client = new S3Client($this->config['s3']);
-
         // Create s3 client
         try {
             // Download the private file from s3
             $result = $this->s3Client->getObject([
-                'Bucket' => $params['bucket'],
-                'Key'    => $params['key'],
+                'Bucket' => $params['Bucket'],
+                'Key'    => $params['Key'],
             ]);
 
             return [
@@ -82,15 +71,12 @@ class S3Service implements ServiceInterface
 
     public function deleteFile($params): array
     {
-        // Set s3 connection parameters
-        $this->s3Client = new S3Client($this->config['s3']);
-
         // Create s3 client
         try {
             // Download the private file from s3
             $result = $this->s3Client->deleteObject([
-                'Bucket' => $params['bucket'],
-                'Key'    => $params['key'],
+                'Bucket' => $params['Bucket'],
+                'Key'    => $params['Key'],
             ]);
 
             return [
@@ -112,9 +98,6 @@ class S3Service implements ServiceInterface
 
     public function setOrGetBucket($bucketName, $policy = []): array
     {
-        // Set s3 connection parameters
-        $this->s3Client = new S3Client($this->config['s3']);
-
         try {
             $this->s3Client->headBucket([
                 'Bucket' => $bucketName,
@@ -186,9 +169,6 @@ class S3Service implements ServiceInterface
 
     public function deleteBucket($bucketName): array
     {
-        // Set s3 connection parameters
-        $this->s3Client = new S3Client($this->config['s3']);
-
         // Check bucket is exist
         try {
             // Check

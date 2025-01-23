@@ -51,7 +51,7 @@ class LocalStorage implements StorageInterface
         }
 
         return [
-            'status' => true,
+            'result' => true,
             'data'   => [
                 'local'          => [
                     'file_path'  => $filePath,

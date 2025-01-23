@@ -152,7 +152,7 @@ class MediaService implements ServiceInterface
                 $storageParams = [
                     'storage'     => $this->storage,
                     'access'      => $authorization['access'],
-                    'bucket'      => $authorization['company']['slug'],
+                    'Bucket'      => $authorization['company']['slug'],
                     'random_name' => $params['random_name'] ?? 0,
                     'company_id'  => $authorization['company_id'],
                     'user_id'     => $authorization['user_id'],
@@ -754,8 +754,8 @@ class MediaService implements ServiceInterface
             case 's3':
                 // Set stream params
                 $params = [
-                    'key'    => $media['information']['storage']['s3']['key'],
-                    'bucket' => $media['information']['storage']['s3']['bucket'],
+                    'Key'    => $media['information']['storage']['s3']['Key'],
+                    'Bucket' => $media['information']['storage']['s3']['Bucket'],
                 ];
 
                 // Start stream
@@ -779,8 +779,8 @@ class MediaService implements ServiceInterface
         if (isset($media['information']['storage']['s3'])) {
             // Set stream params
             $params = [
-                'key'    => $media['information']['storage']['s3']['key'],
-                'bucket' => $media['information']['storage']['s3']['bucket'],
+                'Key'    => $media['information']['storage']['s3']['Key'],
+                'Bucket' => $media['information']['storage']['s3']['Bucket'],
             ];
 
             // Get download and file path

@@ -29,8 +29,8 @@ class S3Storage implements StorageInterface
     public function storeMedia($uploadFile, $params, $acl = 'private'): array
     {
         // Check if the bucket exists and create if not exist
-        $bucket = $this->s3Service->setOrGetBucket($params['bucket']);
-        if (!$bucket['status']) {
+        $bucket = $this->s3Service->setOrGetBucket($params['Bucket']);
+        if (!$bucket['result']) {
             return $bucket;
         }
 
@@ -46,7 +46,7 @@ class S3Storage implements StorageInterface
 
         // Upload the file stream to s3
         $response = $this->s3Service->putFile([
-            'Bucket'   => $params['bucket'],
+            'Bucket'   => $params['Bucket'],
             'Key'      => $fileName,
             'Body'     => $uploadFile->getStream(),
             'ACL'      => $acl,
@@ -64,11 +64,11 @@ class S3Storage implements StorageInterface
 
         // Set result
         return [
-            'status' => true,
+            'result' => true,
             'data'   => [
                 's3'             => [
-                    'key'          => $fileName,
-                    'bucket'       => $params['bucket'],
+                    'Key'          => $fileName,
+                    'Bucket'       => $params['Bucket'],
                     'fileRequest'  => $uploadFile->getClientFilename(),
                     'effectiveUri' => $response['@metadata']['effectiveUri'],
                 ],
@@ -86,17 +86,20 @@ class S3Storage implements StorageInterface
 
     public function getFilePath($params): string
     {
-        // Download the file to a temporary location
-        $tempFilePath = sys_get_temp_dir() . '/' . basename($params['key']);
-
         // Download the private file from s3
-        $this->s3Service->getFile([
-            'Bucket' => $params['bucket'],
-            'Key'    => $params['key'],
-            'SaveAs' => $tempFilePath,
+        $result = $this->s3Service->getFile([
+            'Bucket' => $params['Bucket'],
+            'Key'    => $params['Key'],
         ]);
 
-        return $tempFilePath;
+        // Download the file to a temporary location
+        if ($result['result']) {
+            $tempFilePath =  sys_get_temp_dir() . '/' .  basename($params['Key']);
+            file_put_contents($tempFilePath, $result['data']['Body']);
+            return $tempFilePath;
+        }
+
+        return '';
     }
 
     /**
