@@ -15,7 +15,7 @@ class S3Service implements ServiceInterface
     public function __construct($config)
     {
         $this->s3Client = new S3Client($config['s3']);
-        $this->config = $config;
+        $this->config   = $config;
     }
 
     public function putFile($params): array
@@ -201,31 +201,53 @@ class S3Service implements ServiceInterface
                     ];
                 }
 
-                $result = $this->s3Client->deleteObjects([
-                    'Bucket' => $bucketName,
-                    'Delete' => $deleteObjects,
-                ]);
+                try {
+                    $result = $this->s3Client->deleteObjects([
+                        'Bucket' => $bucketName,
+                        'Delete' => $deleteObjects,
+                    ]);
 
-                // Check for any errors during deletion
-                if (isset($result['Errors'])) {
-                    foreach ($result['Errors'] as $error) {
-                        error_log("Error deleting object: " . $error['Key'] . " - " . $error['Message']);
+                    // Check for any errors during deletion
+                    if (isset($result['Errors'])) {
+                        foreach ($result['Errors'] as $error) {
+                            error_log("Error deleting object: " . $error['Key'] . " - " . $error['Message']);
+                        }
                     }
+                } catch (AwsException $e) {
+                    return [
+                        'result' => true,
+                        'data'   => [
+                            'message' => 'Problem to delete some objects in bucket, but go forward !',
+                        ],
+                        'error'  => [],
+                    ];
                 }
+
             }
 
-            // Delete the empty bucket
-            $this->s3Client->deleteBucket([
-                'Bucket' => $bucketName,
-            ]);
 
-            return [
-                'result' => true,
-                'data'   => [
-                    'message' => 'Bucket and its contents deleted successfully',
-                ],
-                'error'  => [],
-            ];
+            try {
+                // Delete the empty bucket
+                $this->s3Client->deleteBucket([
+                    'Bucket' => $bucketName,
+                ]);
+
+                return [
+                    'result' => true,
+                    'data'   => [
+                        'message' => 'Bucket and its contents deleted successfully',
+                    ],
+                    'error'  => [],
+                ];
+            } catch (AwsException $e) {
+                return [
+                    'result' => true,
+                    'data'   => [
+                        'message' => 'Problem to delete bucket, but go forward !',
+                    ],
+                    'error'  => [],
+                ];
+            }
         } catch (AwsException $e) {
             return [
                 'result' => false,
