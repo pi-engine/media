@@ -260,205 +260,6 @@ class MediaService implements ServiceInterface
         return $storage;
     }
 
-    public function canonizeStorage($storage, $options = []): array
-    {
-        if (empty($storage)) {
-            return [];
-        }
-
-        if (isset($options['view']) && $options['view'] == 'compressed') {
-            return $this->canonizeStorageCompressed($storage);
-        }
-
-        if (is_object($storage)) {
-            $storage = [
-                'id'             => $storage->getId(),
-                'slug'           => $storage->getSlug(),
-                'title'          => $storage->getTitle(),
-                'user_id'        => $storage->getUserId(),
-                'company_id'     => $storage->getCompanyId(),
-                'access'         => $storage->getAccess(),
-                'storage'        => $storage->getStorage(),
-                'type'           => $storage->getType(),
-                'extension'      => $storage->getExtension(),
-                'size'           => $storage->getSize(),
-                'download_count' => $storage->getDownloadCount(),
-                'status'         => $storage->getStatus(),
-                'time_create'    => $storage->getTimeCreate(),
-                'time_update'    => $storage->getTimeUpdate(),
-                'information'    => $storage->getInformation(),
-                'user_identity'  => $storage->getUserIdentity(),
-                'user_name'      => $storage->getUserName(),
-                'user_email'     => $storage->getUserEmail(),
-                'user_mobile'    => $storage->getUserMobile(),
-            ];
-        } else {
-            $storage = [
-                'id'             => $storage['id'],
-                'slug'           => $storage['slug'],
-                'title'          => $storage['title'],
-                'user_id'        => $storage['user_id'],
-                'company_id'     => $storage['company_id'],
-                'access'         => $storage['access'],
-                'storage'        => $storage['storage'],
-                'type'           => $storage['type'],
-                'extension'      => $storage['extension'],
-                'size'           => $storage['size'],
-                'download_count' => $storage['download_count'],
-                'status'         => $storage['status'],
-                'time_create'    => $storage['time_create'],
-                'time_update'    => $storage['time_update'],
-                'information'    => $storage['information'],
-                'user_identity'  => $storage['user_identity'],
-                'user_name'      => $storage['user_name'],
-                'user_email'     => $storage['user_email'],
-                'user_mobile'    => $storage['user_mobile'],
-            ];
-        }
-
-        // Set time view
-        $storage['time_create_view'] = $this->utilityService->date($storage['time_create']);
-        $storage['time_update_view'] = $this->utilityService->date($storage['time_update']);
-
-        // Set information
-        $storage['information'] = json_decode($storage['information'], true);
-
-        // Set original name
-        $storage['original_name'] = $storage['information']['storage']['original_name'] ?? '';
-
-        // Set size view
-        $storage['size_view'] = $storage['information']['storage']['file_size_view'];
-
-        // Set private uri
-        if (in_array($storage['access'], ['private', 'company', 'group', 'admin'])) {
-            $storage['information']['download']['private_uri'] = $this->localDownload->makePrivateUrl($storage);
-        }
-
-        // Clean up
-        if (isset($options['view']) && $options['view'] == 'limited') {
-            unset($storage['information']['storage']);
-        }
-
-        return $storage;
-    }
-
-    public function canonizeStorageCompressed($storage): array
-    {
-        if (is_object($storage)) {
-            $information = $storage->getInformation();
-            $storage     = [
-                'id'    => $storage->getId(),
-                'title' => $storage->getTitle(),
-            ];
-        } else {
-            $information = $storage['information'];
-            $storage     = [
-                'id'    => $storage['id'],
-                'title' => $storage['title'],
-            ];
-        }
-
-        // Set information
-        $information = json_decode($information, true);
-
-        // Set original name
-        $storage['original_name'] = $information['storage']['original_name'] ?? '';
-
-        return $storage;
-    }
-
-    public function canonizeStorageLight($storage): array
-    {
-        if (is_object($storage)) {
-            $information = $storage->getInformation();
-            $storage     = [
-                'id'             => $storage->getId(),
-                'title'          => $storage->getTitle(),
-                'type'           => $storage->getType(),
-                'extension'      => $storage->getExtension(),
-                'size'           => $storage->getSize(),
-                'download_count' => $storage->getDownloadCount(),
-                'time_create'    => $storage->getTimeCreate(),
-                'time_update'    => $storage->getTimeUpdate(),
-            ];
-        } else {
-            $information = $storage['information'];
-            $storage     = [
-                'id'             => $storage['id'],
-                'title'          => $storage['title'],
-                'type'           => $storage['type'],
-                'extension'      => $storage['extension'],
-                'size'           => $storage['size'],
-                'download_count' => $storage['download_count'],
-                'time_create'    => $storage['time_create'],
-                'time_update'    => $storage['time_update'],
-            ];
-        }
-
-        // Set information
-        $information = json_decode($information, true);
-
-        // Set original name
-        $storage['original_name'] = $information['storage']['original_name'] ?? '';
-
-        // Set time view
-        $storage['time_create_view'] = $this->utilityService->date($storage['time_create']);
-        $storage['time_update_view'] = $this->utilityService->date($storage['time_update']);
-
-        // Set size view
-        $storage['size_view'] = $storage['information']['storage']['file_size_view'];
-
-        return $storage;
-    }
-
-    public function canonizeRelation($relation): array
-    {
-        if (empty($relation)) {
-            return [];
-        }
-
-        if (is_object($relation)) {
-            $relation = [
-                'id'               => $relation->getId(),
-                'storage_id'       => $relation->getStorageId(),
-                'user_id'          => $relation->getUserId(),
-                'company_id'       => $relation->getCompanyId(),
-                'access'           => $relation->getAccess(),
-                'relation_module'  => $relation->getRelationModule(),
-                'relation_section' => $relation->getRelationSection(),
-                'relation_item'    => $relation->getRelationItem(),
-                'status'           => $relation->getStatus(),
-                'time_create'      => $relation->getTimeCreate(),
-                'time_update'      => $relation->getTimeUpdate(),
-                'information'      => $relation->getInformation(),
-            ];
-        } else {
-            $relation = [
-                'id'               => $relation['id'],
-                'storage_id'       => $relation['storage_id'],
-                'user_id'          => $relation['user_id'],
-                'company_id'       => $relation['company_id'],
-                'access'           => $relation['access'],
-                'relation_module'  => $relation['relation_module'],
-                'relation_section' => $relation['relation_section'],
-                'relation_item'    => $relation['relation_item'],
-                'status'           => $relation['status'],
-                'time_create'      => $relation['time_create'],
-                'time_update'      => $relation['time_update'],
-                'information'      => $relation['information'],
-            ];
-        }
-
-        // Set time view
-        $relation['time_create_view'] = $this->utilityService->date($relation['time_create']);
-        $relation['time_update_view'] = $this->utilityService->date($relation['time_update']);
-
-        // Set information
-        $relation['information'] = json_decode($relation['information'], true);
-
-        return $relation;
-    }
-
     public function createMedia($authorization, $params, $storageParams): array
     {
         // Store media
@@ -547,7 +348,7 @@ class MediaService implements ServiceInterface
                 $list[$row->getId()] = $this->canonizeStorage($row, ['view' => $view]);
             }
 
-            if (!empty($list) && $view != 'compressed') {
+            if (!empty($list) && !in_array($view, ['limited', 'compressed'])) {
                 $rowSet = $this->mediaRepository->getMediaRelationList(['storage_id' => array_keys($list)]);
                 foreach ($rowSet as $row) {
                     $list[$row->getStorageId()]['relation'][] = $this->canonizeRelation($row);
@@ -862,5 +663,211 @@ class MediaService implements ServiceInterface
             'list'     => $list,
             'count'    => $count,
         ];
+    }
+
+    public function canonizeStorage($storage, $options = []): array
+    {
+        if (empty($storage)) {
+            return [];
+        }
+
+        if (isset($options['view']) && $options['view'] == 'compressed') {
+            return $this->canonizeStorageCompressed($storage);
+        }
+
+        if (is_object($storage)) {
+            $storage = [
+                'id'             => $storage->getId(),
+                'slug'           => $storage->getSlug(),
+                'title'          => $storage->getTitle(),
+                'user_id'        => $storage->getUserId(),
+                'company_id'     => $storage->getCompanyId(),
+                'access'         => $storage->getAccess(),
+                'storage'        => $storage->getStorage(),
+                'type'           => $storage->getType(),
+                'extension'      => $storage->getExtension(),
+                'size'           => $storage->getSize(),
+                'download_count' => $storage->getDownloadCount(),
+                'status'         => $storage->getStatus(),
+                'time_create'    => $storage->getTimeCreate(),
+                'time_update'    => $storage->getTimeUpdate(),
+                'information'    => $storage->getInformation(),
+                'user_identity'  => $storage->getUserIdentity(),
+                'user_name'      => $storage->getUserName(),
+                'user_email'     => $storage->getUserEmail(),
+                'user_mobile'    => $storage->getUserMobile(),
+            ];
+        } else {
+            $storage = [
+                'id'             => $storage['id'],
+                'slug'           => $storage['slug'],
+                'title'          => $storage['title'],
+                'user_id'        => $storage['user_id'],
+                'company_id'     => $storage['company_id'],
+                'access'         => $storage['access'],
+                'storage'        => $storage['storage'],
+                'type'           => $storage['type'],
+                'extension'      => $storage['extension'],
+                'size'           => $storage['size'],
+                'download_count' => $storage['download_count'],
+                'status'         => $storage['status'],
+                'time_create'    => $storage['time_create'],
+                'time_update'    => $storage['time_update'],
+                'information'    => $storage['information'],
+                'user_identity'  => $storage['user_identity'],
+                'user_name'      => $storage['user_name'],
+                'user_email'     => $storage['user_email'],
+                'user_mobile'    => $storage['user_mobile'],
+            ];
+        }
+
+        // Set time view
+        $storage['time_create_view'] = $this->utilityService->date($storage['time_create']);
+        $storage['time_update_view'] = $this->utilityService->date($storage['time_update']);
+
+        // Set information
+        $storage['information'] = json_decode($storage['information'], true);
+
+        // Set original name
+        $storage['original_name'] = $storage['information']['storage']['original_name'] ?? '';
+
+        // Set size view
+        $storage['size_view'] = $storage['information']['storage']['file_size_view'];
+
+        // Set private uri
+        if (in_array($storage['access'], ['private', 'company', 'group', 'admin'])) {
+            $storage['information']['download']['private_uri'] = $this->localDownload->makePrivateUrl($storage);
+        }
+
+        // Clean up
+        if (isset($options['view']) && in_array($options['view'], ['limited', 'compressed'])) {
+
+            // Bucket and Key
+            if ($storage['storage'] == 's3') {
+                $storage['Key'] = $storage['information']['storage']['s3']['Key'];
+                $storage['Bucket'] = $storage['information']['storage']['s3']['Bucket'];
+            }
+
+            unset($storage['information']['storage']);
+        }
+
+        return $storage;
+    }
+
+    public function canonizeStorageCompressed($storage): array
+    {
+        if (is_object($storage)) {
+            $information = $storage->getInformation();
+            $storage     = [
+                'id'    => $storage->getId(),
+                'title' => $storage->getTitle(),
+            ];
+        } else {
+            $information = $storage['information'];
+            $storage     = [
+                'id'    => $storage['id'],
+                'title' => $storage['title'],
+            ];
+        }
+
+        // Set information
+        $information = json_decode($information, true);
+
+        // Set original name
+        $storage['original_name'] = $information['storage']['original_name'] ?? '';
+
+        return $storage;
+    }
+
+    public function canonizeStorageLight($storage): array
+    {
+        if (is_object($storage)) {
+            $information = $storage->getInformation();
+            $storage     = [
+                'id'             => $storage->getId(),
+                'title'          => $storage->getTitle(),
+                'type'           => $storage->getType(),
+                'extension'      => $storage->getExtension(),
+                'size'           => $storage->getSize(),
+                'download_count' => $storage->getDownloadCount(),
+                'time_create'    => $storage->getTimeCreate(),
+                'time_update'    => $storage->getTimeUpdate(),
+            ];
+        } else {
+            $information = $storage['information'];
+            $storage     = [
+                'id'             => $storage['id'],
+                'title'          => $storage['title'],
+                'type'           => $storage['type'],
+                'extension'      => $storage['extension'],
+                'size'           => $storage['size'],
+                'download_count' => $storage['download_count'],
+                'time_create'    => $storage['time_create'],
+                'time_update'    => $storage['time_update'],
+            ];
+        }
+
+        // Set information
+        $information = json_decode($information, true);
+
+        // Set original name
+        $storage['original_name'] = $information['storage']['original_name'] ?? '';
+
+        // Set time view
+        $storage['time_create_view'] = $this->utilityService->date($storage['time_create']);
+        $storage['time_update_view'] = $this->utilityService->date($storage['time_update']);
+
+        // Set size view
+        $storage['size_view'] = $storage['information']['storage']['file_size_view'];
+
+        return $storage;
+    }
+
+    public function canonizeRelation($relation): array
+    {
+        if (empty($relation)) {
+            return [];
+        }
+
+        if (is_object($relation)) {
+            $relation = [
+                'id'               => $relation->getId(),
+                'storage_id'       => $relation->getStorageId(),
+                'user_id'          => $relation->getUserId(),
+                'company_id'       => $relation->getCompanyId(),
+                'access'           => $relation->getAccess(),
+                'relation_module'  => $relation->getRelationModule(),
+                'relation_section' => $relation->getRelationSection(),
+                'relation_item'    => $relation->getRelationItem(),
+                'status'           => $relation->getStatus(),
+                'time_create'      => $relation->getTimeCreate(),
+                'time_update'      => $relation->getTimeUpdate(),
+                'information'      => $relation->getInformation(),
+            ];
+        } else {
+            $relation = [
+                'id'               => $relation['id'],
+                'storage_id'       => $relation['storage_id'],
+                'user_id'          => $relation['user_id'],
+                'company_id'       => $relation['company_id'],
+                'access'           => $relation['access'],
+                'relation_module'  => $relation['relation_module'],
+                'relation_section' => $relation['relation_section'],
+                'relation_item'    => $relation['relation_item'],
+                'status'           => $relation['status'],
+                'time_create'      => $relation['time_create'],
+                'time_update'      => $relation['time_update'],
+                'information'      => $relation['information'],
+            ];
+        }
+
+        // Set time view
+        $relation['time_create_view'] = $this->utilityService->date($relation['time_create']);
+        $relation['time_update_view'] = $this->utilityService->date($relation['time_update']);
+
+        // Set information
+        $relation['information'] = json_decode($relation['information'], true);
+
+        return $relation;
     }
 }
