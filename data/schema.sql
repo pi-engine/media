@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS `media_storage`
 	`title`          VARCHAR(255)        NOT NULL DEFAULT '',
 	`user_id`        INT(10) UNSIGNED    NOT NULL DEFAULT '0',
 	`company_id`     INT(10) UNSIGNED    NOT NULL DEFAULT '0',
+	`category_id`    INT(10) UNSIGNED    NOT NULL DEFAULT '0',
 	`access`         VARCHAR(32)         NOT NULL DEFAULT 'public',
 	`storage`        VARCHAR(32)         NOT NULL DEFAULT '',
 	`type`           VARCHAR(32)         NOT NULL DEFAULT '',

@@ -172,6 +172,7 @@ class MediaService implements ServiceInterface
             'title'       => $params['title'] ?? $storeInfo['file_title'],
             'user_id'     => $authorization['user_id'],
             'company_id'  => $authorization['company_id'],
+            'category_id'      => $params['category_id'] ?? 0,
             'access'      => $params['access'],
             'storage'     => $this->storage,
             'type'        => $storeInfo['file_type'],
@@ -310,6 +311,9 @@ class MediaService implements ServiceInterface
             }
         }
 
+        if (isset($params['category_id']) && !empty($params['category_id'])) {
+            $listParams['category_id'] = $params['category_id'];
+        }
         if (isset($params['status']) && !empty($params['status'])) {
             $listParams['status'] = $params['status'];
         }
@@ -321,7 +325,8 @@ class MediaService implements ServiceInterface
         }
 
         // Check request has relation information
-        if (isset($params['relation_module']) && !empty($params['relation_module'])
+        if (isset($params['relation_module'])
+            && !empty($params['relation_module'])
             && isset($params['relation_section'])
             && !empty($params['relation_section'])
             && isset($params['relation_item'])
@@ -475,6 +480,9 @@ class MediaService implements ServiceInterface
         if (isset($params['status']) && is_numeric($params['status'])) {
             $updateParams['status'] = (int)$params['status'];
         }
+        if (isset($params['category_id']) && is_numeric($params['category_id'])) {
+            $updateParams['category_id'] = (int)$params['category_id'];
+        }
 
         // Set information
         $information = $media['information'];
@@ -601,16 +609,6 @@ class MediaService implements ServiceInterface
         return [];
     }
 
-    public function analytic($params): array
-    {
-        $result = $this->mediaRepository->analytic($params);
-        foreach ($result as $row) {
-            $this->defaultTypes[$row['type']]['value'] = $row['count'];
-        }
-
-        return array_values($this->defaultTypes);
-    }
-
     public function isDuplicated($slug): bool
     {
         return (bool)$this->mediaRepository->duplicatedMedia(
@@ -618,17 +616,6 @@ class MediaService implements ServiceInterface
                 'slug' => $slug,
             ]
         );
-    }
-
-    public function calculateStorage($params): array
-    {
-        $storage = $this->mediaRepository->calculateStorage($params);
-
-        return [
-            'count'     => (int)$storage['count'],
-            'size'      => (int)$storage['size'],
-            'size_view' => $this->localStorage->transformSize($storage['size']),
-        ];
     }
 
     public function dashboard($params): array
@@ -662,6 +649,27 @@ class MediaService implements ServiceInterface
         ];
     }
 
+    public function analytic($params): array
+    {
+        $result = $this->mediaRepository->analytic($params);
+        foreach ($result as $row) {
+            $this->defaultTypes[$row['type']]['value'] = $row['count'];
+        }
+
+        return array_values($this->defaultTypes);
+    }
+
+    public function calculateStorage($params): array
+    {
+        $storage = $this->mediaRepository->calculateStorage($params);
+
+        return [
+            'count'     => (int)$storage['count'],
+            'size'      => (int)$storage['size'],
+            'size_view' => $this->localStorage->transformSize($storage['size']),
+        ];
+    }
+
     public function canonizeStorage($storage, $options = []): array
     {
         if (empty($storage)) {
@@ -679,6 +687,7 @@ class MediaService implements ServiceInterface
                 'title'          => $storage->getTitle(),
                 'user_id'        => $storage->getUserId(),
                 'company_id'     => $storage->getCompanyId(),
+                'category_id'     => $storage->getCategoryId(),
                 'access'         => $storage->getAccess(),
                 'storage'        => $storage->getStorage(),
                 'type'           => $storage->getType(),
@@ -701,6 +710,7 @@ class MediaService implements ServiceInterface
                 'title'          => $storage['title'],
                 'user_id'        => $storage['user_id'],
                 'company_id'     => $storage['company_id'],
+                'category_id'     => $storage['category_id'],
                 'access'         => $storage['access'],
                 'storage'        => $storage['storage'],
                 'type'           => $storage['type'],
@@ -787,6 +797,7 @@ class MediaService implements ServiceInterface
                 'extension'      => $storage->getExtension(),
                 'size'           => $storage->getSize(),
                 'download_count' => $storage->getDownloadCount(),
+                'category_id'     => $storage->getCategoryId(),
                 'time_create'    => $storage->getTimeCreate(),
                 'time_update'    => $storage->getTimeUpdate(),
             ];
@@ -799,6 +810,7 @@ class MediaService implements ServiceInterface
                 'extension'      => $storage['extension'],
                 'size'           => $storage['size'],
                 'download_count' => $storage['download_count'],
+                'category_id' => $storage['category_id'],
                 'time_create'    => $storage['time_create'],
                 'time_update'    => $storage['time_update'],
             ];

@@ -51,6 +51,9 @@ class MediaRepository implements MediaRepositoryInterface
         if (isset($params['status']) && !empty($params['status'])) {
             $where['status'] = $params['status'];
         }
+        if (isset($params['category_id']) && !empty($params['category_id'])) {
+            $where['category_id'] = $params['category_id'];
+        }
         if (isset($params['company_id']) && !empty($params['company_id'])) {
             $where['company_id'] = $params['company_id'];
         }
@@ -114,6 +117,9 @@ class MediaRepository implements MediaRepositoryInterface
         if (isset($params['status']) && !empty($params['status'])) {
             $where['storage.status'] = $params['status'];
         }
+        if (isset($params['category_id']) && !empty($params['category_id'])) {
+            $where['storage.category_id'] = $params['category_id'];
+        }
         if (isset($params['company_id']) && !empty($params['company_id'])) {
             $where['storage.company_id'] = $params['company_id'];
         }
@@ -164,6 +170,9 @@ class MediaRepository implements MediaRepositoryInterface
         if (isset($params['status']) && !empty($params['status'])) {
             $where['status'] = $params['status'];
         }
+        if (isset($params['category_id']) && !empty($params['category_id'])) {
+            $where['category_id'] = $params['category_id'];
+        }
         if (isset($params['company_id']) && !empty($params['company_id'])) {
             $where['company_id'] = $params['company_id'];
         }
@@ -200,6 +209,9 @@ class MediaRepository implements MediaRepositoryInterface
         }
         if (isset($params['status']) && !empty($params['status'])) {
             $where['storage.status'] = $params['status'];
+        }
+        if (isset($params['category_id']) && !empty($params['category_id'])) {
+            $where['storage.category_id'] = $params['category_id'];
         }
         if (isset($params['company_id']) && !empty($params['company_id'])) {
             $where['storage.company_id'] = $params['company_id'];
@@ -407,6 +419,9 @@ class MediaRepository implements MediaRepositoryInterface
         if (isset($params['status']) && !empty($params['status'])) {
             $where['status'] = $params['status'];
         }
+        if (isset($params['category_id']) && !empty($params['category_id'])) {
+            $where['category_id'] = $params['category_id'];
+        }
         if (isset($params['company_id']) && !empty($params['company_id'])) {
             $where['company_id'] = $params['company_id'];
         }
@@ -482,8 +497,8 @@ class MediaRepository implements MediaRepositoryInterface
     public function calculateStorage(array $params = []): array
     {
         $columns = [
-            'size' => new Expression('SUM(size)'),
-            'count' => new Expression('count(*)')
+            'size'  => new Expression('SUM(size)'),
+            'count' => new Expression('count(*)'),
         ];
 
         $where = ['status' => 1];
