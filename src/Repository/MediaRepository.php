@@ -479,9 +479,12 @@ class MediaRepository implements MediaRepositoryInterface
         return $result;
     }
 
-    public function calculateStorage(array $params = []): int
+    public function calculateStorage(array $params = []): array
     {
-        $columns = ['sum' => new Expression('SUM(size)')];
+        $columns = [
+            'size' => new Expression('SUM(size)'),
+            'count' => new Expression('count(*)')
+        ];
 
         $where = ['status' => 1];
         if (isset($params['company_id']) && !empty($params['company_id'])) {
@@ -494,8 +497,6 @@ class MediaRepository implements MediaRepositoryInterface
         $sql       = new Sql($this->db);
         $select    = $sql->select($this->tableStorage)->columns($columns)->where($where);
         $statement = $sql->prepareStatementForSqlObject($select);
-        $row       = $statement->execute()->current();
-
-        return $row['sum'];
+        return $statement->execute()->current();
     }
 }

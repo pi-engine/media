@@ -622,11 +622,12 @@ class MediaService implements ServiceInterface
 
     public function calculateStorage($params): array
     {
-        $size = $this->mediaRepository->calculateStorage($params);
+        $storage = $this->mediaRepository->calculateStorage($params);
 
         return [
-            'storage_size'      => $size,
-            'storage_size_view' => $this->localStorage->transformSize($size),
+            'count'     => (int)$storage['count'],
+            'size'      => (int)$storage['size'],
+            'size_view' => $this->localStorage->transformSize($storage['size']),
         ];
     }
 
@@ -654,14 +655,10 @@ class MediaService implements ServiceInterface
             $list[] = $this->canonizeStorageLight($row);
         }
 
-        // Get count
-        $count = $this->mediaRepository->getMediaCount($listParams);
-
         return [
             'storage'  => $storage,
             'analytic' => $analytic,
             'list'     => $list,
-            'count'    => $count,
         ];
     }
 
@@ -744,7 +741,7 @@ class MediaService implements ServiceInterface
 
             // Bucket and Key
             if ($storage['storage'] == 's3') {
-                $storage['Key'] = $storage['information']['storage']['s3']['Key'];
+                $storage['Key']    = $storage['information']['storage']['s3']['Key'];
                 $storage['Bucket'] = $storage['information']['storage']['s3']['Bucket'];
             }
 

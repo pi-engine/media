@@ -39,5 +39,5 @@ interface MediaRepositoryInterface
 
     public function analytic($params): array|ResultInterface;
 
-    public function calculateStorage(array $params = []): int;
+    public function calculateStorage(array $params = []): array;
 }
