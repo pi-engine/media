@@ -46,7 +46,7 @@ return [
             Handler\Admin\GetHandler::class                => Factory\Handler\Admin\GetHandlerFactory::class,
             Handler\Admin\StreamHandler::class             => Factory\Handler\Admin\StreamHandlerFactory::class,
             Handler\Admin\UpdateHandler::class             => Factory\Handler\Admin\UpdateHandlerFactory::class,
-            Handler\Admin\ReadHandler::class             => Factory\Handler\Admin\ReadHandlerFactory::class,
+            Handler\Admin\ReadHandler::class               => Factory\Handler\Admin\ReadHandlerFactory::class,
             Handler\Admin\DeleteHandler::class             => Factory\Handler\Admin\DeleteHandlerFactory::class,
             Handler\InstallerHandler::class                => Factory\Handler\InstallerHandlerFactory::class,
         ],
@@ -487,12 +487,11 @@ return [
             ],
             // Admin section
             'admin_media' => [
-                'type'    => Literal::class,
-                'options' => [
+                'type'         => Literal::class,
+                'options'      => [
                     'route'    => '/admin/media',
                     'defaults' => [],
                 ],
-
                 'child_routes' => [
                     'add-public'   => [
                         'type'    => Literal::class,
@@ -675,7 +674,7 @@ return [
                             ],
                         ],
                     ],
-                    'read'          => [
+                    'read'         => [
                         'type'    => Literal::class,
                         'options' => [
                             'route'    => '/read',
