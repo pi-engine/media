@@ -172,7 +172,7 @@ class MediaService implements ServiceInterface
             'title'       => $params['title'] ?? $storeInfo['file_title'],
             'user_id'     => $authorization['user_id'],
             'company_id'  => $authorization['company_id'],
-            'category_id'      => $params['category_id'] ?? 0,
+            'category_id' => $params['category_id'] ?? 0,
             'access'      => $params['access'],
             'storage'     => $this->storage,
             'type'        => $storeInfo['file_type'],
@@ -661,12 +661,17 @@ class MediaService implements ServiceInterface
 
     public function calculateStorage($params): array
     {
-        $storage = $this->mediaRepository->calculateStorage($params);
+        $storage         = $this->mediaRepository->calculateStorage($params);
+        $maxStorage      = 1 * 1024 * 1024 * 1024;
+        $usagePercentage = $maxStorage > 0 ? round(($storage['used_bytes'] / $maxStorage) * 100, 2) : 0;
 
         return [
-            'count'     => (int)$storage['count'],
-            'size'      => (int)$storage['size'],
-            'size_view' => $this->localStorage->transformSize($storage['size']),
+            'file_count'       => (int)$storage['file_count'],
+            'used_bytes'       => (int)$storage['used_bytes'],
+            'max_bytes'        => (int)$maxStorage,
+            'used_readable'    => $this->localStorage->transformSize($storage['used_bytes']),
+            'max_readable'     => $this->localStorage->transformSize($maxStorage),
+            'usage_percentage' => $usagePercentage,
         ];
     }
 
@@ -687,7 +692,7 @@ class MediaService implements ServiceInterface
                 'title'          => $storage->getTitle(),
                 'user_id'        => $storage->getUserId(),
                 'company_id'     => $storage->getCompanyId(),
-                'category_id'     => $storage->getCategoryId(),
+                'category_id'    => $storage->getCategoryId(),
                 'access'         => $storage->getAccess(),
                 'storage'        => $storage->getStorage(),
                 'type'           => $storage->getType(),
@@ -710,7 +715,7 @@ class MediaService implements ServiceInterface
                 'title'          => $storage['title'],
                 'user_id'        => $storage['user_id'],
                 'company_id'     => $storage['company_id'],
-                'category_id'     => $storage['category_id'],
+                'category_id'    => $storage['category_id'],
                 'access'         => $storage['access'],
                 'storage'        => $storage['storage'],
                 'type'           => $storage['type'],
@@ -797,7 +802,7 @@ class MediaService implements ServiceInterface
                 'extension'      => $storage->getExtension(),
                 'size'           => $storage->getSize(),
                 'download_count' => $storage->getDownloadCount(),
-                'category_id'     => $storage->getCategoryId(),
+                'category_id'    => $storage->getCategoryId(),
                 'time_create'    => $storage->getTimeCreate(),
                 'time_update'    => $storage->getTimeUpdate(),
             ];
@@ -810,7 +815,7 @@ class MediaService implements ServiceInterface
                 'extension'      => $storage['extension'],
                 'size'           => $storage['size'],
                 'download_count' => $storage['download_count'],
-                'category_id' => $storage['category_id'],
+                'category_id'    => $storage['category_id'],
                 'time_create'    => $storage['time_create'],
                 'time_update'    => $storage['time_update'],
             ];

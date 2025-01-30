@@ -497,8 +497,8 @@ class MediaRepository implements MediaRepositoryInterface
     public function calculateStorage(array $params = []): array
     {
         $columns = [
-            'size'  => new Expression('SUM(size)'),
-            'count' => new Expression('count(*)'),
+            'used_bytes' => new Expression('SUM(size)'),
+            'file_count' => new Expression('count(*)'),
         ];
 
         $where = ['status' => 1];
