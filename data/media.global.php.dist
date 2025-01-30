@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'media'        => [
+    'media' => [
         'authorization'     => [
             'access' => ['public', 'company', 'user', 'group', 'admin'],
         ],
@@ -12,31 +12,154 @@ return [
         'public_path'       => 'PUBLIC_PATH',
         'can_delete'        => 0,
         'check_duplicate'   => 0,
+        'check_real_mime'   => 0,
         'allowed_extension' => [
-            'jpg',
-            'jpeg',
-            'png',
-            'pdf',
-            'doc',
-            'docx',
-            'xls',
-            'xlsx',
-            'csv',
-            'txt',
-            'mp3',
-            'mp4',
+            // Images
+            'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'ico',
+
+            // PDFs & Documents
+            'pdf', 'doc', 'docx', 'xls', 'xlsx', 'xlsm', 'csv', 'txt', 'log', 'rtf',
+
+            // Presentations
+            'ppt', 'pptx', 'pps', 'ppsx',
+
+            // OpenOffice
+            'odt', 'ods', 'odp', 'odg', 'odf',
+
+            // Audio Files
+            'mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a', 'wma',
+
+            // Video Files
+            'mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mpeg', '3gp', 'ts',
+
+            // JSON & Data Files
+            'json', 'xml', 'yaml', 'yml',
+
+            // Archives & Compressed Files
+            'zip', '7z', 'rar', 'tar.gz', 'tar', 'gz',
         ],
-        'mime_type'         => [
+        'mime_type' => [
+            // Images
+            'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'image/svg+xml', 'image/tiff', 'image/x-icon',
+
+            // PDFs
+            'application/pdf',
+
+            // Microsoft Office Formats
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'application/vnd.ms-excel',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel.sheet.macroEnabled.12',
             'text/csv',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
+
+            // OpenOffice Formats
+            'application/vnd.oasis.opendocument.text',
             'application/vnd.oasis.opendocument.spreadsheet',
+            'application/vnd.oasis.opendocument.presentation',
+            'application/vnd.oasis.opendocument.graphics',
+            'application/vnd.oasis.opendocument.formula',
+
+            // Text & Logs
+            'text/plain',
+            'application/rtf',
+            'application/json',
+            'application/xml',
+            'application/x-yaml',
+            'text/yaml',
+
+            // Audio Formats
+            'audio/mpeg',   // MP3
+            'audio/wav',    // WAV
+            'audio/aac',    // AAC
+            'audio/flac',   // FLAC
+            'audio/ogg',    // OGG
+            'audio/mp4',    // M4A
+            'audio/x-ms-wma', // WMA
+
+            // Video Formats
+            'video/mp4',
+            'video/x-matroska', // MKV
+            'video/x-msvideo',  // AVI
+            'video/quicktime',  // MOV
+            'video/x-ms-wmv',   // WMV
+            'video/x-flv',      // FLV
+            'video/webm',       // WebM
+            'video/mpeg',       // MPEG
+            'video/3gpp',       // 3GP
+            'video/MP2T',       // TS
+
+            // Compressed Files
+            'application/zip',
+            'application/x-7z-compressed',
+            'application/x-rar-compressed',
+            'application/gzip',
+            'application/x-tar'
         ],
-        'allowed_size'      => [
+        'forbidden_type' => [
+            // Executables & Scripts**
+            'application/x-msdownload',         // .exe, .dll, .com, .bat
+            'application/x-sh',                 // Shell scripts (.sh)
+            'application/x-php',                // PHP files (.php)
+            'text/x-shellscript',               // Another shell script format (.sh)
+            'application/x-python',             // Python scripts (.py)
+            'application/x-perl',               // Perl scripts (.pl)
+            'application/x-ruby',               // Ruby scripts (.rb)
+            'application/java-archive',         // Java JAR files (.jar)
+            'application/x-msdos-program',      // MS-DOS executable (.exe)
+            'application/vnd.microsoft.portable-executable', // PE executable
+
+            // Binary & Dangerous Formats**
+            'application/x-mach-binary',        // macOS Mach-O binaries
+            'application/x-elf',                // Linux ELF binaries
+            'application/x-dosexec',            // DOS executables
+            'application/octet-stream',         // Generic binary files
+
+            // Compressed & Archive Executables**
+            'application/x-gzip',               // Gzip compressed files (.gz)
+            'application/x-bzip',               // Bzip compressed files (.bz)
+            'application/x-bzip2',              // Bzip2 compressed files (.bz2)
+            'application/x-xz',                 // XZ compressed files (.xz)
+            'application/x-lzma',               // LZMA compressed files (.lzma)
+            'application/x-rar',                // RAR compressed files (.rar)
+            'application/x-tar',                // Tar archives (.tar)
+            'application/x-7z-compressed',      // 7z archives (.7z)
+
+            // Batch & Command Scripts**
+            'application/x-msdos-batch',        // Windows batch files (.bat)
+            'application/x-ms-windows-batch',   // Windows batch scripts
+            'application/x-powershell',         // PowerShell scripts (.ps1)
+
+            // Malicious File Types**
+            'text/html',                        // Prevent XSS attacks via HTML
+            'application/javascript',           // Prevent JS execution (.js)
+            'application/json',                 // Avoid malicious JSON injections
+            'text/x-python',                    // Python scripts (.py)
+            'text/x-perl',                      // Perl scripts (.pl)
+            'text/x-php',                       // PHP scripts disguised as text
+            'application/x-iso9660-image',      // ISO disk images (.iso)
+            'application/x-ms-wim',             // Windows Imaging Format (.wim)
+
+            // Disk Images & Virtualization**
+            'application/x-apple-diskimage',    // macOS Disk Image (.dmg)
+            'application/x-vhd',                // Virtual Hard Disk (.vhd)
+            'application/x-vmdk',               // VMware disk image (.vmdk)
+
+            // Miscellaneous Dangerous Types**
+            'application/x-binary',             // Generic binary files
+            'application/x-compressed',         // Generic compressed files
+            'application/x-sharedlib',          // Linux shared object (.so)
+            'application/x-pie-executable',     // Position-independent executables
+            'application/x-executable',         // Generic executables
+        ],
+        'allowed_size' => [
             'min' => '1kB',
             'max' => '10MB',
         ],
-        's3'             => [
+        's3'           => [
             'version'                     => 'latest',
             'region'                      => 'us-east-1',
             'endpoint'                    => 'XXX',

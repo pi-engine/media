@@ -69,33 +69,30 @@ class UploadMediaMiddleware implements MiddlewareInterface
         $requestBody   = $request->getParsedBody();
         $authorization = $request->getAttribute('media_authorization');
 
-        // Check valid
-        $this->attacheIsValid($uploadFiles, $authorization, $requestBody);
+        // Validate uploaded files
+        $this->validateAttachments($uploadFiles, $authorization, $requestBody);
 
-        // Check if validation result is not true
+        // Check validation result
         if (!$this->validationResult['result']) {
             $request = $request->withAttribute('status', $this->validationResult['code']);
-            $request = $request->withAttribute(
-                'error',
-                [
-                    'message' => $this->validationResult['message'],
-                    'code'    => $this->validationResult['code'],
-                ]
-            );
+            $request = $request->withAttribute('error', [
+                'message' => $this->validationResult['message'],
+                'code'    => $this->validationResult['code'],
+            ]);
             return $this->errorHandler->handle($request);
         }
 
+        // Upload media to storage
         $uploadFile = array_shift($uploadFiles);
         $store      = $this->mediaService->storeMedia($uploadFile, $authorization, $requestBody);
+
+        // Check upload result
         if (!$store['result']) {
             $request = $request->withAttribute('status', StatusCodeInterface::STATUS_FORBIDDEN);
-            $request = $request->withAttribute(
-                'error',
-                [
-                    'message' => $store['error']['message'],
-                    'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
-                ]
-            );
+            $request = $request->withAttribute('error', [
+                'message' => $store['error']['message'],
+                'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
+            ]);
             return $this->errorHandler->handle($request);
         }
 
@@ -103,41 +100,66 @@ class UploadMediaMiddleware implements MiddlewareInterface
         return $handler->handle($request);
     }
 
-    protected function attacheIsValid($uploadFiles, $authorization, $requestBody): array
+    protected function validateAttachments($uploadFiles, $authorization, $requestBody): void
     {
-        // Check file is set
         if (empty($uploadFiles)) {
-            return $this->validationResult = [
+            $this->validationResult = [
                 'result'  => false,
                 'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
                 'message' => 'No file uploaded',
             ];
+            return;
         }
 
-        // Set check class
         $validatorUpload    = new UploadFile();
         $validatorExtension = new Extension($this->config['allowed_extension']);
         $validatorMimeType  = new MimeType($this->config['mime_type']);
         $validatorSize      = new Size($this->config['allowed_size']);
 
-        // Check attached files
+        $errors = [];
         foreach ($uploadFiles as $uploadFile) {
+            // Get temp file path
+            $filePath = $uploadFile->getStream()->getMetadata('uri');
+
+            // Check if the file is uploaded correctly
             if (!$validatorUpload->isValid($uploadFile)) {
-                return $this->setErrorHandler($validatorUpload);
-            }
-            if (!$validatorExtension->isValid($uploadFile)) {
-                return $this->setErrorHandler($validatorExtension);
-            }
-            /* if (!$validatorMimeType->isValid($uploadFile)) {
-                return $this->setErrorHandler($validatorMimeType);
-            } */
-            if (!$validatorSize->isValid($uploadFile)) {
-                return $this->setErrorHandler($validatorUpload);
+                $errors = array_merge($errors, $validatorUpload->getMessages());
             }
 
-            // Check duplicate
-            if (isset($this->config['check_duplicate']) && (int)$this->config['check_duplicate'] === 1) {
-                // Set slug params
+            // Check if the file extension is valid
+            if (!$validatorExtension->isValid($uploadFile)) {
+                $errors = array_merge($errors, $validatorExtension->getMessages());
+            }
+
+            // Check if the MIME type of the file is valid
+            if (!$validatorMimeType->isValid($uploadFile)) {
+                $errors = array_merge($errors, $validatorMimeType->getMessages());
+            }
+
+            // Check if the file size is valid
+            if (!$validatorSize->isValid($uploadFile)) {
+                $errors = array_merge($errors, $validatorSize->getMessages());
+            }
+
+            // Check actual file type and ensure MIME types match
+            if (!empty($this->config['check_real_mime']) && file_exists($filePath)) {
+                $finfo    = finfo_open(FILEINFO_MIME_TYPE);
+                $realMime = finfo_file($finfo, $filePath);
+                finfo_close($finfo);
+
+                // Check if the real MIME type matches the allowed MIME types
+                if (!in_array($realMime, $this->config['mime_type'], true)) {
+                    $errors[] = "Invalid file type: expected " . implode(', ', $this->config['mime_type']) . " but detected $realMime.";
+                }
+
+                // Block dangerous types
+                if (in_array($realMime, $this->config['forbidden_type'], true)) {
+                    $errors[] = "Uploading $realMime files is not allowed.";
+                }
+            }
+
+            // Check duplicate files
+            if (!empty($this->config['check_duplicate'])) {
                 $slug = sprintf(
                     '%s-%s-%s-%s',
                     $requestBody['access'],
@@ -146,39 +168,31 @@ class UploadMediaMiddleware implements MiddlewareInterface
                     $uploadFile->getClientFilename()
                 );
 
-                // Set validator params and create slug
-                $params = [
-                    'slug' => $this->utilityService->slug($slug),
-                ];
+                // Set slug input
+                $params    = ['slug' => $this->utilityService->slug($slug)];
+                $slugInput = new Input('slug');
+                $slugInput->getValidatorChain()->attach(new SlugValidator($this->mediaService, []));
 
-                // Call validator
-                $slug = new Input('slug');
-                $slug->getValidatorChain()->attach(new SlugValidator($this->mediaService, []));
-
-                // Set input filter
+                // Check input validation
                 $inputFilter = new InputFilter();
-                $inputFilter->add($slug);
+                $inputFilter->add($slugInput);
                 $inputFilter->setData($params);
+
+                // Check and set errors if it not valid
                 if (!$inputFilter->isValid()) {
-                    return $this->setErrorHandler($inputFilter);
+                    foreach ($inputFilter->getMessages() as $key => $message) {
+                        $errors[$key] = implode(', ', $message);
+                    }
                 }
             }
         }
 
-        return $this->validationResult;
-    }
-
-    protected function setErrorHandler($inputFilter): array
-    {
-        $message = [];
-        foreach ($inputFilter->getInvalidInput() as $error) {
-            $message[$error->getName()] = $error->getName() . ': ' . implode(', ', $error->getMessages());
+        if (!empty($errors)) {
+            $this->validationResult = [
+                'result'  => false,
+                'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
+                'message' => implode(', ', $errors),
+            ];
         }
-
-        return $this->validationResult = [
-            'result'  => false,
-            'code'    => StatusCodeInterface::STATUS_FORBIDDEN,
-            'message' => implode(', ', $message),
-        ];
     }
 }
