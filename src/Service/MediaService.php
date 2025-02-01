@@ -531,7 +531,7 @@ class MediaService implements ServiceInterface
         }
 
         // Delete relation
-        $this->mediaRepository->deleteMedia((int)$media['id']);
+        $this->mediaRepository->deleteMediaRelation((int)$media['id']);
 
         // Delete storage
         $this->mediaRepository->deleteMedia((int)$media['id']);
