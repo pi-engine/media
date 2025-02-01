@@ -666,10 +666,10 @@ class MediaService implements ServiceInterface
         $usagePercentage = $maxStorage > 0 ? round(($storage['used_bytes'] / $maxStorage) * 100, 2) : 0;
 
         return [
-            'file_count'       => (int)$storage['file_count'],
-            'used_bytes'       => (int)$storage['used_bytes'],
+            'file_count'       => (int)$storage['file_count'] ?? 0,
+            'used_bytes'       => (int)$storage['used_bytes'] ?? 0,
             'max_bytes'        => (int)$maxStorage,
-            'used_readable'    => $this->localStorage->transformSize($storage['used_bytes']),
+            'used_readable'    => $this->localStorage->transformSize((int)$storage['used_bytes'] ?? 0),
             'max_readable'     => $this->localStorage->transformSize($maxStorage),
             'usage_percentage' => $usagePercentage,
         ];
