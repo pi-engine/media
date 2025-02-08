@@ -21,6 +21,9 @@ class MediaService implements ServiceInterface
     /** @var UtilityService */
     protected UtilityService $utilityService;
 
+    /** @var S3Service */
+    protected S3Service $s3Service;
+
     /** @var LocalStorage */
     protected LocalStorage $localStorage;
 
@@ -78,6 +81,7 @@ class MediaService implements ServiceInterface
         MediaRepositoryInterface $mediaRepository,
         AccountService           $accountService,
         UtilityService           $utilityService,
+        S3Service                $s3Service,
         LocalStorage             $localStorage,
         S3Storage                $s3Storage,
         LocalDownload            $localDownload,
@@ -87,6 +91,7 @@ class MediaService implements ServiceInterface
         $this->mediaRepository = $mediaRepository;
         $this->accountService  = $accountService;
         $this->utilityService  = $utilityService;
+        $this->s3Service       = $s3Service;
         $this->localStorage    = $localStorage;
         $this->s3Storage       = $s3Storage;
         $this->localDownload   = $localDownload;
@@ -607,6 +612,72 @@ class MediaService implements ServiceInterface
             return $fileData['data'];
         }
         return [];
+    }
+
+    public function importFromS3($authorization, $bucketName): array
+    {
+        $list = $this->s3Service->getFilesFromBucket($bucketName);
+        foreach ($list['data'] as $value) {
+
+            // Get file info
+            $fileInfo = pathinfo($value['Key']);
+
+            // Set storage params
+            $addStorage = [
+                'title'       => $value['Key'],
+                'user_id'     => $authorization['user_id'],
+                'company_id'  => $authorization['company_id'] ?? 0,
+                'category_id' => 0,
+                'access'      => 'company',
+                'storage'     => $this->storage,
+                'type'        => $this->s3Storage->makeFileType(strtolower($fileInfo['extension'])),
+                'extension'   => strtolower($fileInfo['extension']),
+                'status'      => 1,
+                'size'        => $value['Size'],
+                'time_create' => time(),
+                'time_update' => time(),
+                'information' => json_encode(
+                    [
+                        'storage'  => [
+                            's3'             => [
+                                'Key'          => $value['Key'],
+                                'Bucket'       => $value['Bucket'],
+                                'fileRequest'  => $value['Key'],
+                                'effectiveUri' => '',
+                            ],
+                            'original_name'  => $value['Key'],
+                            'file_name'      => $value['Key'],
+                            'file_title'     => $fileInfo['filename'],
+                            'file_extension' => strtolower($fileInfo['extension']),
+                            'file_size'      => $value['Size'],
+                            'file_type'      => $this->s3Storage->makeFileType(strtolower($fileInfo['extension'])),
+                            'file_size_view' => $this->s3Storage->transformSize($value['Size']),
+                        ],
+                        'category' => $params['category'] ?? [],
+                        'review'   => [],
+                        'history'  => [
+                            [
+                                'action'  => 'add',
+                                'user_id' => $authorization['user_id'],
+                                'data'    => [
+                                    'title'       => $value['Key'],
+                                    'type'        => $this->s3Storage->makeFileType(strtolower($fileInfo['extension'])),
+                                    'extension'   => strtolower($fileInfo['extension']),
+                                    'status'      => 1,
+                                    'size'        => $value['Size'],
+                                    'time_update' => time(),
+                                ],
+                            ],
+                        ],
+                    ],
+                    JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK
+                ),
+            ];
+
+            $this->mediaRepository->addMedia($addStorage);
+
+        }
+        return ['message' => 'ok'];
     }
 
     public function isDuplicated($slug): bool

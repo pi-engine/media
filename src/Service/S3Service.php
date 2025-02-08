@@ -185,7 +185,7 @@ class S3Service implements ServiceInterface
             ];
         }
 
-        // Delete bucket and data if exist
+        // Delete bucket data if exist
         try {
             // List objects in the bucket
             $objects = $this->s3Client->listObjects([
@@ -222,9 +222,7 @@ class S3Service implements ServiceInterface
                         'error'  => [],
                     ];
                 }
-
             }
-
 
             try {
                 // Delete the empty bucket
@@ -258,5 +256,60 @@ class S3Service implements ServiceInterface
                 ],
             ];
         }
+    }
+
+    public function getFilesFromBucket($bucketName): array
+    {
+        $objetList = [];
+
+        // Check bucket is exist
+        try {
+            // Check
+            $this->s3Client->headBucket([
+                'Bucket' => $bucketName,
+            ]);
+        } catch (AwsException $e) {
+            return [
+                'result' => true,
+                'data'   => [
+                    'message' => 'Bucket dose not exist and delete not required !',
+                ],
+                'error'  => [],
+            ];
+        }
+
+        // Delete bucket data if exist
+        try {
+            // List objects in the bucket
+            $objects = $this->s3Client->listObjects([
+                'Bucket' => $bucketName,
+            ]);
+
+            // Delete objects if they exist
+            if (isset($objects['Contents']) && !empty($objects['Contents'])) {
+                foreach ($objects['Contents'] as $object) {
+                    $objetList[] = [
+                        'Bucket' => $bucketName,
+                        'Key'    => $object['Key'],
+                        'Size'   => $object['Size'],
+                    ];
+                }
+            }
+        } catch (AwsException $e) {
+            return [
+                'result' => false,
+                'data'   => [],
+                'error'  => [
+                    'code'    => $e->getStatusCode(),
+                    'message' => "Error deleting bucket: " . $e->getMessage(),
+                ],
+            ];
+        }
+
+        return [
+            'result' => true,
+            'data'   => $objetList,
+            'error'  => [],
+        ];
     }
 }

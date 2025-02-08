@@ -8,6 +8,7 @@ use Pi\Media\Download\LocalDownload;
 use Pi\Media\Download\S3Download;
 use Pi\Media\Repository\MediaRepositoryInterface;
 use Pi\Media\Service\MediaService;
+use Pi\Media\Service\S3Service;
 use Pi\Media\Storage\LocalStorage;
 use Pi\Media\Storage\S3Storage;
 use Pi\User\Service\AccountService;
@@ -24,6 +25,7 @@ class MediaServiceFactory implements FactoryInterface
             $container->get(MediaRepositoryInterface::class),
             $container->get(AccountService::class),
             $container->get(UtilityService::class),
+            $container->get(S3Service::class),
             $container->get(LocalStorage::class),
             $container->get(S3Storage::class),
             $container->get(LocalDownload::class),
