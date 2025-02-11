@@ -903,7 +903,7 @@ class MediaService implements ServiceInterface
         $storage['time_update_view'] = $this->utilityService->date($storage['time_update']);
 
         // Set size view
-        $storage['size_view'] = $storage['information']['storage']['file_size_view'];
+        $storage['size_view'] = $information['storage']['file_size_view'];
 
         return $storage;
     }
