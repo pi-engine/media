@@ -181,7 +181,10 @@ class FileReader implements ServiceInterface
             foreach ($phpWord->getSections() as $section) {
                 foreach ($section->getElements() as $element) {
                     if (method_exists($element, 'getText')) {
-                        $text .= $element->getText() . "\n"; // Concatenate text
+                        $row = $element->getText();
+                        if (is_string($row) && !empty($row)) {
+                            $text .= $element->getText() . "\n"; // Concatenate text
+                        }
                     }
                 }
             }
