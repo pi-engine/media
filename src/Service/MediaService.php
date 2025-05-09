@@ -191,6 +191,7 @@ class MediaService implements ServiceInterface
                     'storage'  => $storeInfo,
                     'category' => $params['category'] ?? [],
                     'review'   => (isset($params['review']) && !empty($params['review'])) ? [$params['review']] : [],
+                    'ai'       => null,
                     'history'  => [
                         [
                             'action'  => 'add',
@@ -316,6 +317,12 @@ class MediaService implements ServiceInterface
             }
         }
 
+        if (isset($params['type']) && !empty($params['type'])) {
+            $listParams['type'] = $params['type'];
+        }
+        if (isset($params['extension']) && !empty($params['extension'])) {
+            $listParams['extension'] = $params['extension'];
+        }
         if (isset($params['category_id']) && !empty($params['category_id'])) {
             $listParams['category_id'] = $params['category_id'];
         }
@@ -454,6 +461,9 @@ class MediaService implements ServiceInterface
         if (isset($params['review']) && !empty($params['review'])) {
             $information['review'][] = $params['review'];
         }
+        if (isset($params['ai']) && !empty($params['ai'])) {
+            $information['ai'] = $params['ai'];
+        }
 
         // Set history
         $information['history'][] = [
@@ -496,6 +506,9 @@ class MediaService implements ServiceInterface
         }
         if (isset($params['review']) && !empty($params['review'])) {
             $information['review'][] = $params['review'];
+        }
+        if (isset($params['ai']) && !empty($params['ai'])) {
+            $information['ai'] = $params['ai'];
         }
 
         // Set history
@@ -755,6 +768,9 @@ class MediaService implements ServiceInterface
         if (isset($options['view']) && $options['view'] == 'compressed') {
             return $this->canonizeStorageCompressed($storage);
         }
+        if (isset($options['view']) && $options['view'] == 'light') {
+            return $this->canonizeStorageCompressed($storage);
+        }
 
         if (is_object($storage)) {
             $storage = [
@@ -822,8 +838,12 @@ class MediaService implements ServiceInterface
             $storage['information']['download']['private_uri'] = $this->localDownload->makePrivateUrl($storage);
         }
 
+        // Set AI data if not set
+        // ToDo: remove it when all media updated
+        $storage['information']['ai'] = $storage['information']['ai'] ?? null;
+
         // Clean up
-        if (isset($options['view']) && in_array($options['view'], ['limited', 'compressed'])) {
+        if (isset($options['view']) && in_array($options['view'], ['light', 'limited', 'compressed'])) {
 
             // Bucket and Key
             if ($storage['storage'] == 's3') {

@@ -51,6 +51,12 @@ class MediaRepository implements MediaRepositoryInterface
         if (isset($params['status']) && !empty($params['status'])) {
             $where['status'] = $params['status'];
         }
+        if (isset($params['type']) && !empty($params['type'])) {
+            $where['type'] = $params['type'];
+        }
+        if (isset($params['extension']) && !empty($params['extension'])) {
+            $where['extension'] = $params['extension'];
+        }
         if (isset($params['category_id']) && !empty($params['category_id'])) {
             $where['category_id'] = $params['category_id'];
         }
