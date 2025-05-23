@@ -10,6 +10,7 @@ use Laminas\Validator\File\MimeType;
 use Laminas\Validator\File\Size;
 use Laminas\Validator\File\UploadFile;
 use Pi\Core\Handler\ErrorHandler;
+use Pi\Core\Service\ConfigService;
 use Pi\Core\Service\UtilityService;
 use Pi\Media\Service\MediaService;
 use Pi\Media\Validator\SlugValidator;
@@ -44,6 +45,9 @@ class UploadMediaMiddleware implements MiddlewareInterface
     /** @var UtilityService */
     protected UtilityService $utilityService;
 
+    /** @var ConfigService */
+    protected ConfigService $configService;
+
     /* @var array */
     protected array $config;
 
@@ -53,6 +57,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
         ErrorHandler             $errorHandler,
         MediaService             $mediaService,
         UtilityService           $utilityService,
+        ConfigService            $configService,
                                  $config
     ) {
         $this->responseFactory = $responseFactory;
@@ -60,6 +65,7 @@ class UploadMediaMiddleware implements MiddlewareInterface
         $this->errorHandler    = $errorHandler;
         $this->mediaService    = $mediaService;
         $this->utilityService  = $utilityService;
+        $this->configService   = $configService;
         $this->config          = $config;
     }
 
@@ -111,6 +117,24 @@ class UploadMediaMiddleware implements MiddlewareInterface
             return;
         }
 
+        // Get custom configs
+        $configList = $this->configService->gtyConfigList();
+        if (isset($configList['file_upload']['configs']) && !empty($configList['file_upload']['configs'])) {
+            foreach ($configList['file_upload']['configs'] as $config) {
+                switch ($config['key']) {
+                    case 'allowed_size':
+                        $this->config['allowed_size']['max'] = $config['value'];
+                        break;
+
+                    case 'allowed_extension':
+                        $this->config['allowed_extension'] = $config['value'];
+                        break;
+                }
+
+            }
+        }
+
+        // Set validator
         $validatorUpload    = new UploadFile();
         $validatorExtension = new Extension($this->config['allowed_extension']);
         $validatorMimeType  = new MimeType($this->config['mime_type']);

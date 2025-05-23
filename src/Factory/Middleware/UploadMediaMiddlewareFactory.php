@@ -4,6 +4,7 @@ namespace Pi\Media\Factory\Middleware;
 
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Pi\Core\Handler\ErrorHandler;
+use Pi\Core\Service\ConfigService;
 use Pi\Core\Service\UtilityService;
 use Pi\Media\Middleware\UploadMediaMiddleware;
 use Pi\Media\Service\MediaService;
@@ -24,6 +25,7 @@ class UploadMediaMiddlewareFactory implements FactoryInterface
             $container->get(ErrorHandler::class),
             $container->get(MediaService::class),
             $container->get(UtilityService::class),
+            $container->get(ConfigService::class),
             $config
         );
     }
