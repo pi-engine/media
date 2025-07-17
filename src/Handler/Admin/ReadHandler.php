@@ -34,7 +34,7 @@ class ReadHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $media = $request->getAttribute('media_item');
+        $media  = $request->getAttribute('media_item');
         $result = $this->mediaService->readMedia($media);
 
         return new EscapingJsonResponse($result, $result['status'] ?? StatusCodeInterface::STATUS_OK);

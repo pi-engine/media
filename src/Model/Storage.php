@@ -9,7 +9,7 @@ class Storage
     private string $title;
     private int    $user_id;
     private int    $company_id;
-    private int $category_id;
+    private int    $category_id;
     private string $access;
     private string $storage;
     private string $type;
@@ -51,7 +51,7 @@ class Storage
         $this->title          = $title;
         $this->user_id        = $user_id;
         $this->company_id     = $company_id;
-        $this->category_id = $category_id;
+        $this->category_id    = $category_id;
         $this->access         = $access;
         $this->storage        = $storage;
         $this->type           = $type;

@@ -94,7 +94,7 @@ class S3Storage implements StorageInterface
 
         // Download the file to a temporary location
         if ($result['result']) {
-            $tempFilePath =  sys_get_temp_dir() . '/' .  basename($params['Key']);
+            $tempFilePath = sys_get_temp_dir() . '/' . basename($params['Key']);
             file_put_contents($tempFilePath, $result['data']['Body']);
             return $tempFilePath;
         }
