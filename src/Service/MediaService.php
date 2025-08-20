@@ -157,7 +157,7 @@ class MediaService implements ServiceInterface
                 $storageParams = [
                     'storage'     => $this->storage,
                     'access'      => $authorization['access'],
-                    'Bucket'      => $authorization['company']['slug'],
+                    'Bucket'      => $authorization['company']['slug'] ?? $this->config['admin_bucket'] ?? 'general',
                     'random_name' => $params['random_name'] ?? 0,
                     'company_id'  => $authorization['company_id'],
                     'user_id'     => $authorization['user_id'],
