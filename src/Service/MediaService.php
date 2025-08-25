@@ -212,6 +212,7 @@ class MediaService implements ServiceInterface
         ];
 
         // Set slug for a check duplicate
+        $addStorage['slug'] = $this->utilityService->slug();
         if (isset($this->config['check_duplicate']) && (int)$this->config['check_duplicate'] === 1) {
             $slug = sprintf(
                 '%s-%s-%s-%s',
