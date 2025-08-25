@@ -5,11 +5,12 @@ return [
         'authorization'     => [
             'access' => ['public', 'company', 'user', 'group', 'admin'],
         ],
-        'storage'           => 'local', // local or s3
+        'storage'           => 'local', // local / s3 / gcs
         'download_uri'      => 'https://...',
         'stream_uri'        => 'https://...',
         'private_path'      => 'PRIVATE_PATH',
         'public_path'       => 'PUBLIC_PATH',
+        'admin_bucket'      => 'general',
         'can_delete'        => 0,
         'check_duplicate'   => 0,
         'check_real_mime'   => 0,
@@ -170,5 +171,11 @@ return [
                 'secret' => 'XXX',
             ],
         ],
+        'gcs'           => [
+            'project_id'    => 'digrc-project-123456',
+            'key_file_path' => __DIR__ . '/../secrets/gcs-key.json',
+            'stream_uri'    => 'https://media.digrc.com',
+            'bucket'        => 'digrc-uploads',
+        ]
     ],
 ];
