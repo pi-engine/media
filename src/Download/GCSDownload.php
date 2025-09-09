@@ -40,7 +40,7 @@ class GCSDownload implements DownloadInterface
 
             $object = $this->gcsService->getObject($bucketName, $objectName);
 
-            $stream = $object->downloadAsStream();
+            $stream   = $object->downloadAsStream();
             $metadata = $object->info();
 
             header("Content-Type: " . ($metadata['contentType'] ?? 'application/octet-stream'));

@@ -8,11 +8,11 @@ use Google\Cloud\Storage\StorageClient;
 class GCSService implements ServiceInterface
 {
     protected StorageClient $storageClient;
-    protected array $config;
+    protected array         $config;
 
     public function __construct(array $config)
     {
-        $this->config = $config;
+        $this->config        = $config;
         $this->storageClient = new StorageClient([
             'keyFilePath' => $config['gcs']['keyFilePath'],
             'projectId'   => $config['gcs']['projectId'],
@@ -31,16 +31,16 @@ class GCSService implements ServiceInterface
             $object = $bucket->upload(
                 $params['Body'],
                 [
-                    'name' => $params['Key'],
-                    'metadata' => $params['Metadata'] ?? [],
+                    'name'          => $params['Key'],
+                    'metadata'      => $params['Metadata'] ?? [],
                     'predefinedAcl' => ($params['ACL'] ?? 'private') === 'public' ? 'publicRead' : 'private',
                 ]
             );
 
             return [
                 'result' => true,
-                'data' => $object->info(),
-                'error' => [],
+                'data'   => $object->info(),
+                'error'  => [],
             ];
         } catch (GoogleException $e) {
             return [
@@ -110,7 +110,7 @@ class GCSService implements ServiceInterface
             $bucket = $this->storageClient->bucket($bucketName);
             if (!$bucket->exists()) {
                 $bucket = $this->storageClient->createBucket($bucketName, [
-                    'location' => $this->config['gcs']['location'] ?? 'US',
+                    'location'     => $this->config['gcs']['location'] ?? 'US',
                     'storageClass' => $this->config['gcs']['storageClass'] ?? 'STANDARD',
                 ]);
 
@@ -193,7 +193,7 @@ class GCSService implements ServiceInterface
 
             $objectList = [];
             foreach ($bucket->objects() as $object) {
-                $info = $object->info();
+                $info         = $object->info();
                 $objectList[] = [
                     'Bucket' => $bucketName,
                     'Key'    => $object->name(),

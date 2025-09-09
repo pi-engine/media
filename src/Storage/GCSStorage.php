@@ -11,12 +11,12 @@ use Random\RandomException;
 class GCSStorage implements StorageInterface
 {
     protected StorageClient $storageClient;
-    protected array $config;
+    protected array         $config;
 
     public function __construct(StorageClient $storageClient, array $config)
     {
         $this->storageClient = $storageClient;
-        $this->config = $config;
+        $this->config        = $config;
     }
 
     /**
@@ -45,8 +45,8 @@ class GCSStorage implements StorageInterface
             $object = $bucket->upload(
                 $uploadFile->getStream(),
                 [
-                    'name' => $fileName,
-                    'metadata' => [
+                    'name'          => $fileName,
+                    'metadata'      => [
                         'company_id' => $params['company_id'],
                         'user_id'    => $params['user_id'] ?? $params['company_id'],
                         'access'     => $params['access'] ?? 'default',
@@ -58,7 +58,7 @@ class GCSStorage implements StorageInterface
             return [
                 'result' => true,
                 'data'   => [
-                    'gcs' => [
+                    'gcs'            => [
                         'Key'          => $fileName,
                         'Bucket'       => $bucketName,
                         'fileRequest'  => $uploadFile->getClientFilename(),
@@ -72,7 +72,7 @@ class GCSStorage implements StorageInterface
                     'file_type'      => $this->makeFileType(strtolower($fileInfo['extension'])),
                     'file_size_view' => $this->transformSize($uploadFile->getSize()),
                 ],
-                'error' => [],
+                'error'  => [],
             ];
         } catch (\Exception $e) {
             return ['result' => false, 'error' => $e->getMessage()];
@@ -106,8 +106,8 @@ class GCSStorage implements StorageInterface
             ->attach(new PregReplace('/[^a-z0-9-]/', '-'))
             ->attach(new PregReplace('/--+/', '-'));
 
-        $fileName = $filterChain->filter($fileInfo['filename']);
-        $timestamp = date('Y-m-d-H-i-s');
+        $fileName     = $filterChain->filter($fileInfo['filename']);
+        $timestamp    = date('Y-m-d-H-i-s');
         $randomString = bin2hex(random_bytes(4));
 
         return sprintf('%s-%s-%s.%s', $fileName, $timestamp, $randomString, $fileInfo['extension']);
@@ -116,7 +116,7 @@ class GCSStorage implements StorageInterface
     public function makeFileType($extension): string
     {
         // Same implementation as original
-        $typeMappings = [ /* ... all same mappings ... */ ];
+        $typeMappings = [ /* ... all same mappings ... */];
 
         return $typeMappings[$extension] ?? 'unknown';
     }
@@ -124,7 +124,7 @@ class GCSStorage implements StorageInterface
     public function transformSize(int|string $value): float|bool|int|string
     {
         $result = false;
-        $sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        $sizes  = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
         if (is_numeric($value)) {
             $value = (int)$value;
@@ -133,12 +133,12 @@ class GCSStorage implements StorageInterface
             }
             $result = round($value, 2) . $sizes[$i];
         } else {
-            $value = trim($value);
+            $value   = trim($value);
             $pattern = '/^([0-9]+)[\s]?(' . implode('|', $sizes) . ')$/i';
             if (preg_match($pattern, $value, $matches)) {
                 $value = (int)$matches[1];
-                $unit = strtoupper($matches[2]);
-                $idx = array_search($unit, $sizes);
+                $unit  = strtoupper($matches[2]);
+                $idx   = array_search($unit, $sizes);
                 if (false !== $idx) {
                     $result = $value * pow(1024, $idx);
                 }
