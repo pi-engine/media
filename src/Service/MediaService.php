@@ -545,7 +545,7 @@ class MediaService implements ServiceInterface
                 break;
 
             case 's3':
-                $this->s3Storage->remove($media['storage']['s3']);
+                $this->s3Storage->remove($media['information']['storage']['s3']);
                 break;
         }
 
