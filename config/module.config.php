@@ -2,9 +2,9 @@
 
 namespace Pi\Media;
 
+use Grc\Company\Middleware\CompanyMiddleware;
 use Laminas\Mvc\Middleware\PipeSpec;
 use Laminas\Router\Http\Literal;
-Use GRC\Company\Middleware\CompanyMiddleware;
 use Pi\Core\Middleware\ErrorMiddleware;
 use Pi\Core\Middleware\InstallerMiddleware;
 use Pi\Core\Middleware\RequestPreparationMiddleware;
