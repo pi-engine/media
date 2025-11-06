@@ -4,8 +4,14 @@ namespace Pi\Media\Service;
 
 use Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
+use PhpOffice\PhpWord\Element\AbstractContainer;
+use PhpOffice\PhpWord\Element\Table;
+use PhpOffice\PhpWord\Element\Text;
+use PhpOffice\PhpWord\Element\TextRun;
 use PhpOffice\PhpWord\IOFactory as WordIOFactory;
 use Smalot\PdfParser\Parser as PdfParser;
+use Throwable;
 
 class FileReader implements ServiceInterface
 {
@@ -91,25 +97,67 @@ class FileReader implements ServiceInterface
     private function readExcel(): array
     {
         try {
-            $spreadsheet = SpreadsheetIOFactory::load($this->filePath);
-            $data        = [];
+            // Use a lightweight reader
+            $reader = SpreadsheetIOFactory::createReaderForFile($this->filePath);
+            $reader->setReadDataOnly(true);
 
-            foreach ($spreadsheet->getAllSheets() as $sheet) {
-                foreach ($sheet->getRowIterator() as $row) {
+            // Optionally read only specific sheet(s)
+            // $reader->setLoadSheetsOnly(['Sheet1']);
+
+            // If you expect large files, use chunked reading
+            $chunkSize   = 500; // rows per chunk
+            $chunkFilter = new class implements IReadFilter {
+                private int $startRow = 0;
+                private int $endRow   = 0;
+
+                public function setRows(int $startRow, int $chunkSize): void
+                {
+                    $this->startRow = $startRow;
+                    $this->endRow   = $startRow + $chunkSize - 1;
+                }
+
+                public function readCell($column, $row, $worksheetName = ''): bool
+                {
+                    return $row >= $this->startRow && $row <= $this->endRow;
+                }
+            };
+            $reader->setReadFilter($chunkFilter);
+
+            $data     = [];
+            $startRow = 1;
+
+            do {
+                $chunkFilter->setRows($startRow, $chunkSize);
+                $spreadsheet = $reader->load($this->filePath);
+                $sheet       = $spreadsheet->getActiveSheet();
+
+                foreach ($sheet->getRowIterator($startRow, $startRow + $chunkSize - 1) as $row) {
                     $rowData = [];
                     foreach ($row->getCellIterator() as $cell) {
-                        $rowData[] = $cell->getValue();
+                        $value = $cell->getValue();
+                        // skip empty cells
+                        if ($value !== null && $value !== '') {
+                            $rowData[] = $value;
+                        }
                     }
-                    $data[] = $rowData; // Add row to data
+                    if (!empty($rowData)) {
+                        $data[] = $rowData;
+                    }
                 }
-            }
+
+                $spreadsheet->disconnectWorksheets();
+                unset($spreadsheet);
+
+                $startRow += $chunkSize;
+                gc_collect_cycles(); // free memory
+            } while (!empty($rowData)); // stop when no data returned
 
             return [
                 'result' => true,
                 'data'   => $data,
                 'error'  => [],
             ];
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return [
                 'result' => false,
                 'data'   => [],
@@ -176,25 +224,51 @@ class FileReader implements ServiceInterface
     {
         try {
             $phpWord = WordIOFactory::load($this->filePath);
-            $text    = '';
+            $textLines = [];
 
-            foreach ($phpWord->getSections() as $section) {
-                foreach ($section->getElements() as $element) {
-                    if (method_exists($element, 'getText')) {
-                        $row = $element->getText();
-                        if (is_string($row) && !empty($row)) {
-                            $text .= $element->getText() . "\n"; // Concatenate text
+            // Recursive closure for traversing all elements
+            $extractText = function ($element) use (&$extractText, &$textLines) {
+                if ($element instanceof Text) {
+                    $txt = trim($element->getText());
+                    if ($txt !== '') {
+                        $textLines[] = $txt;
+                    }
+                } elseif ($element instanceof TextRun) {
+                    foreach ($element->getElements() as $child) {
+                        $extractText($child);
+                    }
+                } elseif ($element instanceof Table) {
+                    foreach ($element->getRows() as $row) {
+                        foreach ($row->getCells() as $cell) {
+                            foreach ($cell->getElements() as $cellElement) {
+                                $extractText($cellElement);
+                            }
                         }
                     }
+                } elseif ($element instanceof AbstractContainer) {
+                    foreach ($element->getElements() as $child) {
+                        $extractText($child);
+                    }
+                }
+            };
+
+            // Process all sections
+            foreach ($phpWord->getSections() as $section) {
+                foreach ($section->getElements() as $element) {
+                    $extractText($element);
                 }
             }
 
+            // Remove duplicates and empty lines, normalize line breaks
+            $textLines = array_filter(array_map('trim', $textLines));
+            $textLines = array_values(array_unique($textLines));
+
             return [
                 'result' => true,
-                'data'   => explode("\n", trim($text)),
+                'data'   => $textLines,
                 'error'  => [],
             ];
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return [
                 'result' => false,
                 'data'   => [],
@@ -204,6 +278,7 @@ class FileReader implements ServiceInterface
             ];
         }
     }
+
 
     private function readTxt(): array
     {
