@@ -3,6 +3,7 @@
 namespace Pi\Media\Service;
 
 use Aws\Exception\AwsException;
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 
 class S3Service implements ServiceInterface
@@ -98,31 +99,28 @@ class S3Service implements ServiceInterface
 
     public function setOrGetBucket($bucketName, $policy = []): array
     {
+        $result = [];
         try {
-            $this->s3Client->headBucket([
+            $result = $this->s3Client->listObjectsV2([
                 'Bucket' => $bucketName,
+                'MaxKeys' => 1,
             ]);
-        } catch (AwsException $e) {
-            if ((int)$e->getStatusCode() === 404) {
+
+            $result = $result->toArray();
+        } catch (S3Exception $e) {
+            $status = (int)$e->getStatusCode();
+
+            if ($status === 404) {
+                // Bucket does not exist → create it
                 try {
-                    // Create the bucket
-                    $this->s3Client->createBucket([
-                        'Bucket' => $bucketName,
-                    ]);
-
-                    // Wait until the bucket is created
-                    $this->s3Client->waitUntil('BucketExists', [
-                        'Bucket' => $bucketName,
-                    ]);
-
-                    // Configure the policy
+                    $this->s3Client->createBucket(['Bucket' => $bucketName]);
                     if (!empty($policy)) {
                         $this->s3Client->putBucketPolicy([
                             'Bucket' => $bucketName,
                             'Policy' => json_encode($policy),
                         ]);
                     }
-                } catch (AwsException $createException) {
+                } catch (S3Exception $createException) {
                     return [
                         'result' => false,
                         'data'   => [],
@@ -132,40 +130,36 @@ class S3Service implements ServiceInterface
                         ],
                     ];
                 }
+            } elseif ($status === 403) {
+                // Access denied → user does not have permission
+                return [
+                    'result' => false,
+                    'data'   => [],
+                    'error'  => [
+                        'code'    => 403,
+                        'message' => "Access denied to bucket '{$bucketName}'.",
+                    ],
+                ];
             } else {
                 return [
                     'result' => false,
                     'data'   => [],
                     'error'  => [
-                        'code'    => $e->getStatusCode(),
-                        'message' => "An error occurred: " . $e->getMessage(),
+                        'code'    => $status,
+                        'message' => $e->getMessage(),
                     ],
                 ];
             }
         }
 
-        // Get data (objects) from the bucket
-        try {
-            $result = $this->s3Client->listObjects([
-                'Bucket' => $bucketName,
-            ]);
-
-            return [
-                'result' => true,
-                'data'   => $result->toArray(),
-                'error'  => [],
-            ];
-        } catch (AwsException $e) {
-            return [
-                'result' => false,
-                'data'   => [],
-                'error'  => [
-                    'code'    => $e->getStatusCode(),
-                    'message' => "Error retrieving objects from the bucket: " . $e->getMessage(),
-                ],
-            ];
-        }
+        // Return objects if bucket exists and is accessible
+        return [
+            'result' => true,
+            'data'   => $result,
+            'error'  => [],
+        ];
     }
+
 
     public function deleteBucket($bucketName): array
     {

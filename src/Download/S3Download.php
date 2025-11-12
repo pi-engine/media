@@ -39,13 +39,28 @@ class S3Download implements DownloadInterface
                 'Key'    => $params['Key'],
             ]);
 
-            // Set headers for streaming the file
-            header("Content-Type: " . $result['ContentType']);
-            header("Content-Disposition: inline; filename=\"{$params['Key']}\"");
+            // Check and set error
+            if (!isset($result['data']['Body']) || $result['data']['Body'] === null) {
+                echo 'Empty body stream from S3';
+                exit;
+            }
 
-            // Stream the file content
-            echo $result['Body']; // The file content will be streamed directly
+            // Set proper headers for download
+            header('Content-Description: File Transfer');
+            header('Content-Type: ' . ($result['data']['ContentType'] ?? 'application/octet-stream'));
+            header('Content-Disposition: attachment; filename="' . basename($params['Key']) . '"');
+            header('Content-Length: ' . $result['data']['ContentLength']);
+            header('Cache-Control: public, must-revalidate, max-age=0');
+            header('Pragma: public');
+            // If you need range support, that's extra work (see note below)
 
+            // $result['Body'] is a Psr7 stream — stream it out in chunks
+            $body = $result['data']['Body'];
+            while (!$body->eof()) {
+                echo $body->read(1024 * 8); // 8KB chunks
+                flush();
+            }
+            exit;
         } catch (AwsException $e) {
             echo "Error downloading file: " . $e->getMessage() . "\n";
         }
