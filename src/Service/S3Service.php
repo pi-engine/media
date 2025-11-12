@@ -102,7 +102,7 @@ class S3Service implements ServiceInterface
         $result = [];
         try {
             $result = $this->s3Client->listObjectsV2([
-                'Bucket' => $bucketName,
+                'Bucket'  => $bucketName,
                 'MaxKeys' => 1,
             ]);
 

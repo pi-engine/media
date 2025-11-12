@@ -223,7 +223,7 @@ class FileReader implements ServiceInterface
     private function readWord(): array
     {
         try {
-            $phpWord = WordIOFactory::load($this->filePath);
+            $phpWord   = WordIOFactory::load($this->filePath);
             $textLines = [];
 
             // Recursive closure for traversing all elements
