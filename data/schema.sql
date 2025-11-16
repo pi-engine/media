@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS `media_storage`
 	`information`    JSON,
 	PRIMARY KEY (`id`),
 	UNIQUE KEY `slug` (`slug`)
-);
+) DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS `media_relation`
 (
@@ -35,4 +36,5 @@ CREATE TABLE IF NOT EXISTS `media_relation`
 	`time_update`      INT(10) UNSIGNED    NOT NULL DEFAULT '0',
 	`information`      JSON,
 	PRIMARY KEY (`id`)
-);
+) DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci;
