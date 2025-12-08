@@ -45,6 +45,9 @@ class MediaRepository implements MediaRepositoryInterface
     public function getMediaList($params = []): HydratingResultSet
     {
         $where = [];
+        if (isset($params['title']) && !empty($params['title'])) {
+            $where['title like ?'] = '%' . $params['title'] . '%';
+        }
         if (isset($params['access']) && !empty($params['access'])) {
             $where['access'] = $params['access'];
         }
@@ -117,6 +120,9 @@ class MediaRepository implements MediaRepositoryInterface
             'relation.relation_section' => $params['relation_section'],
             'relation.relation_item'    => $params['relation_item'],
         ];
+        if (isset($params['title']) && !empty($params['title'])) {
+            $where['storage.title like ?'] = '%' . $params['title'] . '%';
+        }
         if (isset($params['access']) && !empty($params['access'])) {
             $where['storage.access'] = $params['access'];
         }
@@ -170,6 +176,9 @@ class MediaRepository implements MediaRepositoryInterface
         // Set where
         $columns = ['count' => new Expression('count(*)')];
         $where   = [];
+        if (isset($params['title']) && !empty($params['title'])) {
+            $where['title like ?'] = '%' . $params['title'] . '%';
+        }
         if (isset($params['access']) && !empty($params['access'])) {
             $where['access'] = $params['access'];
         }
@@ -210,6 +219,9 @@ class MediaRepository implements MediaRepositoryInterface
             'relation.relation_section' => $params['relation_section'],
             'relation.relation_item'    => $params['relation_item'],
         ];
+        if (isset($params['title']) && !empty($params['title'])) {
+            $where['storage.title like ?'] = '%' . $params['title'] . '%';
+        }
         if (isset($params['access']) && !empty($params['access'])) {
             $where['storage.access'] = $params['access'];
         }

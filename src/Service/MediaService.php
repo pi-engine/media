@@ -333,6 +333,9 @@ class MediaService implements ServiceInterface
         if (isset($params['slug']) && !empty($params['slug'])) {
             $listParams['slug'] = $params['slug'];
         }
+        if (isset($params['title']) && !empty($params['title'])) {
+            $listParams['title'] = $params['title'];
+        }
         if (isset($params['id']) && !empty($params['id'])) {
             $listParams['id'] = $params['id'];
         }
