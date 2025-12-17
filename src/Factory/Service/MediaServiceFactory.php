@@ -19,7 +19,10 @@ class MediaServiceFactory implements FactoryInterface
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null): MediaService
     {
         $config = $container->get('config');
-        $config = $config['media'] ?? [];
+        $config = array_merge(
+            $config['media'] ?? [],
+            $config['ai'] ?? []
+        );
 
         return new MediaService(
             $container->get(MediaRepositoryInterface::class),

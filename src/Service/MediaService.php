@@ -263,6 +263,47 @@ class MediaService implements ServiceInterface
             // Save relation
             $relation              = $this->mediaRepository->addMediaRelation($addRelation);
             $storage['relation'][] = $this->canonizeRelation($relation);
+
+            // For a test
+            // ToDo: remove it after setup nats.io
+            if (
+                $params['relation_module'] === 'governance'
+                && $params['relation_section'] === 'policy'
+                && isset($storage['Key'])
+                && !empty($storage['Key'])
+                && isset($storage['Bucket'])
+                && !empty($storage['Bucket'])
+            ) {
+                // Send to AI
+                $this->utilityService->callService(
+                    sprintf('%s/admin/content/store', $this->config['core_ai']),
+                    'post',
+                    [
+                        'Content-Type'       => 'application/json',
+                        'X-Internal-Request' => 'true',
+                        'Authorization'      => $this->config['core_token'],
+                    ],
+                    [
+                        'collection' => sprintf('company_%s', $storage['company_id']),
+                        'provider'   => [
+                            'provider' => 'gemini',
+                            'model'    => 'gemini-embedding-001',
+                            'size'     => 768,
+                        ],
+                        'name'       => $storage['Key'],
+                        'bucket'     => $storage['Bucket'],
+                        'chunk'      => [
+                            'chunkSize'    => 3500,
+                            'chunkOverlap' => 500,
+                        ],
+                        'meta'       => [
+                            'cat'       => 'content',
+                            'component' => 'compliance',
+                            'docs'      => 'evidences',
+                        ],
+                    ]
+                );
+            }
         }
 
         return $storage;
@@ -846,15 +887,14 @@ class MediaService implements ServiceInterface
         // ToDo: remove it when all media updated
         $storage['information']['ai'] = $storage['information']['ai'] ?? null;
 
+        // Bucket and Key
+        if ($storage['storage'] == 's3') {
+            $storage['Key']    = $storage['information']['storage']['s3']['Key'];
+            $storage['Bucket'] = $storage['information']['storage']['s3']['Bucket'];
+        }
+
         // Clean up
         if (isset($options['view']) && in_array($options['view'], ['light', 'limited', 'compressed'])) {
-
-            // Bucket and Key
-            if ($storage['storage'] == 's3') {
-                $storage['Key']    = $storage['information']['storage']['s3']['Key'];
-                $storage['Bucket'] = $storage['information']['storage']['s3']['Bucket'];
-            }
-
             unset($storage['information']['storage']);
         }
 
